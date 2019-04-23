@@ -5,10 +5,7 @@
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "webpack": "webpack -w",
-    "webpack:production": "NODE_ENV=production webpack",
-    "server": "webpack-dev-server"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "BuckleScript"
@@ -23,11 +20,7 @@
   },
   "devDependencies": {
     "bs-platform": "^5.0.2",
-    "html-webpack-plugin": "^3.2.0",
-    "reason-apollo": "^0.15.2",
-    "webpack": "^4.0.1",
-    "webpack-cli": "^3.1.1",
-    "webpack-dev-server": "^3.1.8"
+    "reason-apollo": "^0.15.2"
   },
   "peerDependencies": {
     "reason-apollo": "^0.15.2"
