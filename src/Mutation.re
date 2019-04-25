@@ -5,13 +5,15 @@ module type Config = {
 };
 
 module Make = (Config: Config) => {
+  [@bs.module] external gql: ReasonApolloTypes.gql = "graphql-tag";
+
   type error = {. "message": string};
 
   [@bs.module "react-apollo-hooks"]
   external useMutation:
     (
       .
-      string,
+      ReasonApolloTypes.queryString,
       {. "variables": Js.Nullable.t(Js.Json.t)},
     ) => (
       .
@@ -33,7 +35,7 @@ module Make = (Config: Config) => {
     let jsMutate =
       useMutation(
         .
-        Config.query,
+        gql(. Config.query ),
         {"variables": Js.Nullable.fromOption(variables)},
       );
 

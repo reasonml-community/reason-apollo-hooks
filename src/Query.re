@@ -5,11 +5,13 @@ module type Config = {
 };
 
 module Make = (Config: Config) => {
+  [@bs.module] external gql: ReasonApolloTypes.gql = "graphql-tag";
+
   type error = {. "message": string};
 
   [@bs.module "react-apollo-hooks"]
   external useQuery:
-    (string, {. "variables": Js.Nullable.t(Js.Json.t)}) =>
+    (ReasonApolloTypes.queryString, {. "variables": Js.Nullable.t(Js.Json.t)}) =>
     {
       .
       "data": Js.Nullable.t(Js.Json.t),
@@ -32,7 +34,7 @@ module Make = (Config: Config) => {
   let use = (~variables=?, ()) => {
     let jsResult =
       useQuery(
-        Config.query,
+        gql(. Config.query ),
         {"variables": Js.Nullable.fromOption(variables)},
       );
 
