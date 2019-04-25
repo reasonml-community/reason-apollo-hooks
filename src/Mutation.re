@@ -10,8 +10,11 @@ module Make = (Config: Config) => {
   [@bs.module "react-apollo-hooks"]
   external useMutation:
     (
+      .
       string,
       {. "variables": Js.Nullable.t(Js.Json.t)},
+    ) => (
+      .
       {. "variables": Js.Nullable.t(Js.Json.t)}
     ) =>
     Js.Promise.t({
@@ -29,12 +32,13 @@ module Make = (Config: Config) => {
   let use = (~variables=?, ()) => {
     let jsMutate =
       useMutation(
+        .
         Config.query,
         {"variables": Js.Nullable.fromOption(variables)},
       );
 
     (~variables=?, ()) =>
-      jsMutate({"variables": Js.Nullable.fromOption(variables)})
+      jsMutate(. {"variables": Js.Nullable.fromOption(variables)})
       |> Js.Promise.then_(jsResult =>
            (
              switch (
