@@ -38,7 +38,7 @@ module UserQuery = ReasonApolloHooks.Query.Make(UserQueryConfig);
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( result, { data, loading, error } ) = UserQuery.use(());
+  let ( result, { data, loading, error } ) = UserQuery.use();
 
   <div>
   {
@@ -71,9 +71,15 @@ module ScreamMutation = ReasonApolloHooks.Mutation.Make(ScreamMutationConfig);
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let screamMutation = ScreaMutation.use(());
+  let screamMutation = ScreamMutation.use();
   let scream = (_) => {
-    screamMutation(~variables=ScreamMutationConfig.make(~screamLevel=10, ())##variables)
+    screamMutation(
+      ScreamMutation.options(
+        ~variables=ScreamMutationConfig.make(~screamLevel=10, ())##variables,
+        ()
+      ),
+      ()
+    )
       |> Js.Promise.then_(result => {
           switch(result) {
             | Data(data) => ...

@@ -9,9 +9,17 @@ module Make = (Config: Config) => {
 
   type error = {. "message": string};
 
+  [@bs.deriving abstract]
+  type options = {
+    [@bs.optional]
+    variables: Js.Json.t,
+    [@bs.optional]
+    client: ApolloClient.generatedApolloClient,
+  };
+
   [@bs.module "react-apollo-hooks"]
   external useQuery:
-    (ReasonApolloTypes.queryString, {. "variables": Js.Nullable.t(Js.Json.t)}) =>
+    (ReasonApolloTypes.queryString, Js.Nullable.t( options )) =>
     {
       .
       "data": Js.Nullable.t(Js.Json.t),
@@ -31,11 +39,11 @@ module Make = (Config: Config) => {
     error: option(error),
   };
 
-  let use = (~variables=?, ()) => {
+  let use = (~options=?, ()) => {
     let jsResult =
       useQuery(
         gql(. Config.query ),
-        {"variables": Js.Nullable.fromOption(variables)},
+        Js.Nullable.fromOption( options ),
       );
 
     let result = {

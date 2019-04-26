@@ -7,6 +7,14 @@ module type Config = {
 module Make = (Config: Config) => {
   [@bs.module] external gql: ReasonApolloTypes.gql = "graphql-tag";
 
+  [@bs.deriving abstract]
+  type options = {
+    [@bs.optional]
+    variables: Js.Json.t,
+    [@bs.optional]
+    client: ApolloClient.generatedApolloClient,
+  };
+
   type error = {. "message": string};
 
   [@bs.module "react-apollo-hooks"]
@@ -14,10 +22,10 @@ module Make = (Config: Config) => {
     (
       .
       ReasonApolloTypes.queryString,
-      {. "variables": Js.Nullable.t(Js.Json.t)},
+      Js.Nullable.t(options),
     ) => (
       .
-      {. "variables": Js.Nullable.t(Js.Json.t)}
+      options
     ) =>
     Js.Promise.t({
       .
@@ -31,16 +39,16 @@ module Make = (Config: Config) => {
     | Error(error)
     | NoData;
 
-  let use = (~variables=?, ()) => {
+  let use = (~options=?, ()) => {
     let jsMutate =
       useMutation(
         .
         gql(. Config.query ),
-        {"variables": Js.Nullable.fromOption(variables)},
+        Js.Nullable.fromOption( options ),
       );
 
-    (~variables=?, ()) =>
-      jsMutate(. {"variables": Js.Nullable.fromOption(variables)})
+    options =>
+      jsMutate(. options)
       |> Js.Promise.then_(jsResult =>
            (
              switch (
