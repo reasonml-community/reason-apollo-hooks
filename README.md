@@ -38,16 +38,37 @@ module UserQuery = ReasonApolloHooks.Query.Make(UserQueryConfig);
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( result, { data, loading, error } ) = UserQuery.use(());
+  let (simple, _full) = UserQuery.use(());
 
   <div>
   {
-    switch(result) {
+    switch(simple) {
       | Loading => <p>{React.string("Loading...")}</p>
       | Data(data) =>
         <p>{React.string(data##currentUser##name)}</p>
       | NoData
       | Error(_) => <p>{React.string("Get off my lawn!")}</p>
+    }
+  }
+  </div>
+}
+```
+Using the `full` record for more advanced cases
+
+```reason
+[@react.component]
+let make = () => {
+  /* Both variant and records available */
+  let (_simple, full) = UserQuery.use(());
+
+  <div>
+  {
+    switch(full) {
+      | { loading: true }=> <p>{React.string("Loading...")}</p>
+      | { data: Some(data) } =>
+        <p>{React.string(data##currentUser##name)}</p>
+      | any other possibilities =>
+      | { error: Some(_) } => <p>{React.string("Get off my lawn!")}</p>
     }
   }
   </div>
