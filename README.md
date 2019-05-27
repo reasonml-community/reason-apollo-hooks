@@ -20,6 +20,26 @@ Then update your bsconfig.json
 ]
 ```
 
+## Setting up 
+Add the provider in the top of the tree
+
+```reason
+/* Create an InMemoryCache */
+let inMemoryCache = ApolloInMemoryCache.createInMemoryCache();
+
+/* Create an HTTP Link */
+let httpLink =
+  ApolloLinks.createHttpLink(~uri="http://localhost:3010/graphql", ());
+
+let client =
+  ReasonApollo.createApolloClient(~link=httpLink, ~cache=inMemoryCache, ());
+  
+let app = 
+ <ReasonApolloHooks.ApolloProvider client>
+   ...
+ </ReasonApolloHooks.ApolloProvider>
+```
+
 # Available hooks
 
 ## useQuery
