@@ -20,7 +20,7 @@ Then update your bsconfig.json
 ]
 ```
 
-## Setting up 
+## Setting up
 Add the provider in the top of the tree
 
 ```reason
@@ -33,12 +33,30 @@ let httpLink =
 
 let client =
   ReasonApollo.createApolloClient(~link=httpLink, ~cache=inMemoryCache, ());
-  
-let app = 
+
+let app =
  <ReasonApolloHooks.ApolloProvider client>
    ...
  </ReasonApolloHooks.ApolloProvider>
 ```
+
+### Usage with reason-apollo
+
+To use with `reason-apollo`'s `ReasonApollo.Provider` already present in your project:
+
+```reason
+let client = ... // create Apollo client
+
+ReactDOMRe.renderToElementWithId(
+  <ReasonApollo.Provider client>
+    <ReasonApolloHooks.ApolloProvider client>
+      <App />
+    </ReasonApolloHooks.ApolloProvider>
+  </ReasonApollo.Provider>,
+  "root",
+);
+```
+
 
 # Available hooks
 
@@ -130,7 +148,7 @@ let make = () => {
           Js.Promise.resolve()
         })
       |> ignore
-  } 
+  }
 
   <div>
     <button onClick={scream}>
