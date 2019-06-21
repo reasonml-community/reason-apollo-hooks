@@ -19,7 +19,7 @@ module Make = (Config: Config) => {
 
   [@bs.module "react-apollo-hooks"]
   external useQuery:
-    (ReasonApolloTypes.queryString, Js.Nullable.t( options )) =>
+    (ReasonApolloTypes.queryString, Js.Nullable.t(options)) =>
     {
       .
       "data": Js.Nullable.t(Js.Json.t),
@@ -41,10 +41,7 @@ module Make = (Config: Config) => {
 
   let use = (~options=?, ()) => {
     let jsResult =
-      useQuery(
-        gql(. Config.query ),
-        Js.Nullable.fromOption( options ),
-      );
+      useQuery(gql(. Config.query), Js.Nullable.fromOption(options));
 
     let result = {
       data:
@@ -55,9 +52,9 @@ module Make = (Config: Config) => {
 
     (
       switch (result) {
-      | {data: Some(data)} => Data(data)
-      | {error: Some(error)} => Error(error)
       | {loading: true} => Loading
+      | {error: Some(error)} => Error(error)
+      | {data: Some(data)} => Data(data)
       | _ => NoData
       },
       result,

@@ -19,14 +19,8 @@ module Make = (Config: Config) => {
 
   [@bs.module "react-apollo-hooks"]
   external useMutation:
-    (
-      .
-      ReasonApolloTypes.queryString,
-      Js.Nullable.t(options),
-    ) => (
-      .
-      options
-    ) =>
+    (. ReasonApolloTypes.queryString, Js.Nullable.t(options)) =>
+    (. options) =>
     Js.Promise.t({
       .
       "data": Js.Nullable.t(Js.Json.t),
@@ -41,11 +35,7 @@ module Make = (Config: Config) => {
 
   let use = (~options=?, ()) => {
     let jsMutate =
-      useMutation(
-        .
-        gql(. Config.query ),
-        Js.Nullable.fromOption( options ),
-      );
+      useMutation(. gql(. Config.query), Js.Nullable.fromOption(options));
 
     options =>
       jsMutate(. options)
