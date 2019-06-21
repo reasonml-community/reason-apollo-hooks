@@ -4,10 +4,22 @@ module type Config = {
   let parse: Js.Json.t => t;
 };
 
+type error = {. "message": string};
+
+type variant('a) =
+  | Data('a)
+  | Error(error)
+  | Loading
+  | NoData;
+  
+type result('a) = {
+  data: option('a),
+  loading: bool,
+  error: option(error),
+};
+
 module Make = (Config: Config) => {
   [@bs.module] external gql: ReasonApolloTypes.gql = "graphql-tag";
-
-  type error = {. "message": string};
 
   [@bs.deriving abstract]
   type options = {
@@ -27,17 +39,6 @@ module Make = (Config: Config) => {
       "error": Js.Nullable.t(error),
     } =
     "useQuery";
-
-  type variant =
-    | Data(Config.t)
-    | Error(error)
-    | Loading
-    | NoData;
-  type result = {
-    data: option(Config.t),
-    loading: bool,
-    error: option(error),
-  };
 
   let use = (~options=?, ()) => {
     let jsResult =
