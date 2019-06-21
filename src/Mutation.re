@@ -4,6 +4,13 @@ module type Config = {
   let parse: Js.Json.t => t;
 };
 
+type error = {. "message": string};
+
+type result('a) =
+  | Data('a)
+  | Error(error)
+  | NoData;
+
 module Make = (Config: Config) => {
   [@bs.module] external gql: ReasonApolloTypes.gql = "graphql-tag";
 
@@ -15,8 +22,6 @@ module Make = (Config: Config) => {
     client: ApolloClient.generatedApolloClient,
   };
 
-  type error = {. "message": string};
-
   [@bs.module "react-apollo-hooks"]
   external useMutation:
     (. ReasonApolloTypes.queryString, Js.Nullable.t(options)) =>
@@ -27,11 +32,6 @@ module Make = (Config: Config) => {
       "error": Js.Nullable.t(error),
     }) =
     "useMutation";
-
-  type result =
-    | Data(Config.t)
-    | Error(error)
-    | NoData;
 
   let use = (~options=?, ()) => {
     let jsMutate =
