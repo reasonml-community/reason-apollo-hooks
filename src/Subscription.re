@@ -21,7 +21,7 @@ module Make = (Config: Config) => {
 
   [@bs.module "react-apollo-hooks"]
   external useSubscription:
-    (ReasonApolloTypes.queryString, Js.Nullable.t( options )) =>
+    (ReasonApolloTypes.queryString, Js.Nullable.t(options)) =>
     {
       .
       "data": Js.Nullable.t(Js.Json.t),
@@ -43,10 +43,7 @@ module Make = (Config: Config) => {
 
   let use = (~options=?, ()) => {
     let jsResult =
-      useSubscription(
-        gql(. Config.query ),
-        Js.Nullable.fromOption( options ),
-      );
+      useSubscription(gql(. Config.query), Js.Nullable.fromOption(options));
 
     let result = {
       data:
