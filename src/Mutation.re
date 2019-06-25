@@ -22,9 +22,9 @@ module Make = (Config: Config) => {
     client: ApolloClient.generatedApolloClient,
   };
 
-  [@bs.module "react-apollo-hooks"]
+  [@bs.module "@apollo/react-hooks"]
   external useMutation:
-    (. ReasonApolloTypes.queryString, Js.Nullable.t(options)) =>
+    (. ReasonApolloTypes.queryString, (options)) =>
     (. options) =>
     Js.Promise.t({
       .
@@ -33,12 +33,12 @@ module Make = (Config: Config) => {
     }) =
     "useMutation";
 
-  let use = (~options=?, ()) => {
+  let use = (~variables=?, ~client=?, ()) => {
     let jsMutate =
-      useMutation(. gql(. Config.query), Js.Nullable.fromOption(options));
+      useMutation(. gql(. Config.query), (options(~variables?, ~client?, ())));
 
-    options =>
-      jsMutate(. options)
+    let mutate = (~variables=?, ~client=?, ()) =>
+      jsMutate(. options(~variables?, ~client?, ()))
       |> Js.Promise.then_(jsResult =>
            (
              switch (
@@ -52,5 +52,7 @@ module Make = (Config: Config) => {
            )
            |> Js.Promise.resolve
          );
+
+    mutate
   };
 };
