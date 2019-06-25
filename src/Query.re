@@ -29,9 +29,9 @@ module Make = (Config: Config) => {
     client: ApolloClient.generatedApolloClient,
   };
 
-  [@bs.module "react-apollo-hooks"]
+  [@bs.module "@apollo/react-hooks"]
   external useQuery:
-    (ReasonApolloTypes.queryString, Js.Nullable.t(options)) =>
+    (ReasonApolloTypes.queryString, options) =>
     {
       .
       "data": Js.Nullable.t(Js.Json.t),
@@ -40,9 +40,9 @@ module Make = (Config: Config) => {
     } =
     "useQuery";
 
-  let use = (~options=?, ()) => {
+  let use = (~variables=?, ~client=?, ()) => {
     let jsResult =
-      useQuery(gql(. Config.query), Js.Nullable.fromOption(options));
+      useQuery(gql(. Config.query), options(~variables?, ~client?, ()));
 
     let result = {
       data:
