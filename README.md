@@ -1,6 +1,6 @@
 # reason-apollo-hooks
 
-Reason bindings for https://github.com/trojanowski/react-apollo-hooks
+Reason bindings for the official @apollo/react-hooks
 
 ## Installation
 
@@ -76,7 +76,7 @@ module UserQuery = ReasonApolloHooks.Query.Make(UserQueryConfig);
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (simple, _full) = UserQuery.use(());
+  let (simple, _full) = UserQuery.use();
 
   <div>
   {
@@ -130,13 +130,10 @@ module ScreamMutation = ReasonApolloHooks.Mutation.Make(ScreamMutationConfig);
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let screamMutation = ScreamMutation.use();
+  let ( screamMutation, _simple, _full ) = ScreamMutation.use();
   let scream = (_) => {
     screamMutation(
-      ScreamMutation.options(
-        ~variables=ScreamMutationConfig.make(~screamLevel=10, ())##variables,
-        ()
-      ),
+      ~variables=ScreamMutationConfig.make(~screamLevel=10, ())##variables,
       ()
     )
       |> Js.Promise.then_(result => {
