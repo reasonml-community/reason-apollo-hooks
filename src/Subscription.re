@@ -24,6 +24,8 @@ module Make = (Config: Config) => {
   [@bs.deriving abstract]
   type options = {
     [@bs.optional]
+    variables: Js.Json.t,
+    [@bs.optional]
     skip: bool,
     [@bs.optional]
     onSubscriptionData: unit => unit,
@@ -31,9 +33,9 @@ module Make = (Config: Config) => {
     client: ApolloClient.generatedApolloClient,
   };
 
-  [@bs.module "react-apollo-hooks"]
+  [@bs.module "@apollo/react-hooks"]
   external useSubscription:
-    (ReasonApolloTypes.queryString, Js.Nullable.t(options)) =>
+    (ReasonApolloTypes.queryString, (options)) =>
     {
       .
       "data": Js.Nullable.t(Js.Json.t),
@@ -42,9 +44,9 @@ module Make = (Config: Config) => {
     } =
     "useSubscription";
 
-  let use = (~options=?, ()) => {
+  let use = (~variables=?, ~client=?, ()) => {
     let jsResult =
-      useSubscription(gql(. Config.query), Js.Nullable.fromOption(options));
+      useSubscription(gql(. Config.query), options(~variables?, ~client?, ()));
 
     let result = {
       data:

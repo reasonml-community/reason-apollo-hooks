@@ -1,6 +1,6 @@
 {
   "name": "reason-apollo-hooks",
-  "version": "1.0.3",
+  "version": "2.0.0-beta.1",
   "scripts": {
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
@@ -12,17 +12,17 @@
   ],
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "react": "^16.8.1",
-    "react-apollo-hooks": "^0.4.5",
-    "react-dom": "^16.8.1",
+  "devDependencies": {
+    "@apollo/react-hooks": "^0.1.0-beta.10",
+    "bs-platform": "^5.0.2",
+    "reason-apollo": "^0.15.2",
     "reason-react": ">=0.7.0"
   },
-  "devDependencies": {
-    "bs-platform": "^5.0.2",
-    "reason-apollo": "^0.15.2"
-  },
   "peerDependencies": {
-    "reason-apollo": "^0.15.2"
+    "@apollo/react-hooks": "^0.1.0-beta.10",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "reason-apollo": "^0.15.2",
+    "reason-react": ">=0.7.0"
   }
 }
