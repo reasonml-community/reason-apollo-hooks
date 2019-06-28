@@ -11,7 +11,7 @@ type variant('a) =
   | Error(error)
   | Loading
   | NoData;
-  
+
 type result('a) = {
   data: option('a),
   loading: bool,
@@ -46,7 +46,14 @@ module Make = (Config: Config) => {
 
     let result = {
       data:
-        jsResult##data->Js.Nullable.toOption->Belt.Option.map(Config.parse),
+        jsResult##data
+        ->Js.Nullable.toOption
+        ->Belt.Option.flatMap(data =>
+            switch (Config.parse(data)) {
+            | parsedData => Some(parsedData)
+            | exception _ => None
+            }
+          ),
       loading: jsResult##loading,
       error: jsResult##error->Js.Nullable.toOption,
     };
