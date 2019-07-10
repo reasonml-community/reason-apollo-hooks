@@ -86,22 +86,33 @@ module Make = (Config: Config) => {
         [|variables|],
       );
 
-    let full = {
-      loading: jsResult##loading,
-      called: jsResult##called,
-      data:
-        jsResult##data->Js.Nullable.toOption->Belt.Option.map(Config.parse),
-      error: jsResult##error->Js.Nullable.toOption,
-    };
+     let full =
+      React.useMemo1(
+        () =>
+          {
+            loading: jsResult##loading,
+            called: jsResult##called,
+            data:
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.map(Config.parse),
+            error: jsResult##error->Js.Nullable.toOption,
+          },
+        [|jsResult|],
+      );
 
     let simple =
-      switch (full) {
-      | {loading: true} => Loading
-      | {error: Some(error)} => Error(error)
-      | {data: Some(data)} => Data(data)
-      | {called: true} => Called
-      | _ => NoData
-      };
+      React.useMemo1(
+        () =>
+          switch (full) {
+          | {loading: true} => Loading
+          | {error: Some(error)} => Error(error)
+          | {data: Some(data)} => Data(data)
+          | {called: true} => Called
+          | _ => NoData
+          },
+        [|full|],
+      );
 
     (mutate, simple, full);
   };
