@@ -42,6 +42,8 @@ module Make = (Config: Config) => {
     variables: Js.Json.t,
     [@bs.optional]
     client: ApolloClient.generatedApolloClient,
+    [@bs.optional]
+    refetchQueries: array(string),
   };
 
   type jsResult = {
@@ -59,17 +61,17 @@ module Make = (Config: Config) => {
     (. ReasonApolloTypes.queryString, options) => (jsMutate, jsResult) =
     "useMutation";
 
-  let use = (~variables=?, ~client=?, ()) => {
+  let use = (~variables=?, ~client=?, ~refetchQueries=?, ()) => {
     let (jsMutate, jsResult) =
       useMutation(.
         gql(. Config.query),
-        options(~variables?, ~client?, ()),
+        options(~variables?, ~client?, ~refetchQueries?, ()),
       );
 
     let mutate =
       React.useMemo1(
-        ((), ~variables=?, ~client=?, ()) =>
-          jsMutate(. options(~variables?, ~client?, ()))
+        ((), ~variables=?, ~client=?, ~refetchQueries=?, ()) =>
+          jsMutate(. options(~variables?, ~client?, ~refetchQueries?, ()))
           |> Js.Promise.then_(jsResult =>
                (
                  switch (
@@ -86,18 +88,17 @@ module Make = (Config: Config) => {
         [|variables|],
       );
 
-     let full =
+    let full =
       React.useMemo1(
-        () =>
-          {
-            loading: jsResult##loading,
-            called: jsResult##called,
-            data:
-              jsResult##data
-              ->Js.Nullable.toOption
-              ->Belt.Option.map(Config.parse),
-            error: jsResult##error->Js.Nullable.toOption,
-          },
+        () => {
+          loading: jsResult##loading,
+          called: jsResult##called,
+          data:
+            jsResult##data
+            ->Js.Nullable.toOption
+            ->Belt.Option.map(Config.parse),
+          error: jsResult##error->Js.Nullable.toOption,
+        },
         [|jsResult|],
       );
 
