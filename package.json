@@ -13,16 +13,19 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@apollo/react-hooks": "^0.1.0-beta.10",
-    "bs-platform": "^5.0.2",
-    "reason-apollo": "^0.15.2",
+    "@apollo/react-hooks": "^0.1.0-beta.11",
+    "bs-platform": "^5.0.6",
+    "reason-apollo": "^0.16.4",
     "reason-react": ">=0.7.0"
   },
   "peerDependencies": {
-    "@apollo/react-hooks": "^0.1.0-beta.10",
+    "@apollo/react-hooks": "^0.1.0-beta.11",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "reason-apollo": "^0.15.2",
+    "reason-apollo": "^0.16.4",
     "reason-react": ">=0.7.0"
+  },
+  "resolutions": {
+    "apollo-client": "2.6.3"
   }
 }
