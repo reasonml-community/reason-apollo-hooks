@@ -43,7 +43,8 @@ module Make = (Config: Config) => {
     [@bs.optional]
     client: ApolloClient.generatedApolloClient,
     [@bs.optional]
-    refetchQueries: array(string),
+    refetchQueries:
+      ReasonApolloTypes.executionResult => array(ApolloClient.queryObj),
   };
 
   type jsResult = {
@@ -90,15 +91,16 @@ module Make = (Config: Config) => {
 
     let full =
       React.useMemo1(
-        () => {
-          loading: jsResult##loading,
-          called: jsResult##called,
-          data:
-            jsResult##data
-            ->Js.Nullable.toOption
-            ->Belt.Option.map(Config.parse),
-          error: jsResult##error->Js.Nullable.toOption,
-        },
+        () =>
+          {
+            loading: jsResult##loading,
+            called: jsResult##called,
+            data:
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.map(Config.parse),
+            error: jsResult##error->Js.Nullable.toOption,
+          },
         [|jsResult|],
       );
 
