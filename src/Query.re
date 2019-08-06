@@ -11,7 +11,7 @@ type variant('a) =
   | Error(error)
   | Loading
   | NoData;
-  
+
 type result('a) = {
   data: option('a),
   loading: bool,
@@ -37,6 +37,7 @@ module Make = (Config: Config) => {
       "data": Js.Nullable.t(Js.Json.t),
       "loading": bool,
       "error": Js.Nullable.t(error),
+      "refetch": _ => 'a,
     } =
     "useQuery";
 
@@ -59,6 +60,7 @@ module Make = (Config: Config) => {
       | _ => NoData
       },
       result,
+      jsResult##refetch,
     );
   };
 };
