@@ -12,10 +12,11 @@ type variant('a) =
   | Loading
   | NoData;
 
-type result('a) = {
+type result('a, 'b, 'c) = {
   data: option('a),
   loading: bool,
   error: option(error),
+  refetch: 'b => Js.Promise.t('c),
 };
 
 module Make = (Config: Config) => {
@@ -37,7 +38,7 @@ module Make = (Config: Config) => {
       "data": Js.Nullable.t(Js.Json.t),
       "loading": bool,
       "error": Js.Nullable.t(error),
-      "refetch": _ => 'a,
+      "refetch": 'a => Js.Promise.t('b),
     } =
     "useQuery";
 
@@ -47,9 +48,17 @@ module Make = (Config: Config) => {
 
     let result = {
       data:
-        jsResult##data->Js.Nullable.toOption->Belt.Option.map(Config.parse),
+        jsResult##data
+        ->Js.Nullable.toOption
+        ->Belt.Option.flatMap(data =>
+            switch (Config.parse(data)) {
+            | parsedData => Some(parsedData)
+            | exception _ => None
+            }
+          ),
       loading: jsResult##loading,
       error: jsResult##error->Js.Nullable.toOption,
+      refetch: jsResult##refetch,
     };
 
     (
@@ -60,7 +69,6 @@ module Make = (Config: Config) => {
       | _ => NoData
       },
       result,
-      jsResult##refetch,
     );
   };
 };
