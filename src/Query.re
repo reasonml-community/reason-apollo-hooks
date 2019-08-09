@@ -16,7 +16,7 @@ type result('a) = {
   data: option('a),
   loading: bool,
   error: option(error),
-  refetch: (~variables: option(Js.Json.t)=?, unit) => Js.Promise.t('a),
+  refetch: (~variables: Js.Json.t=?, unit) => Js.Promise.t('a),
 };
 
 module Make = (Config: Config) => {
@@ -39,8 +39,7 @@ module Make = (Config: Config) => {
       "loading": bool,
       "error": Js.Nullable.t(error),
       [@bs.meth]
-      "refetch":
-        Js.Nullable.t(option(Js.Json.t)) => Js.Promise.t(Js.Json.t),
+      "refetch": Js.Nullable.t(Js.Json.t) => Js.Promise.t(Js.Json.t),
     } =
     "useQuery";
 
