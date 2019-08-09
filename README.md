@@ -76,7 +76,7 @@ module UserQuery = ReasonApolloHooks.Query.Make(UserQueryConfig);
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (simple, _full, _refetch) = UserQuery.use();
+  let (simple, _full) = UserQuery.use();
 
   <div>
   {
@@ -97,7 +97,7 @@ Using the `full` record for more advanced cases
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (_simple, full, _refetch) = UserQuery.use(());
+  let (_simple, full) = UserQuery.use(());
 
   <div>
   {
