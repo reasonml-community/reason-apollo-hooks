@@ -12,11 +12,12 @@ type variant('a) =
   | Loading
   | NoData;
 
+type refetch('a) = (~variables: Js.Json.t=?, unit) => Js.Promise.t('a);
 type result('a) = {
   data: option('a),
   loading: bool,
   error: option(error),
-  refetch: (~variables: Js.Json.t=?, unit) => Js.Promise.t('a),
+  refetch: refetch('a),
 };
 
 module Make = (Config: Config) => {
