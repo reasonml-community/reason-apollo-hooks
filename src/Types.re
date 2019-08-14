@@ -1,6 +1,5 @@
 /**
- * network status from apollo-client
- * https://github.com/apollographql/apollo-client/blob/master/packages/apollo-client/src/core/networkStatus.ts
+ * apollo-client/src/core/networkStatus
  */
 type networkStatus =
   | Loading

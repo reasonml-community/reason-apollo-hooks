@@ -20,7 +20,7 @@ let make = () => {
   let getAllPersons =
     GetAllPersonsConfig.make(~skip=0, ~first=personsPerPage, ());
 
-  let (simple, full) =
+  let (_simple, full) =
     GetAllPersonsQuery.use(
       ~variables=getAllPersons##variables,
       ~notifyOnNetworkStatusChange=true,
@@ -29,11 +29,13 @@ let make = () => {
 
   let handleLoadMore = _ => {
     let skip = React.Ref.current(skipRef) + personsPerPage;
-    let getAllPersons2 =
+    skipRef->React.Ref.setCurrent(skip);
+
+    let getNextPage =
       GetAllPersonsConfig.make(~skip, ~first=personsPerPage, ());
 
     full.fetchMore(
-      ~variables=getAllPersons2##variables,
+      ~variables=getNextPage##variables,
       ~updateQuery=[%bs.raw
         {|
           function(prevResult, { fetchMoreResult, ...rest }) {
@@ -47,9 +49,6 @@ let make = () => {
       ],
       (),
     )
-    |> Js.Promise.then_(_ =>
-         skipRef->React.Ref.setCurrent(skip) |> Js.Promise.resolve
-       )
     |> ignore;
   };
 
@@ -70,6 +69,8 @@ let make = () => {
          </button>
        </div>
      | {error: Some(_)} => <p> {React.string("Error")} </p>
+     | {error: None, data: None, loading: false} =>
+       <p> {React.string("Not asked")} </p>
      }}
   </div>;
 };

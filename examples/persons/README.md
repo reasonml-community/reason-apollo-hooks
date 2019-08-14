@@ -3,7 +3,7 @@
 ## Run Project
 
 ```sh
-npm install
+yarn
 npm start
 # in another tab
 npm run webpack

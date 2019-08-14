@@ -14,7 +14,7 @@ type variant('a) =
 
 /**
  *
- *  https://github.com/apollographql/apollo-client/blob/master/packages/apollo-client/src/core/ObservableQuery.ts#L46
+ *  apollo-client/src/core/ObservableQuery.ts
  */
 [@bs.deriving abstract]
 type updateQueryOptions = {
@@ -39,7 +39,7 @@ type result('a) = {
 };
 
 /**
- * https://github.com/apollographql/apollo-client/blob/master/packages/apollo-client/src/core/watchQueryOptions.ts#L121
+ * apollo-client/src/core/watchQueryOptions.ts
  */
 [@bs.deriving abstract]
 type fetchMoreOptions = {
