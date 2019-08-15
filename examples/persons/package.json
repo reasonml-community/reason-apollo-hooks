@@ -1,0 +1,35 @@
+{
+  "name": "persons",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "bsb -make-world",
+    "start": "bsb -make-world -w",
+    "clean": "bsb -clean-world",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack": "webpack -w",
+    "webpack:production": "NODE_ENV=production webpack",
+    "server": "webpack-dev-server",
+    "get-schema": "yarn send-introspection-query https://api.graph.cool/simple/v1/cjdgba1jw4ggk0185ig4bhpsn"
+  },
+  "keywords": [
+    "BuckleScript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@apollo/react-hooks": "^3.0.0",
+    "react": "^16.8.1",
+    "react-dom": "^16.8.1",
+    "reason-apollo": "^0.17.0",
+    "reason-react": ">=0.7.0",
+    "reason-apollo-hooks": "../../"
+  },
+  "devDependencies": {
+    "bs-platform": "^5.0.6",
+    "html-webpack-plugin": "^3.2.0",
+    "graphql_ppx": "^0.2.8",
+    "webpack": "^4.0.1",
+    "webpack-cli": "^3.1.1",
+    "webpack-dev-server": "^3.1.8"
+  }
+}
