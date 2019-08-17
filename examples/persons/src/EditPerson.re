@@ -39,7 +39,7 @@ let make = () => {
   let (state, dispatch) =
     React.useReducer(reducer, {age: None, name: "", id: ""});
 
-  let (editPersonMutation, simple, _full) =
+  let (editPersonMutation, _simple, _full) =
     EditPersonMutation.use(
       ~refetchQueries=
         _ => {
