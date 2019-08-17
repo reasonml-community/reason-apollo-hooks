@@ -31,7 +31,6 @@
     "css-loader": "^3.2.0",
     "graphql_ppx": "^0.2.8",
     "html-webpack-plugin": "^3.2.0",
-    "parcel-bundler": "^1.12.3",
     "style-loader": "^1.0.0",
     "webpack": "^4.0.1",
     "webpack-cli": "^3.1.1",

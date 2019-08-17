@@ -15,7 +15,7 @@ To get the updates, first build `reason-apollo-hooks`:
 
 ```sh
 npm run clean
-npm run buils
+npm run build
 ```
 
 Then run `npm run update-deps`, which will remove the old versions of `reason-apollo-hooks` and get the latest local changes:
@@ -25,3 +25,5 @@ npm run update-deps
 npm run clean
 npm start
 ```
+
+Since `reason-apollo-hooks` uses `react` and `reason-react` as peer dependencies, you might end up with duplicated `react` packages in `node_modules` due to `yarn`/`npm` not being able to handle them properly while developing locally. This will cause a runtime error. To remove those packages, run `npm run dedupe:react`.
