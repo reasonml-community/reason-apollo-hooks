@@ -36,6 +36,8 @@ type controledVariantResult('a) =
 module Make = (Config: Config) => {
   [@bs.module] external gql: ReasonApolloTypes.gql = "graphql-tag";
 
+  type mutationResult = {. "data": option(Config.t)};
+
   [@bs.deriving abstract]
   type options = {
     [@bs.optional]
@@ -45,6 +47,8 @@ module Make = (Config: Config) => {
     [@bs.optional]
     refetchQueries:
       ReasonApolloTypes.executionResult => array(ApolloClient.queryObj),
+    [@bs.optional]
+    update: (ApolloClient.generatedApolloClient, mutationResult) => unit,
   };
 
   type jsResult = {
@@ -62,11 +66,11 @@ module Make = (Config: Config) => {
     (. ReasonApolloTypes.queryString, options) => (jsMutate, jsResult) =
     "useMutation";
 
-  let use = (~variables=?, ~client=?, ~refetchQueries=?, ()) => {
+  let use = (~variables=?, ~client=?, ~refetchQueries=?, ~update=?, ()) => {
     let (jsMutate, jsResult) =
       useMutation(.
         gql(. Config.query),
-        options(~variables?, ~client?, ~refetchQueries?, ()),
+        options(~variables?, ~client?, ~refetchQueries?, ~update?, ()),
       );
 
     let mutate =

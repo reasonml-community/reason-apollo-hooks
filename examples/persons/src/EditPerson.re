@@ -4,7 +4,7 @@ module EditPersonConfig = [%graphql
   {|
     mutation updatePerson($id: ID!, $age: Int!, $name: String!) {
       updatePerson(id: $id, age: $age, name: $name) {
-        id
+          id
           age
           name
         }
@@ -36,6 +36,8 @@ let reducer = (state, action) => {
 [@react.component]
 let make = () => {
   let filterAgeLimit = 42;
+  let filterName = "Bob";
+
   let (state, dispatch) =
     React.useReducer(reducer, {age: None, name: "", id: ""});
 
@@ -45,12 +47,19 @@ let make = () => {
         _ => {
           let query =
             FilterByAge.PersonsOlderThanConfig.make(~age=filterAgeLimit, ());
-          let queryObj = {
-            "query": ApolloClient.gql(. query##query),
-            "variables": query##variables,
-          };
+          [|ReasonApolloHooks.Utils.toQueryObj(query)|];
+        },
+      ~update=
+        (client, mutationResult) => {
+          let data =
+            mutationResult##data
+            ->Belt.Option.flatMap(result => result##updatePerson);
 
-          [|queryObj|];
+          switch (data) {
+          | Some(person) =>
+            FilterByNameCache.updateCache(client, person, filterName)
+          | None => ()
+          };
         },
       (),
     );
@@ -122,6 +131,7 @@ let make = () => {
         </div>
       </form>
       <FilterByAge age=filterAgeLimit />
+      <FilterByNameCache name=filterName />
     </div>
   </div>;
 };
