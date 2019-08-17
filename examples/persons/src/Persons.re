@@ -52,22 +52,41 @@ let make = () => {
     |> ignore;
   };
 
-  <div>
+  <div className="person-list">
     {switch (full) {
      | {loading: true, data: None} => <p> {React.string("Loading...")} </p>
      | {data: Some(data)} =>
-       <div>
+       <>
          {data##allPersons
           ->Belt.Array.map(person =>
-              <div key=person##id> {React.string(person##name)} </div>
+              <div key=person##id className="person">
+                <div className="person-field">
+                  <span className="person-label">
+                    {React.string("Id: ")}
+                  </span>
+                  {React.string(person##id)}
+                </div>
+                <div className="person-field">
+                  <span className="person-label">
+                    {React.string("Name: ")}
+                  </span>
+                  {React.string(person##name)}
+                </div>
+                <div className="person-field">
+                  <span className="person-label">
+                    {React.string("Age: ")}
+                  </span>
+                  {person##age |> string_of_int |> React.string}
+                </div>
+              </div>
             )
-          |> ReasonReact.array}
+          |> React.array}
          <button
            onClick=handleLoadMore
            disabled={full.networkStatus === ReasonApolloHooks.Types.FetchMore}>
            {React.string("Load more")}
          </button>
-       </div>
+       </>
      | {error: Some(_)} => <p> {React.string("Error")} </p>
      | {error: None, data: None, loading: false} =>
        <p> {React.string("Not asked")} </p>
