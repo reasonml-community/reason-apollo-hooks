@@ -9,7 +9,9 @@
     "webpack": "webpack -w",
     "webpack:production": "NODE_ENV=production webpack",
     "server": "webpack-dev-server",
-    "get-schema": "yarn send-introspection-query https://api.graph.cool/simple/v1/cjdgba1jw4ggk0185ig4bhpsn"
+    "get-schema": "yarn send-introspection-query https://api.graph.cool/simple/v1/cjdgba1jw4ggk0185ig4bhpsn",
+    "update-deps": "rm -rf node_modules/reason-apollo-hooks && yarn install --check-files && npm run dedupe:react",
+    "dedupe:react": "npm dedupe reason-react --no-package-lock"
   },
   "keywords": [
     "BuckleScript"
@@ -21,13 +23,15 @@
     "react": "^16.8.1",
     "react-dom": "^16.8.1",
     "reason-apollo": "^0.17.0",
-    "reason-react": ">=0.7.0",
-    "reason-apollo-hooks": "../../"
+    "reason-apollo-hooks": "../../",
+    "reason-react": ">=0.7.0"
   },
   "devDependencies": {
     "bs-platform": "^5.0.6",
-    "html-webpack-plugin": "^3.2.0",
+    "css-loader": "^3.2.0",
     "graphql_ppx": "^0.2.8",
+    "html-webpack-plugin": "^3.2.0",
+    "style-loader": "^1.0.0",
     "webpack": "^4.0.1",
     "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.8"

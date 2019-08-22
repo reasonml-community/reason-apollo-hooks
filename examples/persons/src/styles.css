@@ -1,0 +1,40 @@
+#root {
+  padding: 10px 40px;
+  display: flex;
+}
+
+input {
+  font-size: 14px;
+  padding: 3px 5px;
+}
+
+.form-field {
+  margin-bottom: 15px;
+}
+
+.person-list {
+  width: 350px;
+  padding-top: 25px;
+  margin-left: 100px;
+}
+
+.person {
+  margin-bottom: 15px;
+  border-bottom: 1px solid #aaa;
+}
+
+.person-field {
+  margin-bottom: 10px;
+}
+
+.person-label {
+  font-weight: bold;
+}
+
+.edit-person {
+  position: fixed;
+}
+
+.edit-person-container {
+  width: 300px;
+}
