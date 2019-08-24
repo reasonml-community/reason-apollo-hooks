@@ -21,6 +21,7 @@ Then update your bsconfig.json
 ```
 
 ## Setting up
+
 Add the provider in the top of the tree
 
 ```reason
@@ -57,7 +58,6 @@ ReactDOMRe.renderToElementWithId(
 );
 ```
 
-
 # Available hooks
 
 ## useQuery
@@ -91,6 +91,7 @@ let make = () => {
   </div>
 }
 ```
+
 Using the `full` record for more advanced cases
 
 ```reason
@@ -113,6 +114,11 @@ let make = () => {
 }
 ```
 
+Using `fetchPolicy` to change interactions with the `apollo` cache, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionsfetchpolicy).
+
+```reason
+let (_simple, full) = UserQuery.use(~fetchPolicy=NetworkOnly, ());
+```
 
 ## useMutation
 
