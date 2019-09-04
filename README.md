@@ -8,7 +8,7 @@ Reason bindings for the official @apollo/react-hooks
 yarn add reason-apollo-hooks reason-apollo @apollo/react-hooks
 ```
 
-Follow the installation instructions of [https://github.com/mhallin/graphql_ppx](graphql_ppx).
+Follow the installation instructions of [graphql_ppx](https://github.com/mhallin/graphql_ppx).
 
 Then update your bsconfig.json
 
