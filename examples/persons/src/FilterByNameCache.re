@@ -50,7 +50,7 @@ let updateCache = (client, person, name) => {
   let readQueryOptions =
     ReasonApolloHooks.Utils.toReadQueryOptions(filterByNameQuery);
 
-  // By default, apollo cache adds field __typename to the query and will use it
+  // By default, apollo adds field __typename to the query and will use it
   // to normalize data. Parsing the result with Config.parse will remove the field,
   // which won't allow to save the data back to cache. This means we can't use ReadQuery.make,
   // which parses cache result, and have to use the readQuery which returns Json.t.
