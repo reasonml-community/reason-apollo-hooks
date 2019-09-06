@@ -48,6 +48,8 @@ module Make = (Config: Config) => {
     refetchQueries:
       ReasonApolloTypes.executionResult => array(ApolloClient.queryObj),
     [@bs.optional]
+    awaitRefetchQueries: bool,
+    [@bs.optional]
     update: (ApolloClient.generatedApolloClient, mutationResult) => unit,
   };
 
@@ -66,17 +68,47 @@ module Make = (Config: Config) => {
     (. ReasonApolloTypes.queryString, options) => (jsMutate, jsResult) =
     "useMutation";
 
-  let use = (~variables=?, ~client=?, ~refetchQueries=?, ~update=?, ()) => {
+  let use =
+      (
+        ~variables=?,
+        ~client=?,
+        ~refetchQueries=?,
+        ~awaitRefetchQueries=?,
+        ~update=?,
+        (),
+      ) => {
     let (jsMutate, jsResult) =
       useMutation(.
         gql(. Config.query),
-        options(~variables?, ~client?, ~refetchQueries?, ~update?, ()),
+        options(
+          ~variables?,
+          ~client?,
+          ~refetchQueries?,
+          ~awaitRefetchQueries?,
+          ~update?,
+          (),
+        ),
       );
 
     let mutate =
       React.useMemo1(
-        ((), ~variables=?, ~client=?, ~refetchQueries=?, ()) =>
-          jsMutate(. options(~variables?, ~client?, ~refetchQueries?, ()))
+        (
+          (),
+          ~variables=?,
+          ~client=?,
+          ~refetchQueries=?,
+          ~awaitRefetchQueries=?,
+          (),
+        ) =>
+          jsMutate(.
+            options(
+              ~variables?,
+              ~client?,
+              ~refetchQueries?,
+              ~awaitRefetchQueries?,
+              (),
+            ),
+          )
           |> Js.Promise.then_(jsResult =>
                (
                  switch (
