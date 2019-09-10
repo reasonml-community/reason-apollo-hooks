@@ -23,3 +23,23 @@ let toNetworkStatus = (status: Js.Nullable.t(int)) => {
   | _ => Unknown
   };
 };
+
+/**
+ * apollo-client/src/core/watchQueryOptions.ts
+ */
+type fetchPolicy =
+  | CacheFirst
+  | NetworkOnly
+  | CacheOnly
+  | NoCache
+  | Standby;
+
+let fetchPolicyToJs = fetchPolicy => {
+  switch (fetchPolicy) {
+  | CacheFirst => "cache-first"
+  | NetworkOnly => "network-only"
+  | CacheOnly => "cache-only"
+  | NoCache => "no-cache"
+  | Standby => "standby"
+  };
+};

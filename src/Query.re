@@ -59,6 +59,8 @@ module Make = (Config: Config) => {
     client: ApolloClient.generatedApolloClient,
     [@bs.optional]
     notifyOnNetworkStatusChange: bool,
+    [@bs.optional]
+    fetchPolicy: string,
   };
 
   [@bs.module "@apollo/react-hooks"]
@@ -76,11 +78,24 @@ module Make = (Config: Config) => {
     } =
     "useQuery";
 
-  let use = (~variables=?, ~client=?, ~notifyOnNetworkStatusChange=?, ()) => {
+  let use =
+      (
+        ~variables=?,
+        ~client=?,
+        ~notifyOnNetworkStatusChange=?,
+        ~fetchPolicy=?,
+        (),
+      ) => {
     let jsResult =
       useQuery(
         gql(. Config.query),
-        options(~variables?, ~client?, ~notifyOnNetworkStatusChange?, ()),
+        options(
+          ~variables?,
+          ~client?,
+          ~notifyOnNetworkStatusChange?,
+          ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
+          (),
+        ),
       );
 
     let result =
