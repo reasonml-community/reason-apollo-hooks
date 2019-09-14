@@ -64,7 +64,7 @@ module Make = (Config: Config) => {
   };
 
   type jsMutate = (. options) => Js.Promise.t(jsResult);
-  type mutate =
+  type mutation =
     (
       ~variables: Js.Json.t=?,
       ~client: ApolloClient.generatedApolloClient=?,
@@ -101,7 +101,7 @@ module Make = (Config: Config) => {
         ),
       );
 
-    let mutate: mutate =
+    let mutate: mutation =
       React.useMemo1(
         (
           (),
