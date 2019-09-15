@@ -12,6 +12,9 @@ type error = {
   "graphlErrors": graphqlErrors,
 };
 
+type refetchQueries =
+  ReasonApolloTypes.executionResult => array(ApolloClient.queryObj);
+
 /* Result that is return by the hook */
 type result('a) =
   | Data('a)
@@ -45,8 +48,7 @@ module Make = (Config: Config) => {
     [@bs.optional]
     client: ApolloClient.generatedApolloClient,
     [@bs.optional]
-    refetchQueries:
-      ReasonApolloTypes.executionResult => array(ApolloClient.queryObj),
+    refetchQueries,
     [@bs.optional]
     awaitRefetchQueries: bool,
     [@bs.optional]
@@ -62,6 +64,15 @@ module Make = (Config: Config) => {
   };
 
   type jsMutate = (. options) => Js.Promise.t(jsResult);
+  type mutation =
+    (
+      ~variables: Js.Json.t=?,
+      ~client: ApolloClient.generatedApolloClient=?,
+      ~refetchQueries: refetchQueries=?,
+      ~awaitRefetchQueries: bool=?,
+      unit
+    ) =>
+    Js.Promise.t(controledVariantResult(Config.t));
 
   [@bs.module "@apollo/react-hooks"]
   external useMutation:
@@ -90,7 +101,7 @@ module Make = (Config: Config) => {
         ),
       );
 
-    let mutate =
+    let mutate: mutation =
       React.useMemo1(
         (
           (),
