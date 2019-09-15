@@ -98,6 +98,12 @@ module Make = (Config: Config) => {
         ),
       );
 
+    let getData = obj =>
+      obj
+      ->Js.Json.decodeObject
+      ->Belt.Option.flatMap(x => Js.Dict.get(x, "data"))
+      ->Belt.Option.getExn;
+
     let result =
       React.useMemo1(
         () =>
@@ -117,7 +123,7 @@ module Make = (Config: Config) => {
             refetch: (~variables=?, ()) =>
               jsResult##refetch(Js.Nullable.fromOption(variables))
               |> Js.Promise.then_(result =>
-                   Config.parse(result) |> Js.Promise.resolve
+                   Config.parse(result->getData) |> Js.Promise.resolve
                  ),
             fetchMore: (~variables=?, ~updateQuery, ()) =>
               jsResult##fetchMore(
