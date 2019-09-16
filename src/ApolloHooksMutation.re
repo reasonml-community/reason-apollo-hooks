@@ -26,6 +26,7 @@ type controlledResult('a) = {
 type controlledVariantResult('a) =
   | Loading
   | Called
+  | NotCalled
   | Data('a)
   | Error(error)
   | NoData;
@@ -150,14 +151,12 @@ let useMutation:
 
     let full =
       React.useMemo1(
-        () =>
-          {
-            loading: jsResult##loading,
-            called: jsResult##called,
-            data:
-              jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
-            error: jsResult##error->Js.Nullable.toOption,
-          },
+        () => {
+          loading: jsResult##loading,
+          called: jsResult##called,
+          data: jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
+          error: jsResult##error->Js.Nullable.toOption,
+        },
         [|jsResult|],
       );
 
@@ -169,6 +168,7 @@ let useMutation:
           | {error: Some(error)} => Error(error)
           | {data: Some(data)} => Data(data)
           | {called: true} => Called
+          | {called: false} => NotCalled
           | _ => NoData
           },
         [|full|],
