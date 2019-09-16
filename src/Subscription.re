@@ -19,7 +19,7 @@ type result('a) = {
 };
 
 module Make = (Config: Config) => {
-  [@bs.module] external gql: ReasonApolloTypes.gql = "graphql-tag";
+  [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
 
   [@bs.deriving abstract]
   type options = {
