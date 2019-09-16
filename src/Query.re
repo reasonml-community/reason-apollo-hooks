@@ -63,6 +63,8 @@ module Make = (Config: Config) => {
     fetchPolicy: string,
     [@bs.optional]
     errorPolicy: string,
+    [@bs.optional]
+    skip: bool,
   };
 
   [@bs.module "@apollo/react-hooks"]
@@ -87,6 +89,7 @@ module Make = (Config: Config) => {
         ~notifyOnNetworkStatusChange=?,
         ~fetchPolicy=?,
         ~errorPolicy=?,
+        ~skip=?,
         (),
       ) => {
     let jsResult =
@@ -98,6 +101,7 @@ module Make = (Config: Config) => {
           ~notifyOnNetworkStatusChange?,
           ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
           ~errorPolicy=?errorPolicy->Belt.Option.map(Types.errorPolicyToJs),
+          ~skip?,
           (),
         ),
       );
@@ -110,29 +114,30 @@ module Make = (Config: Config) => {
 
     let result =
       React.useMemo1(
-        () => {
-          data:
-            jsResult##data
-            ->Js.Nullable.toOption
-            ->Belt.Option.flatMap(data =>
-                switch (Config.parse(data)) {
-                | parsedData => Some(parsedData)
-                | exception _ => None
-                }
+        () =>
+          {
+            data:
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.flatMap(data =>
+                  switch (Config.parse(data)) {
+                  | parsedData => Some(parsedData)
+                  | exception _ => None
+                  }
+                ),
+            loading: jsResult##loading,
+            error: jsResult##error->Js.Nullable.toOption,
+            networkStatus: Types.toNetworkStatus(jsResult##networkStatus),
+            refetch: (~variables=?, ()) =>
+              jsResult##refetch(Js.Nullable.fromOption(variables))
+              |> Js.Promise.then_(result =>
+                   Config.parse(result->getData) |> Js.Promise.resolve
+                 ),
+            fetchMore: (~variables=?, ~updateQuery, ()) =>
+              jsResult##fetchMore(
+                fetchMoreOptions(~variables?, ~updateQuery, ()),
               ),
-          loading: jsResult##loading,
-          error: jsResult##error->Js.Nullable.toOption,
-          networkStatus: Types.toNetworkStatus(jsResult##networkStatus),
-          refetch: (~variables=?, ()) =>
-            jsResult##refetch(Js.Nullable.fromOption(variables))
-            |> Js.Promise.then_(result =>
-                 Config.parse(result->getData) |> Js.Promise.resolve
-               ),
-          fetchMore: (~variables=?, ~updateQuery, ()) =>
-            jsResult##fetchMore(
-              fetchMoreOptions(~variables?, ~updateQuery, ()),
-            ),
-        },
+          },
         [|jsResult|],
       );
 
