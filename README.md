@@ -126,6 +126,20 @@ Using `errorPolicy` to change how errors are handled, see [apollo docs](https://
 let (simple, _full) = UserQuery.use(~errorPolicy=All, ());
 ```
 
+Using `skip` to skip query entirely, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#configskip).
+
+```reason
+let (simple, _full) =
+  UserQuery.use(
+    ~skip=
+      switch (val) {
+      | None => true
+      | _ => false
+      },
+    (),
+  );
+```
+
 ## useMutation
 
 ```reason
