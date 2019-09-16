@@ -120,6 +120,12 @@ Using `fetchPolicy` to change interactions with the `apollo` cache, see [apollo 
 let (_simple, full) = UserQuery.use(~fetchPolicy=NetworkOnly, ());
 ```
 
+Using `errorPolicy` to change how errors are handled, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionserrorpolicy).
+
+```reason
+let (simple, _full) = UserQuery.use(~errorPolicy=All, ());
+```
+
 ## useMutation
 
 ```reason
