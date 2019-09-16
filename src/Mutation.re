@@ -37,7 +37,7 @@ type controledVariantResult('a) =
   | NoData;
 
 module Make = (Config: Config) => {
-  [@bs.module] external gql: ReasonApolloTypes.gql = "graphql-tag";
+  [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
 
   type mutationResult = {. "data": option(Config.t)};
 
