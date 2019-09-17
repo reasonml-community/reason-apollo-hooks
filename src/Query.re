@@ -65,6 +65,8 @@ module Make = (Config: Config) => {
     errorPolicy: string,
     [@bs.optional]
     skip: bool,
+    [@bs.optional]
+    pollInterval: int,
   };
 
   [@bs.module "@apollo/react-hooks"]
@@ -90,6 +92,7 @@ module Make = (Config: Config) => {
         ~fetchPolicy=?,
         ~errorPolicy=?,
         ~skip=?,
+        ~pollInterval=?,
         (),
       ) => {
     let jsResult =
@@ -102,6 +105,7 @@ module Make = (Config: Config) => {
           ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
           ~errorPolicy=?errorPolicy->Belt.Option.map(Types.errorPolicyToJs),
           ~skip?,
+          ~pollInterval?,
           (),
         ),
       );
