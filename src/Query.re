@@ -54,6 +54,10 @@ type options = {
   notifyOnNetworkStatusChange: bool,
   [@bs.optional]
   fetchPolicy: string,
+  [@bs.optional]
+  errorPolicy: string,
+  [@bs.optional]
+  pollInterval: int,
 };
 
 [@bs.module "@apollo/react-hooks"]
@@ -72,7 +76,15 @@ external useQueryJs:
   "useQuery";
 
 let useQuery =
-    (~query, ~client=?, ~notifyOnNetworkStatusChange=?, ~fetchPolicy=?, ()) => {
+    (
+      ~query,
+      ~client=?,
+      ~notifyOnNetworkStatusChange=?,
+      ~fetchPolicy=?,
+      ~errorPolicy=?,
+      ~pollInterval=?,
+      (),
+    ) => {
   let jsResult =
     useQueryJs(
       gql(. query##query),
@@ -81,6 +93,8 @@ let useQuery =
         ~client?,
         ~notifyOnNetworkStatusChange?,
         ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
+        ~errorPolicy=?errorPolicy->Belt.Option.map(Types.errorPolicyToJs),
+        ~pollInterval?,
         (),
       ),
     );
