@@ -9,7 +9,7 @@ type graphqlErrors;
 type error = {
   .
   "message": string,
-  "graphlErrors": graphqlErrors,
+  "graphqlErrors": graphqlErrors,
 };
 
 type refetchQueries =
@@ -29,7 +29,7 @@ type controlledResult('a) = {
   error: option(error),
 };
 
-type controledVariantResult('a) =
+type controlledVariantResult('a) =
   | Loading
   | Called
   | Data('a)
@@ -72,7 +72,7 @@ module Make = (Config: Config) => {
       ~awaitRefetchQueries: bool=?,
       unit
     ) =>
-    Js.Promise.t(controledVariantResult(Config.t));
+    Js.Promise.t(controlledVariantResult(Config.t));
 
   [@bs.module "@apollo/react-hooks"]
   external useMutation:
