@@ -3,7 +3,7 @@ type graphqlErrors;
 type error = {
   .
   "message": string,
-  "graphlErrors": graphqlErrors,
+  "graphqlErrors": graphqlErrors,
 };
 
 type refetchQueries =
