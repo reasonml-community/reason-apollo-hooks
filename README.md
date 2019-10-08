@@ -36,9 +36,9 @@ let client =
   ReasonApollo.createApolloClient(~link=httpLink, ~cache=inMemoryCache, ());
 
 let app =
- <ReasonApolloHooks.ApolloProvider client>
+ <ApolloHooks.ApolloProvider client>
    ...
- </ReasonApolloHooks.ApolloProvider>
+ </ApolloHooks.ApolloProvider>
 ```
 
 ### Usage with reason-apollo
@@ -50,9 +50,9 @@ let client = ... // create Apollo client
 
 ReactDOMRe.renderToElementWithId(
   <ReasonApollo.Provider client>
-    <ReasonApolloHooks.ApolloProvider client>
+    <ApolloHooks.ApolloProvider client>
       <App />
-    </ReasonApolloHooks.ApolloProvider>
+    </ApolloHooks.ApolloProvider>
   </ReasonApollo.Provider>,
   "root",
 );
@@ -71,7 +71,7 @@ module UserQueryConfig = [%graphql {|
   }
 |}];
 
-module UserQuery = ReasonApolloHooks.Query.Make(UserQueryConfig);
+module UserQuery = ApolloHooks.Query.Make(UserQueryConfig);
 
 [@react.component]
 let make = () => {
@@ -137,7 +137,7 @@ module ScreamMutationConfig = [%graphql {|
   }
 |}];
 
-module ScreamMutation = ReasonApolloHooks.Mutation.Make(ScreamMutationConfig);
+module ScreamMutation = ApolloHooks.Mutation.Make(ScreamMutationConfig);
 
 [@react.component]
 let make = () => {
@@ -192,7 +192,7 @@ module PersonsQueryConfig = [%graphql
 |}
 ];
 
-module PersonsQuery = ReasonApolloHooks.Query.Make(PersonsQueryConfig);
+module PersonsQuery = ApolloHooks.Query.Make(PersonsQueryConfig);
 
 module PersonsReadQuery = ApolloClient.ReadQuery(PersonsQueryConfig);
 module PersonsWriteQuery = ApolloClient.WriteQuery(PersonsQueryConfig);
@@ -201,7 +201,7 @@ external cast: Js.Json.t => PersonsQueryConfig.t = "%identity";
 
 let updatePersons = (~client, ~name, ~age) => {
   let query = PersonsQueryConfig.make();
-  let readQueryOptions = ReasonApolloHooks.Utils.toReadQueryOptions(query);
+  let readQueryOptions = ApolloHooks.Utils.toReadQueryOptions(query);
 
   // can throw exception of cache is empty
   switch (PersonsReadQuery.readQuery(client, readQueryOptions)) {

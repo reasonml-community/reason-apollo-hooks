@@ -8,7 +8,7 @@
  * to serialize the parsed data back to its initial format, queries that will be updated manually
  * in cache can't use any of those directive, unless you will take care of the serialization yourself.
  */
-module PersonsNameFilterConfig = [%graphql
+module PersonsNameFilterQuery = [%graphql
   {|
   query getPersonsWithName($name: String!) {
     allPersons(filter: { name: $name } ) {
@@ -20,7 +20,7 @@ module PersonsNameFilterConfig = [%graphql
 |}
 ];
 
-external cast: Js.Json.t => PersonsNameFilterConfig.t = "%identity";
+external cast: Js.Json.t => PersonsNameFilterQuery.t = "%identity";
 
 type person = {
   .
@@ -29,15 +29,12 @@ type person = {
   "name": string,
 };
 
-module PersonsNameFilterQuery =
-  ReasonApolloHooks.Query.Make(PersonsNameFilterConfig);
-
 /** example using cache */
 module PersonsNameFilterReadQuery =
-  ApolloClient.ReadQuery(PersonsNameFilterConfig);
+  ApolloClient.ReadQuery(PersonsNameFilterQuery);
 
 module PersonsNameFilterWriteQuery =
-  ApolloClient.WriteQuery(PersonsNameFilterConfig);
+  ApolloClient.WriteQuery(PersonsNameFilterQuery);
 
 let updateFiltered = (person: person, name, filteredPersons: array(person)) =>
   person##name === name
@@ -45,10 +42,10 @@ let updateFiltered = (person: person, name, filteredPersons: array(person)) =>
     : filteredPersons->Belt.Array.keep(p => p##id !== person##id);
 
 let updateCache = (client, person, name) => {
-  let filterByNameQuery = PersonsNameFilterConfig.make(~name, ());
+  let filterByNameQuery = PersonsNameFilterQuery.make(~name, ());
 
   let readQueryOptions =
-    ReasonApolloHooks.Utils.toReadQueryOptions(filterByNameQuery);
+    ApolloHooks.Utils.toReadQueryOptions(filterByNameQuery);
 
   // By default, apollo adds field __typename to the query and will use it
   // to normalize data. Parsing the result with Config.parse will remove the field,
@@ -80,15 +77,12 @@ let updateCache = (client, person, name) => {
 
 [@react.component]
 let make = (~name) => {
-  let getPersonsWithName = PersonsNameFilterConfig.make(~name, ());
-
   let (simple, _full) =
-    PersonsNameFilterQuery.use(~variables=getPersonsWithName##variables, ());
+    ApolloHooks.useQuery(~query=PersonsNameFilterQuery.make(~name, ()), ());
 
   <div>
     {switch (simple) {
-     | ReasonApolloHooks.Query.Loading =>
-       <p> {React.string("Loading...")} </p>
+     | ApolloHooks.Query.Loading => <p> {React.string("Loading...")} </p>
      | Data(data) =>
        <h3>
          {"There are "

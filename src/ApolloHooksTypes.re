@@ -11,7 +11,7 @@ type networkStatus =
   | Error
   | Unknown;
 
-let toNetworkStatus = (status: Js.Nullable.t(int)) =>
+let toNetworkStatus = (status: Js.Nullable.t(int)) => {
   switch (status->Js.Nullable.toOption) {
   | Some(1) => Loading
   | Some(2) => SetVariables
@@ -22,6 +22,7 @@ let toNetworkStatus = (status: Js.Nullable.t(int)) =>
   | Some(8) => Error
   | _ => Unknown
   };
+};
 
 /**
  * apollo-client/src/core/watchQueryOptions.ts
@@ -33,7 +34,7 @@ type fetchPolicy =
   | NoCache
   | Standby;
 
-let fetchPolicyToJs = fetchPolicy =>
+let fetchPolicyToJs = fetchPolicy => {
   switch (fetchPolicy) {
   | CacheFirst => "cache-first"
   | NetworkOnly => "network-only"
@@ -41,18 +42,4 @@ let fetchPolicyToJs = fetchPolicy =>
   | NoCache => "no-cache"
   | Standby => "standby"
   };
-
-/**
- * apollo-client/src/core/watchQueryOptions.ts
- */
-type errorPolicy =
-  | None
-  | Ignore
-  | All;
-
-let errorPolicyToJs = errorPolicy =>
-  switch (errorPolicy) {
-  | None => "none"
-  | Ignore => "ignore"
-  | All => "all"
-  };
+};

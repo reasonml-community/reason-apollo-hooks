@@ -1,6 +1,4 @@
-open ReasonApolloHooks;
-
-module EditPersonConfig = [%graphql
+module EditPersonMutation = [%graphql
   {|
     mutation updatePerson($id: ID!, $age: Int!, $name: String!) {
       updatePerson(id: $id, age: $age, name: $name) {
@@ -11,8 +9,6 @@ module EditPersonConfig = [%graphql
       }
   |}
 ];
-
-module EditPersonMutation = Mutation.Make(EditPersonConfig);
 
 type state = {
   id: string,
@@ -42,19 +38,19 @@ let make = () => {
     React.useReducer(reducer, {age: None, name: "", id: ""});
 
   let (editPersonMutation, _simple, _full) =
-    EditPersonMutation.use(
+    ApolloHooks.useMutation(
+      ~incompleteMutation=EditPersonMutation.query,
       ~refetchQueries=
         _ => {
           let query =
-            FilterByAge.PersonsOlderThanConfig.make(~age=filterAgeLimit, ());
-          [|ReasonApolloHooks.Utils.toQueryObj(query)|];
+            FilterByAge.PersonsOlderThanQuery.make(~age=filterAgeLimit, ());
+          [|ApolloHooks.Utils.toQueryObj(query)|];
         },
       ~update=
         (client, mutationResult) => {
           let data =
             mutationResult##data
             ->Belt.Option.flatMap(result => result##updatePerson);
-
           switch (data) {
           | Some(person) =>
             FilterByNameCache.updateCache(client, person, filterName)
@@ -69,8 +65,8 @@ let make = () => {
     switch (state.age) {
     | Some(age) =>
       editPersonMutation(
-        ~variables=
-          EditPersonConfig.make(~id=state.id, ~age, ~name=state.name, ())##variables,
+        ~mutation=
+          EditPersonMutation.make(~id=state.id, ~age, ~name=state.name, ()),
         (),
       )
       |> ignore
@@ -110,7 +106,7 @@ let make = () => {
         <div className="form-field">
           <input
             required=true
-            pattern="\d{1,3}"
+            pattern="\\d{1,3}"
             placeholder="Age"
             value={
               state.age

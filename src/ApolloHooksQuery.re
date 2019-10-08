@@ -29,7 +29,7 @@ type queryResult('a) = {
   fetchMore:
     (~variables: Js.Json.t=?, ~updateQuery: updateQueryT, unit) =>
     Js.Promise.t(unit),
-  networkStatus: Types.networkStatus,
+  networkStatus: ApolloHooksTypes.networkStatus,
 };
 
 /**
@@ -54,10 +54,6 @@ type options = {
   notifyOnNetworkStatusChange: bool,
   [@bs.optional]
   fetchPolicy: string,
-  [@bs.optional]
-  errorPolicy: string,
-  [@bs.optional]
-  pollInterval: int,
 };
 
 [@bs.module "@apollo/react-hooks"]
@@ -76,15 +72,7 @@ external useQueryJs:
   "useQuery";
 
 let useQuery =
-    (
-      ~query,
-      ~client=?,
-      ~notifyOnNetworkStatusChange=?,
-      ~fetchPolicy=?,
-      ~errorPolicy=?,
-      ~pollInterval=?,
-      (),
-    ) => {
+    (~query, ~client=?, ~notifyOnNetworkStatusChange=?, ~fetchPolicy=?, ()) => {
   let jsResult =
     useQueryJs(
       gql(. query##query),
@@ -92,9 +80,8 @@ let useQuery =
         ~variables=query##variables,
         ~client?,
         ~notifyOnNetworkStatusChange?,
-        ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
-        ~errorPolicy=?errorPolicy->Belt.Option.map(Types.errorPolicyToJs),
-        ~pollInterval?,
+        ~fetchPolicy=?
+          fetchPolicy->Belt.Option.map(ApolloHooksTypes.fetchPolicyToJs),
         (),
       ),
     );
@@ -121,7 +108,8 @@ let useQuery =
               ),
           loading: jsResult##loading,
           error: jsResult##error->Js.Nullable.toOption,
-          networkStatus: Types.toNetworkStatus(jsResult##networkStatus),
+          networkStatus:
+            ApolloHooksTypes.toNetworkStatus(jsResult##networkStatus),
           refetch: (~variables=?, ()) =>
             jsResult##refetch(Js.Nullable.fromOption(variables))
             |> Js.Promise.then_(result =>
