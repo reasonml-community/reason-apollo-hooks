@@ -1,4 +1,4 @@
-module PersonsOlderThanQuery = [%graphql
+module PersonsOlderThanConfig = [%graphql
   {|
   query getPersonsOlderThan($age: Int!) {
     allPersons(filter: { age_gte: $age } ) {
@@ -8,14 +8,20 @@ module PersonsOlderThanQuery = [%graphql
 |}
 ];
 
+module PersonsOlderThanQuery =
+  ReasonApolloHooks.Query.Make(PersonsOlderThanConfig);
+
 [@react.component]
 let make = (~age) => {
+  let getPersonsOlderThan = PersonsOlderThanConfig.make(~age, ());
+
   let (simple, _full) =
-    ApolloHooks.useQuery(~query=PersonsOlderThanQuery.make(~age, ()), ());
+    PersonsOlderThanQuery.use(~variables=getPersonsOlderThan##variables, ());
 
   <div>
     {switch (simple) {
-     | Loading => <p> {React.string("Loading...")} </p>
+     | ReasonApolloHooks.Query.Loading =>
+       <p> {React.string("Loading...")} </p>
      | Data(data) =>
        <h3>
          {"There are "
