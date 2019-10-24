@@ -20,10 +20,10 @@
     ts-invariant "^0.4.4"
     tslib "^1.10.0"
 
-"@baransu/graphql_ppx_re@^0.2.0-beta.2":
-  version "0.2.0-beta.2"
-  resolved "https://registry.yarnpkg.com/@baransu/graphql_ppx_re/-/graphql_ppx_re-0.2.0-beta.2.tgz#7a54c7d959cee7a207c824a01581a203a7a2eed9"
-  integrity sha512-x1XfYXMBWUDz2+/3J0ns3D536XH/mKb1ZPUaNUv2L/dDZ+Y4b4+yPjyiYnOvOyw3iGNb7SaGkRSfyXtAcTfOPA==
+"@baransu/graphql_ppx_re@^0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@baransu/graphql_ppx_re/-/graphql_ppx_re-0.3.2.tgz#6876609be84853b1da6184b7868731066a892851"
+  integrity sha512-DseaS4enJpd43MyTEQZagbEktCzE0wpI96QSxOYR9AHpkgLNrSaM92yi8FBV8Q4sYmFX9191Bdjp+30Y0KWXwQ==
 
 "@types/events@*":
   version "3.0.0"
