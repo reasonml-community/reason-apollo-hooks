@@ -123,13 +123,17 @@ let useQuery =
       [|jsResult|],
     );
 
-  (
-    switch (result) {
-    | {loading: true} => Loading
-    | {error: Some(error)} => Error(error)
-    | {data: Some(data)} => Data(data)
-    | _ => NoData
-    },
-    result,
-  );
+  let simple =
+    React.useMemo1(
+      () =>
+        switch (result) {
+        | {loading: true} => Loading
+        | {error: Some(error)} => Error(error)
+        | {data: Some(data)} => Data(data)
+        | _ => NoData
+        },
+      [|result|],
+    );
+
+  (simple, result);
 };
