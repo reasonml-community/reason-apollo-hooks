@@ -36,9 +36,9 @@ let client =
   ReasonApollo.createApolloClient(~link=httpLink, ~cache=inMemoryCache, ());
 
 let app =
- <ApolloHooks.ApolloProvider client>
+ <ReasonApolloHooks.ApolloProvider client>
    ...
- </ApolloHooks.ApolloProvider>
+ </ReasonApolloHooks.ApolloProvider>
 ```
 
 ### Usage with reason-apollo
@@ -50,9 +50,9 @@ let client = ... // create Apollo client
 
 ReactDOMRe.renderToElementWithId(
   <ReasonApollo.Provider client>
-    <ApolloHooks.ApolloProvider client>
+    <ReasonApolloHooks.ApolloProvider client>
       <App />
-    </ApolloHooks.ApolloProvider>
+    </ReasonApolloHooks.ApolloProvider>
   </ReasonApollo.Provider>,
   "root",
 );
@@ -63,9 +63,7 @@ ReactDOMRe.renderToElementWithId(
 ## useQuery
 
 ```reason
-open ApolloHooks
-
-module UserQuery = [%graphql {|
+module UserQueryConfig = [%graphql {|
   query UserQuery {
     currentUser {
       name
@@ -73,10 +71,12 @@ module UserQuery = [%graphql {|
   }
 |}];
 
+module UserQuery = ReasonApolloHooks.Query.Make(UserQueryConfig);
+
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (simple, _full) = useQuery(~query=UserQuery.make(), ());
+  let (simple, _full) = UserQuery.use();
 
   <div>
   {
@@ -98,7 +98,7 @@ Using the `full` record for more advanced cases
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (_simple, full) = useQuery(~query=UserQuery.make(), ());
+  let (_simple, full) = UserQuery.use(());
 
   <div>
   {
@@ -117,21 +117,20 @@ let make = () => {
 Using `fetchPolicy` to change interactions with the `apollo` cache, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionsfetchpolicy).
 
 ```reason
-let (_simple, full) = useQuery(~query=UserQuery.make(), ~fetchPolicy=NetworkOnly, ());
+let (_simple, full) = UserQuery.use(~fetchPolicy=NetworkOnly, ());
 ```
 
 Using `errorPolicy` to change how errors are handled, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionserrorpolicy).
 
 ```reason
-let (simple, _full) = useQuery(~query=UserQuery.make(), ~errorPolicy=All, ());
+let (simple, _full) = UserQuery.use(~errorPolicy=All, ());
 ```
 
 Using `skip` to skip query entirely, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#configskip).
 
 ```reason
 let (simple, _full) =
-  useQuery(
-    ~query=UserQuery.make(),
+  UserQuery.use(
     ~skip=
       switch (val) {
       | None => true
@@ -144,7 +143,7 @@ let (simple, _full) =
 ## useMutation
 
 ```reason
-module ScreamMutation = [%graphql {|
+module ScreamMutationConfig = [%graphql {|
   mutation ScreamMutation($screamLevel: Int!) {
     scream(level: $screamLevel) {
       error
@@ -152,40 +151,17 @@ module ScreamMutation = [%graphql {|
   }
 |}];
 
+module ScreamMutation = ReasonApolloHooks.Mutation.Make(ScreamMutationConfig);
+
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation(~mutation=ScreamMutation.make(~screamLevel=10, ()), ());
+  let ( screamMutation, _simple, _full ) = ScreamMutation.use();
   let scream = (_) => {
-    screamMutation()
-      |> Js.Promise.then_(result => {
-          switch(result) {
-            | Data(data) => ...
-            | Error(error) => ...
-            | NoData => ...
-          }
-          Js.Promise.resolve()
-        })
-      |> ignore
-  }
-
-  <div>
-    <button onClick={scream}>
-      {React.string("You kids get off my lawn!")}
-    </button>
-  </div>
-}
-```
-
-If you don't know the value of the variables you can initialize with the query property
-
-```reason
-[@react.component]
-let make = () => {
-  /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation(~incompleteMutation=ScreamMutation.query, ());
-  let scream = (_) => {
-    screamMutation(~mutation=ScreamMutation.make(~screamLevel=10, ()), ())
+    screamMutation(
+      ~variables=ScreamMutationConfig.make(~screamLevel=10, ())##variables,
+      ()
+    )
       |> Js.Promise.then_(result => {
           switch(result) {
             | Data(data) => ...
@@ -218,7 +194,7 @@ There are a couple of caveats with manual cache updates.
 An example of cache update could look like this:
 
 ```reason
-module PersonsQuery = [%graphql
+module PersonsQueryConfig = [%graphql
 {|
   query getAllPersons  {
     allPersons  {
@@ -230,14 +206,16 @@ module PersonsQuery = [%graphql
 |}
 ];
 
-module PersonsReadQuery = ApolloClient.ReadQuery(PersonsQuery);
-module PersonsWriteQuery = ApolloClient.WriteQuery(PersonsQuery);
+module PersonsQuery = ReasonApolloHooks.Query.Make(PersonsQueryConfig);
 
-external cast: Js.Json.t => PersonsQuery.t = "%identity";
+module PersonsReadQuery = ApolloClient.ReadQuery(PersonsQueryConfig);
+module PersonsWriteQuery = ApolloClient.WriteQuery(PersonsQueryConfig);
+
+external cast: Js.Json.t => PersonsQueryConfig.t = "%identity";
 
 let updatePersons = (~client, ~name, ~age) => {
-  let query = PersonsQuery.make();
-  let readQueryOptions = ApolloHooks.Utils.toReadQueryOptions(query);
+  let query = PersonsQueryConfig.make();
+  let readQueryOptions = ReasonApolloHooks.Utils.toReadQueryOptions(query);
 
   // can throw exception of cache is empty
   switch (PersonsReadQuery.readQuery(client, readQueryOptions)) {
