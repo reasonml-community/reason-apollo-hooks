@@ -20,7 +20,6 @@
     }
   ],
   "suffix": ".bs.js",
-  "namespace": true,
   "bs-dependencies": ["reason-react", "reason-apollo"],
   "refmt": 3
 }
