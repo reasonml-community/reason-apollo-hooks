@@ -45,3 +45,18 @@ let fetchPolicyToJs = fetchPolicy => {
   | Standby => "standby"
   };
 };
+
+/**
+ * apollo-client/src/core/watchQueryOptions.ts
+ */
+type errorPolicy =
+  | None
+  | Ignore
+  | All;
+
+let errorPolicyToJs = errorPolicy =>
+  switch (errorPolicy) {
+  | None => "none"
+  | Ignore => "ignore"
+  | All => "all"
+  };
