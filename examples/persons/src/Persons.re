@@ -1,4 +1,4 @@
-module GetAllPersonsConfig = [%graphql
+module GetAllPersonsQuery = [%graphql
   {|
   query getAllPersons($skip: Int!, $first: Int!) {
     allPersons(skip: $skip, first: $first) {
@@ -10,19 +10,15 @@ module GetAllPersonsConfig = [%graphql
 |}
 ];
 
-module GetAllPersonsQuery = ReasonApolloHooks.Query.Make(GetAllPersonsConfig);
-
 let personsPerPage = 10;
 
 [@react.component]
 let make = () => {
   let skipRef = React.useRef(0);
-  let getAllPersons =
-    GetAllPersonsConfig.make(~skip=0, ~first=personsPerPage, ());
 
   let (_simple, full) =
-    GetAllPersonsQuery.use(
-      ~variables=getAllPersons##variables,
+    ApolloHooks.useQuery(
+      ~query=GetAllPersonsQuery.make(~skip=0, ~first=personsPerPage, ()),
       ~notifyOnNetworkStatusChange=true,
       (),
     );
@@ -32,7 +28,7 @@ let make = () => {
     skipRef->React.Ref.setCurrent(skip);
 
     let getNextPage =
-      GetAllPersonsConfig.make(~skip, ~first=personsPerPage, ());
+      GetAllPersonsQuery.make(~skip, ~first=personsPerPage, ());
 
     full.fetchMore(
       ~variables=getNextPage##variables,
@@ -83,7 +79,7 @@ let make = () => {
           |> React.array}
          <button
            onClick=handleLoadMore
-           disabled={full.networkStatus === ReasonApolloHooks.Types.FetchMore}>
+           disabled={full.networkStatus === ApolloHooks.Types.FetchMore}>
            {React.string("Load more")}
          </button>
        </>
