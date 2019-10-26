@@ -39,6 +39,8 @@ type options('a) = {
   [@bs.optional]
   variables: Js.Json.t,
   [@bs.optional]
+  mutation: option(ReasonApolloTypes.queryString),
+  [@bs.optional]
   client: ApolloClient.generatedApolloClient,
   [@bs.optional]
   refetchQueries,
@@ -76,7 +78,6 @@ exception Error(string);
 
 let useMutation =
     (
-      ~incompleteMutation=?,
       ~mutation=?,
       ~client=?,
       ~refetchQueries=?,
@@ -86,27 +87,15 @@ let useMutation =
     ) => {
   let (jsMutate, jsResult) =
     useMutationJs(.
-      gql(.
-        switch (mutation, incompleteMutation) {
-        | (Some(mutation), _) => mutation##query
-        | (_, Some(incompleteMutation)) => incompleteMutation
-        | (None, None) =>
-          raise(
-            Error("You need to provide a mutation or an incomplete mutation"),
-          )
-        },
-      ),
+      switch (mutation) {
+      | None => gql(. "mutation { emptyMutation }")
+      | Some(mutation) => gql(. mutation##query)
+      },
       options(
         ~variables=?
-          switch (mutation, incompleteMutation) {
-          | (Some(mutation), _) => Some(mutation##variables)
-          | (_, Some(_incompleteMutation)) => None
-          | (None, None) =>
-            raise(
-              Error(
-                "You need to provide a mutation or an incomplete mutation",
-              ),
-            )
+          switch (mutation) {
+          | Some(mutation) => Some(mutation##variables)
+          | None => None
           },
         ~client?,
         ~refetchQueries?,
@@ -139,6 +128,7 @@ let useMutation =
         jsMutate(.
           options(
             ~variables=mutation##variables,
+            ~mutation=Some(gql(. mutation##query)),
             ~client?,
             ~refetchQueries?,
             ~awaitRefetchQueries?,

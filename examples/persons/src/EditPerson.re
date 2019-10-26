@@ -39,7 +39,6 @@ let make = () => {
 
   let (editPersonMutation, _simple, _full) =
     ApolloHooks.useMutation(
-      ~incompleteMutation=EditPersonMutation.query,
       ~refetchQueries=
         _ => {
           let query =
