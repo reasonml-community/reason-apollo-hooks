@@ -183,7 +183,7 @@ If you don't know the value of the variables you can initialize with the query p
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation(~incompleteMutation=ScreamMutation.query, ());
+  let ( screamMutation, _simple, _full ) = useMutation();
   let scream = (_) => {
     screamMutation(~mutation=ScreamMutation.make(~screamLevel=10, ()), ())
       |> Js.Promise.then_(result => {
