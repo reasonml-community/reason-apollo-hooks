@@ -78,8 +78,7 @@ let make = () => {
             )
           |> React.array}
          <button
-           onClick=handleLoadMore
-           disabled={full.networkStatus === ApolloHooks.Types.FetchMore}>
+           onClick=handleLoadMore disabled={full.networkStatus === FetchMore}>
            {React.string("Load more")}
          </button>
        </>

@@ -1,6 +1,5 @@
 module Mutation = ApolloHooksMutation;
 module Query = ApolloHooksQuery;
-module Types = ApolloHooksTypes;
 module ApolloProvider = ApolloHooksApolloProvider;
 
 let useQuery = Query.useQuery;
