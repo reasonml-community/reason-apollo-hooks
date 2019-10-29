@@ -1,3 +1,5 @@
+open ApolloHooks;
+
 /**
  * Query response will be parsed using Config.parse from graphq_ppx before it is accessed in
  * reason, but react-apollo will save it in cache in its original format, as a regular JS object,
@@ -43,9 +45,7 @@ let updateFiltered = (person: person, name, filteredPersons: array(person)) =>
 
 let updateCache = (client, person, name) => {
   let filterByNameQuery = PersonsNameFilterQuery.make(~name, ());
-
-  let readQueryOptions =
-    ApolloHooks.Utils.toReadQueryOptions(filterByNameQuery);
+  let readQueryOptions = toReadQueryOptions(filterByNameQuery);
 
   // By default, apollo adds field __typename to the query and will use it
   // to normalize data. Parsing the result with Config.parse will remove the field,
@@ -78,11 +78,11 @@ let updateCache = (client, person, name) => {
 [@react.component]
 let make = (~name) => {
   let (simple, _full) =
-    ApolloHooks.useQuery(~query=PersonsNameFilterQuery.make(~name, ()), ());
+    useQuery(~query=PersonsNameFilterQuery.make(~name, ()), ());
 
   <div>
     {switch (simple) {
-     | ApolloHooks.Query.Loading => <p> {React.string("Loading...")} </p>
+     | Loading => <p> {React.string("Loading...")} </p>
      | Data(data) =>
        <h3>
          {"There are "

@@ -78,7 +78,7 @@ exception Error(string);
 
 let useMutation =
     (
-      ~mutation=?,
+      mutation,
       ~client=?,
       ~refetchQueries=?,
       ~awaitRefetchQueries=?,
@@ -87,16 +87,9 @@ let useMutation =
     ) => {
   let (jsMutate, jsResult) =
     useMutationJs(.
-      switch (mutation) {
-      | None => gql(. "mutation { emptyMutation }")
-      | Some(mutation) => gql(. mutation##query)
-      },
+      gql(. mutation##query),
       options(
-        ~variables=?
-          switch (mutation) {
-          | Some(mutation) => Some(mutation##variables)
-          | None => None
-          },
+        ~variables=mutation##variables,
         ~client?,
         ~refetchQueries?,
         ~awaitRefetchQueries?,
@@ -108,21 +101,7 @@ let useMutation =
   let parse = React.useRef(None);
   let mutate =
     React.useMemo1(
-      (
-        (),
-        ~mutation as passedMutation: 'b=?,
-        ~client=?,
-        ~refetchQueries=?,
-        ~awaitRefetchQueries=?,
-        (),
-      ) => {
-        let mutation =
-          switch (passedMutation, mutation) {
-          | (Some(mutation), _) => mutation
-          | (_, Some(mutation)) => mutation
-          | (None, None) => raise(Error("Need to pass a mutation"))
-          };
-
+      ((), ~client=?, ~refetchQueries=?, ~awaitRefetchQueries=?, ()) => {
         React.Ref.setCurrent(parse, Some(mutation##parse));
 
         jsMutate(.
@@ -156,13 +135,101 @@ let useMutation =
              |> Js.Promise.resolve
            );
       },
-      [|
-        switch (mutation) {
-        | Some(mutation) => Some(mutation##variables)
-        | None => None
-        },
-      |],
+      [|mutation##variables|],
     );
+
+  let full =
+    React.useMemo1(
+      () => {
+        let parse = data => {
+          switch (React.Ref.current(parse)) {
+          | Some(parse) => parse(data)
+          | _ => raise(Error("Parse error"))
+          };
+        };
+        {
+          loading: jsResult##loading,
+          called: jsResult##called,
+          data: jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
+          error: jsResult##error->Js.Nullable.toOption,
+        };
+      },
+      [|jsResult|],
+    );
+
+  let simple =
+    React.useMemo1(
+      () =>
+        switch (full) {
+        | {loading: true} => Loading
+        | {error: Some(error)} => Error(error)
+        | {data: Some(data)} => Data(data)
+        | {called: true} => Called
+        | _ => NoData
+        },
+      [|full|],
+    );
+
+  (mutate, simple, full);
+};
+let useDynamicMutation =
+    (~client=?, ~refetchQueries=?, ~awaitRefetchQueries=?, ~update=?, ()) => {
+  let (jsMutate, jsResult) =
+    useMutationJs(.
+      gql(. "mutation { emptyMutation }"),
+      options(
+        ~client?,
+        ~refetchQueries?,
+        ~awaitRefetchQueries?,
+        ~update?,
+        (),
+      ),
+    );
+
+  let parse = React.useRef(None);
+  let mutate =
+    React.useMemo0(
+      (
+        (),
+        ~mutation: 'b,
+        ~client=?,
+        ~refetchQueries=?,
+        ~awaitRefetchQueries=?,
+        (),
+      ) => {
+      React.Ref.setCurrent(parse, Some(mutation##parse));
+
+      jsMutate(.
+        options(
+          ~variables=mutation##variables,
+          ~mutation=Some(gql(. mutation##query)),
+          ~client?,
+          ~refetchQueries?,
+          ~awaitRefetchQueries?,
+          (),
+        ),
+      )
+      |> Js.Promise.then_(jsResult =>
+           (
+             switch (
+               Js.Nullable.toOption(jsResult##data),
+               Js.Nullable.toOption(jsResult##error),
+             ) {
+             | (Some(data), _) =>
+               let parse = data => {
+                 switch (React.Ref.current(parse)) {
+                 | Some(parse) => parse(data)
+                 | _ => raise(Error("Parse error"))
+                 };
+               };
+               Data(parse(data));
+             | (None, Some(error)) => Error(error)
+             | (None, None) => NoData
+             }
+           )
+           |> Js.Promise.resolve
+         );
+    });
 
   let full =
     React.useMemo1(

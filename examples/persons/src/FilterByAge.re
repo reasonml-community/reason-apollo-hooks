@@ -1,3 +1,5 @@
+open ApolloHooks;
+
 module PersonsOlderThanQuery = [%graphql
   {|
   query getPersonsOlderThan($age: Int!) {
@@ -11,7 +13,7 @@ module PersonsOlderThanQuery = [%graphql
 [@react.component]
 let make = (~age) => {
   let (simple, _full) =
-    ApolloHooks.useQuery(~query=PersonsOlderThanQuery.make(~age, ()), ());
+    useQuery(~query=PersonsOlderThanQuery.make(~age, ()), ());
 
   <div>
     {switch (simple) {

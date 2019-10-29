@@ -155,7 +155,7 @@ module ScreamMutation = [%graphql {|
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation(~mutation=ScreamMutation.make(~screamLevel=10, ()), ());
+  let ( screamMutation, _simple, _full ) = useMutation(ScreamMutation.make(~screamLevel=10, ()), ());
   let scream = (_) => {
     screamMutation()
       |> Js.Promise.then_(result => {
@@ -183,7 +183,7 @@ If you don't know the value of the variables you can initialize with the query p
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation();
+  let ( screamMutation, _simple, _full ) = useDynamicMutation();
   let scream = (_) => {
     screamMutation(~mutation=ScreamMutation.make(~screamLevel=10, ()), ())
       |> Js.Promise.then_(result => {

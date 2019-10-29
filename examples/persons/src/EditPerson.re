@@ -1,3 +1,4 @@
+open ApolloHooks;
 module EditPersonMutation = [%graphql
   {|
     mutation updatePerson($id: ID!, $age: Int!, $name: String!) {
@@ -38,12 +39,12 @@ let make = () => {
     React.useReducer(reducer, {age: None, name: "", id: ""});
 
   let (editPersonMutation, _simple, _full) =
-    ApolloHooks.useMutation(
+    ApolloHooks.useDynamicMutation(
       ~refetchQueries=
         _ => {
           let query =
             FilterByAge.PersonsOlderThanQuery.make(~age=filterAgeLimit, ());
-          [|ApolloHooks.Utils.toQueryObj(query)|];
+          [|toQueryObj(query)|];
         },
       ~update=
         (client, mutationResult) => {
