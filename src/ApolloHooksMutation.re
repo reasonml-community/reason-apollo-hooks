@@ -191,7 +191,7 @@ let useDynamicMutation =
     React.useMemo0(
       (
         (),
-        ~mutation: 'b,
+        mutation: 'b,
         ~client=?,
         ~refetchQueries=?,
         ~awaitRefetchQueries=?,

@@ -39,7 +39,7 @@ let make = () => {
     React.useReducer(reducer, {age: None, name: "", id: ""});
 
   let (editPersonMutation, _simple, _full) =
-    ApolloHooks.useDynamicMutation(
+    useDynamicMutation(
       ~refetchQueries=
         _ => {
           let query =
@@ -65,8 +65,7 @@ let make = () => {
     switch (state.age) {
     | Some(age) =>
       editPersonMutation(
-        ~mutation=
-          EditPersonMutation.make(~id=state.id, ~age, ~name=state.name, ()),
+        EditPersonMutation.make(~id=state.id, ~age, ~name=state.name, ()),
         (),
       )
       |> ignore
