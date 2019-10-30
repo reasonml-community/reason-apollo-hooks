@@ -177,7 +177,7 @@ let make = () => {
 }
 ```
 
-If you don't know the value of the variables you can initialize with the query property
+If you don't know the value of the variables yet you can use `useDynamicMutation`
 
 ```reason
 [@react.component]
