@@ -78,7 +78,7 @@ let updateCache = (client, person, name) => {
 [@react.component]
 let make = (~name) => {
   let (simple, _full) =
-    useQuery(~query=PersonsNameFilterQuery.make(~name, ()), ());
+    useQuery(PersonsNameFilterQuery.make(~name, ()), ());
 
   <div>
     {switch (simple) {

@@ -79,7 +79,7 @@ external useQueryJs:
 
 let useQuery =
     (
-      ~query,
+      query,
       ~client=?,
       ~notifyOnNetworkStatusChange=?,
       ~fetchPolicy=?,

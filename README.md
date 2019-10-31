@@ -76,7 +76,7 @@ module UserQuery = [%graphql {|
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (simple, _full) = useQuery(~query=UserQuery.make(), ());
+  let (simple, _full) = useQuery(UserQuery.make(), ());
 
   <div>
   {
@@ -98,7 +98,7 @@ Using the `full` record for more advanced cases
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (_simple, full) = useQuery(~query=UserQuery.make(), ());
+  let (_simple, full) = useQuery(UserQuery.make(), ());
 
   <div>
   {
@@ -117,13 +117,13 @@ let make = () => {
 Using `fetchPolicy` to change interactions with the `apollo` cache, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionsfetchpolicy).
 
 ```reason
-let (_simple, full) = useQuery(~query=UserQuery.make(), ~fetchPolicy=NetworkOnly, ());
+let (_simple, full) = useQuery(UserQuery.make(), ~fetchPolicy=NetworkOnly, ());
 ```
 
 Using `errorPolicy` to change how errors are handled, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionserrorpolicy).
 
 ```reason
-let (simple, _full) = useQuery(~query=UserQuery.make(), ~errorPolicy=All, ());
+let (simple, _full) = useQuery(UserQuery.make(), ~errorPolicy=All, ());
 ```
 
 Using `skip` to skip query entirely, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#configskip).
@@ -131,7 +131,7 @@ Using `skip` to skip query entirely, see [apollo docs](https://www.apollographql
 ```reason
 let (simple, _full) =
   useQuery(
-    ~query=UserQuery.make(),
+    UserQuery.make(),
     ~skip=
       switch (val) {
       | None => true
@@ -185,7 +185,7 @@ let make = () => {
   /* Both variant and records available */
   let ( screamMutation, _simple, _full ) = useDynamicMutation();
   let scream = (_) => {
-    screamMutation(~mutation=ScreamMutation.make(~screamLevel=10, ()), ())
+    screamMutation(ScreamMutation.make(~screamLevel=10, ()), ())
       |> Js.Promise.then_(result => {
           switch(result) {
             | Data(data) => ...
