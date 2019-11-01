@@ -12,7 +12,7 @@ module PersonsOlderThanQuery = [%graphql
 
 [@react.component]
 let make = (~age) => {
-  let (simple, _full) = useQuery(PersonsOlderThanQuery.make(~age, ()), ());
+  let (simple, _full) = useQuery((module PersonsOlderThanQuery));
 
   <div>
     {switch (simple) {

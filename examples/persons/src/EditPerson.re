@@ -39,7 +39,7 @@ let make = () => {
     React.useReducer(reducer, {age: None, name: "", id: ""});
 
   let (editPersonMutation, _simple, _full) =
-    useDynamicMutation(
+    useMutation(
       ~refetchQueries=
         _ => {
           let query =
@@ -57,7 +57,7 @@ let make = () => {
           | None => ()
           };
         },
-      (),
+      (module EditPersonMutation),
     );
 
   let handleSubmit = event => {
@@ -65,8 +65,8 @@ let make = () => {
     switch (state.age) {
     | Some(age) =>
       editPersonMutation(
-        EditPersonMutation.make(~id=state.id, ~age, ~name=state.name, ()),
-        (),
+        ~variables=
+          EditPersonMutation.make(~age, ~id=state.id, ~name=state.name, ())##variables,
       )
       |> ignore
     | None => ignore()

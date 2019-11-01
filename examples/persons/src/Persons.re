@@ -18,9 +18,8 @@ let make = () => {
 
   let (_simple, full) =
     ApolloHooks.useQuery(
-      GetAllPersonsQuery.make(~skip=0, ~first=personsPerPage, ()),
       ~notifyOnNetworkStatusChange=true,
-      (),
+      (module GetAllPersonsQuery),
     );
 
   let handleLoadMore = _ => {

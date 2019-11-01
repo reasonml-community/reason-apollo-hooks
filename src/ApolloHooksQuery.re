@@ -1,3 +1,4 @@
+open ApolloHooksTypes;
 type queryError = {. "message": string};
 
 type queryVariant('a) =
@@ -77,82 +78,94 @@ external useQueryJs:
   } =
   "useQuery";
 
-let useQuery =
+let useQuery:
+  type t.
     (
-      query,
-      ~client=?,
-      ~notifyOnNetworkStatusChange=?,
-      ~fetchPolicy=?,
-      ~errorPolicy=?,
-      ~skip=?,
-      ~pollInterval=?,
-      (),
-    ) => {
-  let jsResult =
-    useQueryJs(
-      gql(. query##query),
-      options(
-        ~variables=query##variables,
-        ~client?,
-        ~notifyOnNetworkStatusChange?,
-        ~fetchPolicy=?
-          fetchPolicy->Belt.Option.map(ApolloHooksTypes.fetchPolicyToJs),
-        ~errorPolicy=?
-          errorPolicy->Belt.Option.map(ApolloHooksTypes.errorPolicyToJs),
-        ~skip?,
-        ~pollInterval?,
-        (),
-      ),
-    );
+      ~client: ApolloClient.generatedApolloClient=?,
+      ~variables: Js.Json.t=?,
+      ~notifyOnNetworkStatusChange: bool=?,
+      ~fetchPolicy: ApolloHooksTypes.fetchPolicy=?,
+      ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
+      ~skip: bool=?,
+      ~pollInterval: int=?,
+      (module Config with type t = t)
+    ) =>
+    (queryVariant(t), queryResult(t)) =
+  (
+    ~client=?,
+    ~variables=?,
+    ~notifyOnNetworkStatusChange=?,
+    ~fetchPolicy=?,
+    ~errorPolicy=?,
+    ~skip=?,
+    ~pollInterval=?,
+    (module Config),
+  ) => {
+    let jsResult =
+      useQueryJs(
+        gql(. Config.query),
+        options(
+          ~variables?,
+          ~client?,
+          ~notifyOnNetworkStatusChange?,
+          ~fetchPolicy=?
+            fetchPolicy->Belt.Option.map(ApolloHooksTypes.fetchPolicyToJs),
+          ~errorPolicy=?
+            errorPolicy->Belt.Option.map(ApolloHooksTypes.errorPolicyToJs),
+          ~skip?,
+          ~pollInterval?,
+          (),
+        ),
+      );
 
-  let parse: Js.Json.t => 'response = query##parse;
-  let getData = obj =>
-    obj
-    ->Js.Json.decodeObject
-    ->Belt.Option.flatMap(x => Js.Dict.get(x, "data"))
-    ->Belt.Option.getExn;
+    let parse = Config.parse;
+    let getData = obj =>
+      obj
+      ->Js.Json.decodeObject
+      ->Belt.Option.flatMap(x => Js.Dict.get(x, "data"))
+      ->Belt.Option.getExn;
 
-  let result =
-    React.useMemo1(
-      () =>
-        {
-          data:
-            jsResult##data
-            ->Js.Nullable.toOption
-            ->Belt.Option.flatMap(data =>
-                switch (parse(data)) {
-                | parsedData => Some(parsedData)
-                | exception _ => None
-                }
+    let result =
+      React.useMemo1(
+        () =>
+          {
+            data:
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.flatMap(data =>
+                  switch (parse(data)) {
+                  | parsedData => Some(parsedData)
+                  | exception _ => None
+                  }
+                ),
+            loading: jsResult##loading,
+            error: jsResult##error->Js.Nullable.toOption,
+            networkStatus:
+              ApolloHooksTypes.toNetworkStatus(jsResult##networkStatus),
+            refetch: (~variables=?, ()) =>
+              jsResult##refetch(Js.Nullable.fromOption(variables))
+              |> Js.Promise.then_(result =>
+                   parse(result->getData) |> Js.Promise.resolve
+                 ),
+            fetchMore: (~variables=?, ~updateQuery, ()) =>
+              jsResult##fetchMore(
+                fetchMoreOptions(~variables?, ~updateQuery, ()),
               ),
-          loading: jsResult##loading,
-          error: jsResult##error->Js.Nullable.toOption,
-          networkStatus:
-            ApolloHooksTypes.toNetworkStatus(jsResult##networkStatus),
-          refetch: (~variables=?, ()) =>
-            jsResult##refetch(Js.Nullable.fromOption(variables))
-            |> Js.Promise.then_(result =>
-                 parse(result->getData) |> Js.Promise.resolve
-               ),
-          fetchMore: (~variables=?, ~updateQuery, ()) =>
-            jsResult##fetchMore(
-              fetchMoreOptions(~variables?, ~updateQuery, ()),
-            ),
-        },
-      [|jsResult|],
-    );
+          },
+        [|jsResult|],
+      );
 
-  let simple =
-    React.useMemo1(
-      () =>
-        switch (result) {
-        | {loading: true} => Loading
-        | {error: Some(error)} => Error(error)
-        | {data: Some(data)} => Data(data)
-        | _ => NoData
-        },
-      [|result|],
-    );
+    let simple =
+      React.useMemo1(
+        () =>
+          switch (result) {
+          | {loading: true} => Loading
+          | {error: Some(error)} => Error(error)
+          | {data: Some(data)} => Data(data)
+          | _ => NoData
+          },
+        [|result|],
+      );
 
-  (simple, result);
-};
+    (simple, result);
+  };

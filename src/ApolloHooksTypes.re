@@ -60,3 +60,9 @@ let errorPolicyToJs = errorPolicy =>
   | Ignore => "ignore"
   | All => "all"
   };
+
+module type Config = {
+  type t;
+  let query: string;
+  let parse: Js.Json.t => t;
+};

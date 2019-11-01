@@ -4,7 +4,6 @@ module ApolloProvider = ApolloHooksApolloProvider;
 
 let useQuery = Query.useQuery;
 let useMutation = Mutation.useMutation;
-let useDynamicMutation = Mutation.useDynamicMutation;
 
 let toQueryObj = (result): ApolloClient.queryObj => {
   "query": ApolloClient.gql(. result##query),

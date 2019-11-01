@@ -76,192 +76,113 @@ external useMutationJs:
 
 exception Error(string);
 
-let useMutation =
+let useMutation:
+  type t.
     (
-      mutation,
-      ~client=?,
-      ~refetchQueries=?,
-      ~awaitRefetchQueries=?,
-      ~update=?,
-      (),
-    ) => {
-  let (jsMutate, jsResult) =
-    useMutationJs(.
-      gql(. mutation##query),
-      options(
-        ~variables=mutation##variables,
-        ~client?,
-        ~refetchQueries?,
-        ~awaitRefetchQueries?,
-        ~update?,
-        (),
-      ),
-    );
-
-  let parse = React.useRef(None);
-  let mutate =
-    React.useMemo1(
-      ((), ~client=?, ~refetchQueries=?, ~awaitRefetchQueries=?, ()) => {
-        React.Ref.setCurrent(parse, Some(mutation##parse));
-
-        jsMutate(.
-          options(
-            ~variables=mutation##variables,
-            ~mutation=Some(gql(. mutation##query)),
-            ~client?,
-            ~refetchQueries?,
-            ~awaitRefetchQueries?,
-            (),
-          ),
-        )
-        |> Js.Promise.then_(jsResult =>
-             (
-               switch (
-                 Js.Nullable.toOption(jsResult##data),
-                 Js.Nullable.toOption(jsResult##error),
-               ) {
-               | (Some(data), _) =>
-                 let parse = data => {
-                   switch (React.Ref.current(parse)) {
-                   | Some(parse) => parse(data)
-                   | _ => raise(Error("Parse error"))
-                   };
-                 };
-                 Data(parse(data));
-               | (None, Some(error)) => Error(error)
-               | (None, None) => NoData
-               }
-             )
-             |> Js.Promise.resolve
-           );
-      },
-      [|mutation##variables|],
-    );
-
-  let full =
-    React.useMemo1(
-      () => {
-        let parse = data => {
-          switch (React.Ref.current(parse)) {
-          | Some(parse) => parse(data)
-          | _ => raise(Error("Parse error"))
-          };
-        };
-        {
-          loading: jsResult##loading,
-          called: jsResult##called,
-          data: jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
-          error: jsResult##error->Js.Nullable.toOption,
-        };
-      },
-      [|jsResult|],
-    );
-
-  let simple =
-    React.useMemo1(
-      () =>
-        switch (full) {
-        | {loading: true} => Loading
-        | {error: Some(error)} => Error(error)
-        | {data: Some(data)} => Data(data)
-        | {called: true} => Called
-        | _ => NoData
-        },
-      [|full|],
-    );
-
-  (mutate, simple, full);
-};
-let useDynamicMutation =
-    (~client=?, ~refetchQueries=?, ~awaitRefetchQueries=?, ~update=?, ()) => {
-  let (jsMutate, jsResult) =
-    useMutationJs(.
-      gql(. "mutation { emptyMutation }"),
-      options(
-        ~client?,
-        ~refetchQueries?,
-        ~awaitRefetchQueries?,
-        ~update?,
-        (),
-      ),
-    );
-
-  let parse = React.useRef(None);
-  let mutate =
-    React.useMemo0(
+      ~client: ApolloClient.generatedApolloClient=?,
+      ~variables: Js.Json.t=?,
+      ~refetchQueries: refetchQueries=?,
+      ~awaitRefetchQueries: bool=?,
+      ~update: (ApolloClient.generatedApolloClient, mutationResult('a)) =>
+               unit
+                 =?,
+      (module ApolloHooksTypes.Config with type t = t)
+    ) =>
+    (
       (
-        (),
-        mutation: 'b,
-        ~client=?,
-        ~refetchQueries=?,
-        ~awaitRefetchQueries=?,
-        (),
-      ) => {
-      React.Ref.setCurrent(parse, Some(mutation##parse));
-
-      jsMutate(.
+        ~variables: Js.Json.t=?,
+        ~client: ApolloClient.generatedApolloClient=?,
+        ~refetchQueries: refetchQueries=?,
+        ~awaitRefetchQueries: bool=?,
+        unit
+      ) =>
+      Js.Promise.t(controlledVariantResult(t)),
+      controlledVariantResult(t),
+      controlledResult(t),
+    ) =
+  (
+    ~client=?,
+    ~variables=?,
+    ~refetchQueries=?,
+    ~awaitRefetchQueries=?,
+    ~update=?,
+    (module Config),
+  ) => {
+    let (jsMutate, jsResult) =
+      useMutationJs(.
+        gql(. Config.query),
         options(
-          ~variables=mutation##variables,
-          ~mutation=Some(gql(. mutation##query)),
           ~client?,
+          ~variables?,
           ~refetchQueries?,
           ~awaitRefetchQueries?,
+          ~update?,
           (),
         ),
-      )
-      |> Js.Promise.then_(jsResult =>
-           (
-             switch (
-               Js.Nullable.toOption(jsResult##data),
-               Js.Nullable.toOption(jsResult##error),
-             ) {
-             | (Some(data), _) =>
-               let parse = data => {
-                 switch (React.Ref.current(parse)) {
-                 | Some(parse) => parse(data)
-                 | _ => raise(Error("Parse error"))
-                 };
-               };
-               Data(parse(data));
-             | (None, Some(error)) => Error(error)
-             | (None, None) => NoData
-             }
-           )
-           |> Js.Promise.resolve
-         );
-    });
+      );
 
-  let full =
-    React.useMemo1(
-      () => {
-        let parse = data => {
-          switch (React.Ref.current(parse)) {
-          | Some(parse) => parse(data)
-          | _ => raise(Error("Parse error"))
-          };
-        };
-        {
-          loading: jsResult##loading,
-          called: jsResult##called,
-          data: jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
-          error: jsResult##error->Js.Nullable.toOption,
-        };
-      },
-      [|jsResult|],
-    );
+    let mutate =
+      React.useMemo1(
+        (
+          (),
+          ~variables=?,
+          ~client=?,
+          ~refetchQueries=?,
+          ~awaitRefetchQueries=?,
+          (),
+        ) =>
+          jsMutate(.
+            options(
+              ~variables?,
+              ~client?,
+              ~refetchQueries?,
+              ~awaitRefetchQueries?,
+              (),
+            ),
+          )
+          |> Js.Promise.then_(jsResult =>
+               (
+                 switch (
+                   Js.Nullable.toOption(jsResult##data),
+                   Js.Nullable.toOption(jsResult##error),
+                 ) {
+                 | (Some(data), _) => Data(Config.parse(data))
+                 | (None, Some(error)) => Error(error)
+                 | (None, None) => NoData
+                 }
+               )
+               |> Js.Promise.resolve
+             ),
+        [|variables|],
+      );
 
-  let simple =
-    React.useMemo1(
-      () =>
-        switch (full) {
-        | {loading: true} => Loading
-        | {error: Some(error)} => Error(error)
-        | {data: Some(data)} => Data(data)
-        | {called: true} => Called
-        | _ => NoData
-        },
-      [|full|],
-    );
+    let full =
+      React.useMemo1(
+        () =>
+          {
+            loading: jsResult##loading,
+            called: jsResult##called,
+            data:
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.map(Config.parse),
+            error: jsResult##error->Js.Nullable.toOption,
+          },
+        [|jsResult|],
+      );
 
-  (mutate, simple, full);
-};
+    let simple =
+      React.useMemo1(
+        () =>
+          switch (full) {
+          | {loading: true} => Loading
+          | {error: Some(error)} => Error(error)
+          | {data: Some(data)} => Data(data)
+          | {called: true} => Called
+          | _ => NoData
+          },
+        [|full|],
+      );
+
+    (mutate, simple, full);
+  };
