@@ -79,8 +79,7 @@ let updateCache = (client, person, name) => {
 let make = (~name) => {
   let (simple, _full) =
     useQuery(
-      ~variables=
-        PersonsNameFilterQuery.makeWithVariables({"name": "2"})##variables,
+      ~variables=PersonsNameFilterQuery.make(~name, ())##variables,
       (module PersonsNameFilterQuery),
     );
 

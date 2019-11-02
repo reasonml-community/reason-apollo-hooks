@@ -67,6 +67,7 @@ let make = () => {
       editPersonMutation(
         ~variables=
           EditPersonMutation.make(~age, ~id=state.id, ~name=state.name, ())##variables,
+        (),
       )
       |> ignore
     | None => ignore()
