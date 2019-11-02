@@ -59,9 +59,9 @@ type jsResult = {
 };
 
 type jsMutate('a) = (. options('a)) => Js.Promise.t(jsResult);
-type mutation('a, 'b) =
+type mutation('a) =
   (
-    ~mutation: 'b,
+    ~variables: Js.Json.t=?,
     ~client: ApolloClient.generatedApolloClient=?,
     ~refetchQueries: refetchQueries=?,
     ~awaitRefetchQueries: bool=?,
@@ -88,18 +88,7 @@ let useMutation:
                  =?,
       (module ApolloHooksTypes.Config with type t = t)
     ) =>
-    (
-      (
-        ~variables: Js.Json.t=?,
-        ~client: ApolloClient.generatedApolloClient=?,
-        ~refetchQueries: refetchQueries=?,
-        ~awaitRefetchQueries: bool=?,
-        unit
-      ) =>
-      Js.Promise.t(controlledVariantResult(t)),
-      controlledVariantResult(t),
-      controlledResult(t),
-    ) =
+    (mutation(t), controlledVariantResult(t), controlledResult(t)) =
   (
     ~client=?,
     ~variables=?,
