@@ -1,7 +1,7 @@
 open ApolloHooksTypes;
 type queryError = {. "message": string};
 
-type queryVariant('a) =
+type variant('a) =
   | Data('a)
   | Error(queryError)
   | Loading
@@ -90,7 +90,7 @@ let useQuery:
       ~pollInterval: int=?,
       (module Config with type t = t)
     ) =>
-    (queryVariant(t), queryResult(t)) =
+    (variant(t), queryResult(t)) =
   (
     ~client=?,
     ~variables=?,
