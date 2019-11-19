@@ -36,9 +36,9 @@ let client =
   ReasonApollo.createApolloClient(~link=httpLink, ~cache=inMemoryCache, ());
 
 let app =
- <ApolloHooks.ApolloProvider client>
+ <ApolloHooks.Provider client>
    ...
- </ApolloHooks.ApolloProvider>
+ </ApolloHooks.Provider>
 ```
 
 ### Usage with reason-apollo
@@ -50,9 +50,9 @@ let client = ... // create Apollo client
 
 ReactDOMRe.renderToElementWithId(
   <ReasonApollo.Provider client>
-    <ApolloHooks.ApolloProvider client>
+    <ApolloHooks.Provider client>
       <App />
-    </ApolloHooks.ApolloProvider>
+    </ApolloHooks.Provider>
   </ReasonApollo.Provider>,
   "root",
 );

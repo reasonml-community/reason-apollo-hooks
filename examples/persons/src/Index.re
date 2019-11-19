@@ -2,9 +2,9 @@
 
 ReactDOMRe.renderToElementWithId(
   <ReasonApollo.Provider client=Client.instance>
-    <ApolloHooks.ApolloProvider client=Client.instance>
+    <ApolloHooks.Provider client=Client.instance>
       <> <EditPerson /> <Persons /> </>
-    </ApolloHooks.ApolloProvider>
+    </ApolloHooks.Provider>
   </ReasonApollo.Provider>,
   "root",
 );
