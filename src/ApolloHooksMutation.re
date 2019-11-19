@@ -32,7 +32,7 @@ type controlledVariantResult('a) =
 
 [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
 
-type mutationResult('a) = {. "data": 'a};
+type mutationResult('a) = {. "data": option('a)};
 
 [@bs.deriving abstract]
 type options('a) = {
