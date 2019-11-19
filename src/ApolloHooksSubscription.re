@@ -18,33 +18,40 @@ type result('a) = {
   error: option(error),
 };
 
-module Make = (Config: Config) => {
-  [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
+[@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
 
-  [@bs.deriving abstract]
-  type options = {
-    [@bs.optional]
-    variables: Js.Json.t,
-    [@bs.optional]
-    skip: bool,
-    [@bs.optional]
-    onSubscriptionData: unit => unit,
-    [@bs.optional]
-    client: ApolloClient.generatedApolloClient,
-  };
+[@bs.deriving abstract]
+type options = {
+  [@bs.optional]
+  variables: Js.Json.t,
+  [@bs.optional]
+  skip: bool,
+  [@bs.optional]
+  onSubscriptionData: unit => unit,
+  [@bs.optional]
+  client: ApolloClient.generatedApolloClient,
+};
 
-  [@bs.module "@apollo/react-hooks"]
-  external useSubscription:
-    (ReasonApolloTypes.queryString, options) =>
-    {
-      .
-      "data": Js.Nullable.t(Js.Json.t),
-      "loading": bool,
-      "error": Js.Nullable.t(error),
-    } =
-    "useSubscription";
+[@bs.module "@apollo/react-hooks"]
+external useSubscription:
+  (ReasonApolloTypes.queryString, options) =>
+  {
+    .
+    "data": Js.Nullable.t(Js.Json.t),
+    "loading": bool,
+    "error": Js.Nullable.t(error),
+  } =
+  "useSubscription";
 
-  let use = (~variables=?, ~client=?, ()) => {
+let useSubscription:
+  type t.
+    (
+      ~variables: Js.Json.t=?,
+      ~client: ApolloClient.generatedApolloClient=?,
+      (module ApolloHooksTypes.Config with type t = t)
+    ) =>
+    (variant(t), result(t)) =
+  (~variables=?, ~client=?, (module Config)) => {
     let jsResult =
       useSubscription(
         gql(. Config.query),
@@ -68,4 +75,3 @@ module Make = (Config: Config) => {
       result,
     );
   };
-};
