@@ -1,9 +1,3 @@
-module type Config = {
-  let query: string;
-  type t;
-  let parse: Js.Json.t => t;
-};
-
 type error = {. "message": string};
 
 type variant('a) =
@@ -33,7 +27,7 @@ type options = {
 };
 
 [@bs.module "@apollo/react-hooks"]
-external useSubscription:
+external useSubscriptionJs:
   (ReasonApolloTypes.queryString, options) =>
   {
     .
@@ -53,7 +47,7 @@ let useSubscription:
     (variant(t), result(t)) =
   (~variables=?, ~client=?, (module Config)) => {
     let jsResult =
-      useSubscription(
+      useSubscriptionJs(
         gql(. Config.query),
         options(~variables?, ~client?, ()),
       );
