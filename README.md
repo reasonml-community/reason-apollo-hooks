@@ -177,15 +177,15 @@ let make = () => {
 }
 ```
 
-If you don't know the value of the variables yet you can use `useDynamicMutation`
+If you don't know the value of the variables yet you can pass them in later
 
 ```reason
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useDynamicMutation();
+  let ( screamMutation, _simple, _full ) = useMutation((module ScreamMutation));
   let scream = (_) => {
-    screamMutation(ScreamMutation.make(~screamLevel=10, ()), ())
+    screamMutation(~variables=ScreamMutation.make(~screamLevel=10, ())##variables, ())
       |> Js.Promise.then_(result => {
           switch(result) {
             | Data(data) => ...
