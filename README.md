@@ -131,13 +131,12 @@ Using `skip` to skip query entirely, see [apollo docs](https://www.apollographql
 ```reason
 let (simple, _full) =
   useQuery(
-    UserQuery.make(),
     ~skip=
-      switch (val) {
+      switch (value) {
       | None => true
       | _ => false
       },
-    (),
+    (module UserQuery),
   );
 ```
 
