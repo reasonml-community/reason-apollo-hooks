@@ -155,7 +155,7 @@ module ScreamMutation = [%graphql {|
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation(~variables=ScreamMutation.make(~screamLevel=10, ())##variables, (module ScreamMutation));
+  let ( screamMutation, _simple, _full ) = useMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), (module ScreamMutation));
   let scream = (_) => {
     screamMutation()
       |> Js.Promise.then_(result => {
@@ -185,7 +185,7 @@ let make = () => {
   /* Both variant and records available */
   let ( screamMutation, _simple, _full ) = useMutation((module ScreamMutation));
   let scream = (_) => {
-    screamMutation(~variables=ScreamMutation.make(~screamLevel=10, ())##variables, ())
+    screamMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), ())
       |> Js.Promise.then_(result => {
           switch(result) {
             | Data(data) => ...

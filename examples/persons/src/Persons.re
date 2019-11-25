@@ -19,7 +19,7 @@ let make = () => {
   let (_simple, full) =
     ApolloHooks.useQuery(
       ~variables=
-        GetAllPersonsQuery.make(~skip=0, ~first=personsPerPage, ())##variables,
+        GetAllPersonsQuery.makeVariables(~skip=0, ~first=personsPerPage, ()),
       ~notifyOnNetworkStatusChange=true,
       (module GetAllPersonsQuery),
     );
@@ -28,11 +28,9 @@ let make = () => {
     let skip = React.Ref.current(skipRef) + personsPerPage;
     skipRef->React.Ref.setCurrent(skip);
 
-    let getNextPage =
-      GetAllPersonsQuery.make(~skip, ~first=personsPerPage, ());
-
     full.fetchMore(
-      ~variables=getNextPage##variables,
+      ~variables=
+        GetAllPersonsQuery.makeVariables(~skip, ~first=personsPerPage, ()),
       ~updateQuery=[%bs.raw
         {|
           function(prevResult, { fetchMoreResult, ...rest }) {

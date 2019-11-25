@@ -14,7 +14,7 @@ module PersonsOlderThanQuery = [%graphql
 let make = (~age) => {
   let (simple, _full) =
     useQuery(
-      ~variables=PersonsOlderThanQuery.make(~age, ())##variables,
+      ~variables=PersonsOlderThanQuery.makeVariables(~age, ()),
       (module PersonsOlderThanQuery),
     );
 
