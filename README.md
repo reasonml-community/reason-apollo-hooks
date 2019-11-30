@@ -8,7 +8,7 @@ Reason bindings for the official @apollo/react-hooks
 yarn add reason-apollo-hooks reason-apollo @apollo/react-hooks
 ```
 
-Follow the installation instructions of [graphql_ppx](https://github.com/mhallin/graphql_ppx).
+Follow the installation instructions of [graphql_ppx_re](https://github.com/baransu/graphql_ppx_re).
 
 Then update your bsconfig.json
 
@@ -76,7 +76,7 @@ module UserQuery = [%graphql {|
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (simple, _full) = useQuery((module UserQuery));
+  let (simple, _full) = useQuery(UserQuery.definition);
 
   <div>
   {
@@ -98,7 +98,7 @@ Using the `full` record for more advanced cases
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (_simple, full) = useQuery((module UserQuery));
+  let (_simple, full) = useQuery(UserQuery.definition);
 
   <div>
   {
@@ -117,13 +117,13 @@ let make = () => {
 Using `fetchPolicy` to change interactions with the `apollo` cache, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionsfetchpolicy).
 
 ```reason
-let (_simple, full) = useQuery(~fetchPolicy=NetworkOnly, (module UserQuery));
+let (_simple, full) = useQuery(~fetchPolicy=NetworkOnly, UserQuery.definition);
 ```
 
 Using `errorPolicy` to change how errors are handled, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionserrorpolicy).
 
 ```reason
-let (simple, _full) = useQuery(~errorPolicy=All, (module UserQuery));
+let (simple, _full) = useQuery(~errorPolicy=All, UserQuery.definition);
 ```
 
 Using `skip` to skip query entirely, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#configskip).
@@ -136,7 +136,7 @@ let (simple, _full) =
       | None => true
       | _ => false
       },
-    (module UserQuery),
+    UserQuery.definition,
   );
 ```
 
@@ -154,7 +154,7 @@ module ScreamMutation = [%graphql {|
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), (module ScreamMutation));
+  let ( screamMutation, _simple, _full ) = useMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), ScreamMutation.definition);
   let scream = (_) => {
     screamMutation()
       |> Js.Promise.then_(result => {
@@ -182,7 +182,7 @@ If you don't know the value of the variables yet you can pass them in later
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation((module ScreamMutation));
+  let ( screamMutation, _simple, _full ) = useMutation(ScreamMutation.definition);
   let scream = (_) => {
     screamMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), ())
       |> Js.Promise.then_(result => {

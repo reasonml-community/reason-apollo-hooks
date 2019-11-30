@@ -61,8 +61,13 @@ let errorPolicyToJs = errorPolicy =>
   | All => "all"
   };
 
-module type Config = {
-  type t;
-  let query: string;
-  let parse: Js.Json.t => t;
-};
+type parse('a) = Js.Json.t => 'a;
+type query = string;
+type composeVariables('returnType, 'composedFunction) =
+  (Js.Json.t => 'returnType) => 'composedFunction;
+
+type graphqlDefinition('data, 'returnType, 'composedFunction) = (
+  parse('data),
+  query,
+  composeVariables('returnType, 'composedFunction),
+);

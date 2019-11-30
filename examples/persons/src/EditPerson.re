@@ -57,7 +57,7 @@ let make = () => {
           | None => ()
           };
         },
-      (module EditPersonMutation),
+      EditPersonMutation.definition,
     );
 
   let handleSubmit = event => {
@@ -66,7 +66,12 @@ let make = () => {
     | Some(age) =>
       editPersonMutation(
         ~variables=
-          EditPersonMutation.makeVariables(~age, ~id=state.id, ~name=state.name, ()),
+          EditPersonMutation.makeVariables(
+            ~age,
+            ~id=state.id,
+            ~name=state.name,
+            (),
+          ),
         (),
       )
       |> ignore

@@ -80,7 +80,7 @@ let make = (~name) => {
   let (simple, _full) =
     useQuery(
       ~variables=PersonsNameFilterQuery.make(~name, ())##variables,
-      (module PersonsNameFilterQuery),
+      PersonsNameFilterQuery.definition,
     );
 
   <div>

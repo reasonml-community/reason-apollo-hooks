@@ -88,7 +88,7 @@ let useQuery:
       ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
       ~skip: bool=?,
       ~pollInterval: int=?,
-      (module Config with type t = t)
+      graphqlDefinition(t, _, _)
     ) =>
     (variant(t), queryResult(t)) =
   (
@@ -99,11 +99,11 @@ let useQuery:
     ~errorPolicy=?,
     ~skip=?,
     ~pollInterval=?,
-    (module Config),
+    (parse, query, _),
   ) => {
     let jsResult =
       useQueryJs(
-        gql(. Config.query),
+        gql(. query),
         options(
           ~variables?,
           ~client?,
@@ -118,7 +118,6 @@ let useQuery:
         ),
       );
 
-    let parse = Config.parse;
     let getData = obj =>
       obj
       ->Js.Json.decodeObject

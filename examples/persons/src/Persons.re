@@ -21,7 +21,7 @@ let make = () => {
       ~variables=
         GetAllPersonsQuery.makeVariables(~skip=0, ~first=personsPerPage, ()),
       ~notifyOnNetworkStatusChange=true,
-      (module GetAllPersonsQuery),
+      GetAllPersonsQuery.definition,
     );
 
   let handleLoadMore = _ => {

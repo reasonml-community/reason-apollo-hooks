@@ -86,7 +86,7 @@ let useMutation:
       ~update: (ApolloClient.generatedApolloClient, mutationResult('a)) =>
                unit
                  =?,
-      (module ApolloHooksTypes.Config with type t = t)
+      ApolloHooksTypes.graphqlDefinition(t, _, _)
     ) =>
     (mutation(t), controlledVariantResult(t), controlledResult(t)) =
   (
@@ -95,11 +95,11 @@ let useMutation:
     ~refetchQueries=?,
     ~awaitRefetchQueries=?,
     ~update=?,
-    (module Config),
+    (parse, query, _),
   ) => {
     let (jsMutate, jsResult) =
       useMutationJs(.
-        gql(. Config.query),
+        gql(. query),
         options(
           ~client?,
           ~variables?,
@@ -135,7 +135,7 @@ let useMutation:
                    Js.Nullable.toOption(jsResult##data),
                    Js.Nullable.toOption(jsResult##error),
                  ) {
-                 | (Some(data), _) => Data(Config.parse(data))
+                 | (Some(data), _) => Data(parse(data))
                  | (None, Some(error)) => Error(error)
                  | (None, None) => NoData
                  }
@@ -152,9 +152,7 @@ let useMutation:
             loading: jsResult##loading,
             called: jsResult##called,
             data:
-              jsResult##data
-              ->Js.Nullable.toOption
-              ->Belt.Option.map(Config.parse),
+              jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
             error: jsResult##error->Js.Nullable.toOption,
           },
         [|jsResult|],
