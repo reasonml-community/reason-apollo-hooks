@@ -38,13 +38,12 @@ external useSubscriptionJs:
   "useSubscription";
 
 let useSubscription:
-  type t.
-    (
-      ~variables: Js.Json.t=?,
-      ~client: ApolloClient.generatedApolloClient=?,
-      ApolloHooksTypes.graphqlDefinition(t, _, _)
-    ) =>
-    (variant(t), result(t)) =
+  (
+    ~variables: Js.Json.t=?,
+    ~client: ApolloClient.generatedApolloClient=?,
+    ApolloHooksTypes.graphqlDefinition('data, _, _)
+  ) =>
+  (variant('data), result('data)) =
   (~variables=?, ~client=?, (parse, query, _)) => {
     let jsResult =
       useSubscriptionJs(gql(. query), options(~variables?, ~client?, ()));

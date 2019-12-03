@@ -79,18 +79,17 @@ external useQueryJs:
   "useQuery";
 
 let useQuery:
-  type t.
-    (
-      ~client: ApolloClient.generatedApolloClient=?,
-      ~variables: Js.Json.t=?,
-      ~notifyOnNetworkStatusChange: bool=?,
-      ~fetchPolicy: ApolloHooksTypes.fetchPolicy=?,
-      ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
-      ~skip: bool=?,
-      ~pollInterval: int=?,
-      graphqlDefinition(t, _, _)
-    ) =>
-    (variant(t), queryResult(t)) =
+  (
+    ~client: ApolloClient.generatedApolloClient=?,
+    ~variables: Js.Json.t=?,
+    ~notifyOnNetworkStatusChange: bool=?,
+    ~fetchPolicy: ApolloHooksTypes.fetchPolicy=?,
+    ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
+    ~skip: bool=?,
+    ~pollInterval: int=?,
+    graphqlDefinition('data, _, _)
+  ) =>
+  (variant('data), queryResult('data)) =
   (
     ~client=?,
     ~variables=?,

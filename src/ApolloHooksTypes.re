@@ -63,11 +63,11 @@ let errorPolicyToJs = errorPolicy =>
 
 type parse('a) = Js.Json.t => 'a;
 type query = string;
-type composeVariables('returnType, 'composedFunction) =
-  (Js.Json.t => 'returnType) => 'composedFunction;
+type composeVariables('returnType, 'hookReturnType) =
+  (Js.Json.t => 'returnType) => 'hookReturnType;
 
-type graphqlDefinition('data, 'returnType, 'composedFunction) = (
+type graphqlDefinition('data, 'returnType, 'hookReturnType) = (
   parse('data),
   query,
-  composeVariables('returnType, 'composedFunction),
+  composeVariables('returnType, 'hookReturnType),
 );

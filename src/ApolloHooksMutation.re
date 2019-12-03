@@ -77,18 +77,21 @@ external useMutationJs:
 exception Error(string);
 
 let useMutation:
-  type t.
-    (
-      ~client: ApolloClient.generatedApolloClient=?,
-      ~variables: Js.Json.t=?,
-      ~refetchQueries: refetchQueries=?,
-      ~awaitRefetchQueries: bool=?,
-      ~update: (ApolloClient.generatedApolloClient, mutationResult('a)) =>
-               unit
-                 =?,
-      ApolloHooksTypes.graphqlDefinition(t, _, _)
-    ) =>
-    (mutation(t), controlledVariantResult(t), controlledResult(t)) =
+  (
+    ~client: ApolloClient.generatedApolloClient=?,
+    ~variables: Js.Json.t=?,
+    ~refetchQueries: refetchQueries=?,
+    ~awaitRefetchQueries: bool=?,
+    ~update: (ApolloClient.generatedApolloClient, mutationResult('data)) =>
+             unit
+               =?,
+    ApolloHooksTypes.graphqlDefinition('data, _, _)
+  ) =>
+  (
+    mutation('data),
+    controlledVariantResult('data),
+    controlledResult('data),
+  ) =
   (
     ~client=?,
     ~variables=?,
