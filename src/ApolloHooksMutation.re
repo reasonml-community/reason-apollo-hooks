@@ -1,9 +1,3 @@
-module type Config = {
-  let query: string;
-  type t;
-  let parse: Js.Json.t => t;
-};
-
 type graphqlErrors;
 
 type error = {
@@ -36,64 +30,82 @@ type controlledVariantResult('a) =
   | Error(error)
   | NoData;
 
-module Make = (Config: Config) => {
-  [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
+[@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
 
-  type mutationResult = {. "data": option(Config.t)};
+type mutationResult('a) = {. "data": option('a)};
 
-  [@bs.deriving abstract]
-  type options = {
-    [@bs.optional]
-    variables: Js.Json.t,
-    [@bs.optional]
-    client: ApolloClient.generatedApolloClient,
-    [@bs.optional]
-    refetchQueries,
-    [@bs.optional]
-    awaitRefetchQueries: bool,
-    [@bs.optional]
-    update: (ApolloClient.generatedApolloClient, mutationResult) => unit,
-  };
+[@bs.deriving abstract]
+type options('a) = {
+  [@bs.optional]
+  variables: Js.Json.t,
+  [@bs.optional]
+  mutation: option(ReasonApolloTypes.queryString),
+  [@bs.optional]
+  client: ApolloClient.generatedApolloClient,
+  [@bs.optional]
+  refetchQueries,
+  [@bs.optional]
+  awaitRefetchQueries: bool,
+  [@bs.optional]
+  update: (ApolloClient.generatedApolloClient, mutationResult('a)) => unit,
+};
 
-  type jsResult = {
-    .
-    "data": Js.Nullable.t(Js.Json.t),
-    "loading": bool,
-    "called": bool,
-    "error": Js.Nullable.t(error),
-  };
+type jsResult = {
+  .
+  "data": Js.Nullable.t(Js.Json.t),
+  "loading": bool,
+  "called": bool,
+  "error": Js.Nullable.t(error),
+};
 
-  type jsMutate = (. options) => Js.Promise.t(jsResult);
-  type mutation =
-    (
-      ~variables: Js.Json.t=?,
-      ~client: ApolloClient.generatedApolloClient=?,
-      ~refetchQueries: refetchQueries=?,
-      ~awaitRefetchQueries: bool=?,
-      unit
-    ) =>
-    Js.Promise.t(controlledVariantResult(Config.t));
+type jsMutate('a) = (. options('a)) => Js.Promise.t(jsResult);
+type mutation('a) =
+  (
+    ~variables: Js.Json.t=?,
+    ~client: ApolloClient.generatedApolloClient=?,
+    ~refetchQueries: refetchQueries=?,
+    ~awaitRefetchQueries: bool=?,
+    unit
+  ) =>
+  Js.Promise.t(controlledVariantResult('a));
 
-  [@bs.module "@apollo/react-hooks"]
-  external useMutation:
-    (. ReasonApolloTypes.queryString, options) => (jsMutate, jsResult) =
-    "useMutation";
+[@bs.module "@apollo/react-hooks"]
+external useMutationJs:
+  (. ReasonApolloTypes.queryString, options('a)) => (jsMutate('a), jsResult) =
+  "useMutation";
 
-  let use =
-      (
-        ~variables=?,
-        ~client=?,
-        ~refetchQueries=?,
-        ~awaitRefetchQueries=?,
-        ~update=?,
-        (),
-      ) => {
+exception Error(string);
+
+let useMutation:
+  (
+    ~client: ApolloClient.generatedApolloClient=?,
+    ~variables: Js.Json.t=?,
+    ~refetchQueries: refetchQueries=?,
+    ~awaitRefetchQueries: bool=?,
+    ~update: (ApolloClient.generatedApolloClient, mutationResult('data)) =>
+             unit
+               =?,
+    ApolloHooksTypes.graphqlDefinition('data, _, _)
+  ) =>
+  (
+    mutation('data),
+    controlledVariantResult('data),
+    controlledResult('data),
+  ) =
+  (
+    ~client=?,
+    ~variables=?,
+    ~refetchQueries=?,
+    ~awaitRefetchQueries=?,
+    ~update=?,
+    (parse, query, _),
+  ) => {
     let (jsMutate, jsResult) =
-      useMutation(.
-        gql(. Config.query),
+      useMutationJs(.
+        gql(. query),
         options(
-          ~variables?,
           ~client?,
+          ~variables?,
           ~refetchQueries?,
           ~awaitRefetchQueries?,
           ~update?,
@@ -101,7 +113,7 @@ module Make = (Config: Config) => {
         ),
       );
 
-    let mutate: mutation =
+    let mutate =
       React.useMemo1(
         (
           (),
@@ -126,7 +138,7 @@ module Make = (Config: Config) => {
                    Js.Nullable.toOption(jsResult##data),
                    Js.Nullable.toOption(jsResult##error),
                  ) {
-                 | (Some(data), _) => Data(Config.parse(data))
+                 | (Some(data), _) => Data(parse(data))
                  | (None, Some(error)) => Error(error)
                  | (None, None) => NoData
                  }
@@ -143,9 +155,7 @@ module Make = (Config: Config) => {
             loading: jsResult##loading,
             called: jsResult##called,
             data:
-              jsResult##data
-              ->Js.Nullable.toOption
-              ->Belt.Option.map(Config.parse),
+              jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
             error: jsResult##error->Js.Nullable.toOption,
           },
         [|jsResult|],
@@ -166,4 +176,3 @@ module Make = (Config: Config) => {
 
     (mutate, simple, full);
   };
-};

@@ -1,14 +1,9 @@
-module type Config = {
-  let query: string;
-  type t;
-  let parse: Js.Json.t => t;
-};
-
-type error = {. "message": string};
+open ApolloHooksTypes;
+type queryError = {. "message": string};
 
 type variant('a) =
   | Data('a)
-  | Error(error)
+  | Error(queryError)
   | Loading
   | NoData;
 
@@ -27,15 +22,15 @@ type updateQueryOptions = {
 type updateQueryT = (Js.Json.t, updateQueryOptions) => Js.Json.t;
 
 type refetch('a) = (~variables: Js.Json.t=?, unit) => Js.Promise.t('a);
-type result('a) = {
+type queryResult('a) = {
   data: option('a),
   loading: bool,
-  error: option(error),
+  error: option(queryError),
   refetch: refetch('a),
   fetchMore:
     (~variables: Js.Json.t=?, ~updateQuery: updateQueryT, unit) =>
     Js.Promise.t(unit),
-  networkStatus: Types.networkStatus,
+  networkStatus: ApolloHooksTypes.networkStatus,
 };
 
 /**
@@ -48,62 +43,74 @@ type fetchMoreOptions = {
   updateQuery: updateQueryT,
 };
 
-module Make = (Config: Config) => {
-  [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
+[@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
 
-  [@bs.deriving abstract]
-  type options = {
-    [@bs.optional]
-    variables: Js.Json.t,
-    [@bs.optional]
-    client: ApolloClient.generatedApolloClient,
-    [@bs.optional]
-    notifyOnNetworkStatusChange: bool,
-    [@bs.optional]
-    fetchPolicy: string,
-    [@bs.optional]
-    errorPolicy: string,
-    [@bs.optional]
-    skip: bool,
-    [@bs.optional]
-    pollInterval: int,
-  };
+[@bs.deriving abstract]
+type options = {
+  [@bs.optional]
+  variables: Js.Json.t,
+  [@bs.optional]
+  client: ApolloClient.generatedApolloClient,
+  [@bs.optional]
+  notifyOnNetworkStatusChange: bool,
+  [@bs.optional]
+  fetchPolicy: string,
+  [@bs.optional]
+  errorPolicy: string,
+  [@bs.optional]
+  skip: bool,
+  [@bs.optional]
+  pollInterval: int,
+};
 
-  [@bs.module "@apollo/react-hooks"]
-  external useQuery:
-    (ReasonApolloTypes.queryString, options) =>
-    {
-      .
-      "data": Js.Nullable.t(Js.Json.t),
-      "loading": bool,
-      "error": Js.Nullable.t(error),
-      [@bs.meth]
-      "refetch": Js.Nullable.t(Js.Json.t) => Js.Promise.t(Js.Json.t),
-      [@bs.meth] "fetchMore": fetchMoreOptions => Js.Promise.t(unit),
-      "networkStatus": Js.Nullable.t(int),
-    } =
-    "useQuery";
+[@bs.module "@apollo/react-hooks"]
+external useQueryJs:
+  (ReasonApolloTypes.queryString, options) =>
+  {
+    .
+    "data": Js.Nullable.t(Js.Json.t),
+    "loading": bool,
+    "error": Js.Nullable.t(queryError),
+    [@bs.meth]
+    "refetch": Js.Nullable.t(Js.Json.t) => Js.Promise.t(Js.Json.t),
+    [@bs.meth] "fetchMore": fetchMoreOptions => Js.Promise.t(unit),
+    "networkStatus": Js.Nullable.t(int),
+  } =
+  "useQuery";
 
-  let use =
-      (
-        ~variables=?,
-        ~client=?,
-        ~notifyOnNetworkStatusChange=?,
-        ~fetchPolicy=?,
-        ~errorPolicy=?,
-        ~skip=?,
-        ~pollInterval=?,
-        (),
-      ) => {
+let useQuery:
+  (
+    ~client: ApolloClient.generatedApolloClient=?,
+    ~variables: Js.Json.t=?,
+    ~notifyOnNetworkStatusChange: bool=?,
+    ~fetchPolicy: ApolloHooksTypes.fetchPolicy=?,
+    ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
+    ~skip: bool=?,
+    ~pollInterval: int=?,
+    graphqlDefinition('data, _, _)
+  ) =>
+  (variant('data), queryResult('data)) =
+  (
+    ~client=?,
+    ~variables=?,
+    ~notifyOnNetworkStatusChange=?,
+    ~fetchPolicy=?,
+    ~errorPolicy=?,
+    ~skip=?,
+    ~pollInterval=?,
+    (parse, query, _),
+  ) => {
     let jsResult =
-      useQuery(
-        gql(. Config.query),
+      useQueryJs(
+        gql(. query),
         options(
           ~variables?,
           ~client?,
           ~notifyOnNetworkStatusChange?,
-          ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
-          ~errorPolicy=?errorPolicy->Belt.Option.map(Types.errorPolicyToJs),
+          ~fetchPolicy=?
+            fetchPolicy->Belt.Option.map(ApolloHooksTypes.fetchPolicyToJs),
+          ~errorPolicy=?
+            errorPolicy->Belt.Option.map(ApolloHooksTypes.errorPolicyToJs),
           ~skip?,
           ~pollInterval?,
           (),
@@ -124,18 +131,19 @@ module Make = (Config: Config) => {
               jsResult##data
               ->Js.Nullable.toOption
               ->Belt.Option.flatMap(data =>
-                  switch (Config.parse(data)) {
+                  switch (parse(data)) {
                   | parsedData => Some(parsedData)
                   | exception _ => None
                   }
                 ),
             loading: jsResult##loading,
             error: jsResult##error->Js.Nullable.toOption,
-            networkStatus: Types.toNetworkStatus(jsResult##networkStatus),
+            networkStatus:
+              ApolloHooksTypes.toNetworkStatus(jsResult##networkStatus),
             refetch: (~variables=?, ()) =>
               jsResult##refetch(Js.Nullable.fromOption(variables))
               |> Js.Promise.then_(result =>
-                   Config.parse(result->getData) |> Js.Promise.resolve
+                   parse(result->getData) |> Js.Promise.resolve
                  ),
             fetchMore: (~variables=?, ~updateQuery, ()) =>
               jsResult##fetchMore(
@@ -159,4 +167,3 @@ module Make = (Config: Config) => {
 
     (simple, result);
   };
-};
