@@ -19,14 +19,14 @@
     "bs-platform": "^5.0.6",
     "husky": "^3.0.5",
     "lint-staged": "^9.4.0",
-    "reason-apollo": "^0.17.0",
+    "reason-apollo": "^0.18.0",
     "reason-react": ">=0.7.0"
   },
   "peerDependencies": {
     "@apollo/react-hooks": "^3.0.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "reason-apollo": "^0.17.0",
+    "reason-apollo": "^0.18.0",
     "reason-react": ">=0.7.0"
   },
   "lint-staged": {

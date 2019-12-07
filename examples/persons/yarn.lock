@@ -20,10 +20,10 @@
     ts-invariant "^0.4.4"
     tslib "^1.10.0"
 
-"@baransu/graphql_ppx_re@^0.4.0":
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/@baransu/graphql_ppx_re/-/graphql_ppx_re-0.4.0.tgz#24f01e19d030768bba85a8676c70679c8fb63725"
-  integrity sha512-vCWaBTbLRHDRvl72e80UH1Xo6Rp7JaBJgBgt24jBX1zXPdpvELObwxapmaSdPHK+wI31X0fRJu9z6yD7IAlBDA==
+"@baransu/graphql_ppx_re@^0.4.6":
+  version "0.4.6"
+  resolved "https://registry.yarnpkg.com/@baransu/graphql_ppx_re/-/graphql_ppx_re-0.4.6.tgz#cd4e20a5c5496a665e08aca0f4dea78ecca2e0d7"
+  integrity sha512-BlVNBF4926NPdhODAdemGeCFsPw7HNWLo3o2kQM2kr+6XXrog86etwRN/2/4Xa8KUzqKWM2ohjJEbbZE/cIHyQ==
 
 "@types/events@*":
   version "3.0.0"
@@ -684,10 +684,10 @@ browserify-zlib@^0.2.0:
   dependencies:
     pako "~1.0.5"
 
-bs-platform@^5.2.0:
-  version "5.2.0"
-  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-5.2.0.tgz#0ec317273daed573491c105f68ea48826a285b7a"
-  integrity sha512-miyePsOF9VbuhT5QD5E/hb+l454Fo4MAcg5xV1GJhbWxmejuF/X7mCYUsNrK1UUAaYt8hnoyFdeLG22sxVta9A==
+bs-platform@^7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-7.0.1.tgz#1d7b0ef6088b998dceee5db74a7cd8f01c20a3bd"
+  integrity sha512-UjStdtHhbtC/l6vKJ1XRDqrPk7rFf5PLYHtRX3akDXEYVnTbN36z0g4DEr5mU8S0N945e33HYts9x+i7hKKpZQ==
 
 buffer-from@^1.0.0:
   version "1.1.1"
@@ -3571,12 +3571,12 @@ readdirp@^2.2.1:
     readable-stream "^2.0.2"
 
 reason-apollo-hooks@../../:
-  version "2.6.0"
+  version "3.0.0"
 
-reason-apollo@^0.17.0:
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/reason-apollo/-/reason-apollo-0.17.0.tgz#44e5930028a26378dcc44fd3545dd36c84ab665b"
-  integrity sha512-3o0eit+uxkbRkkdzYnK+tV5oSWwmNWczT9qdSJKNCpu0R/NYE5qfpSBX7ouJUnE1j4arxgXDs2Ryey47QNYwrw==
+reason-apollo@^0.18.0:
+  version "0.18.0"
+  resolved "https://registry.yarnpkg.com/reason-apollo/-/reason-apollo-0.18.0.tgz#cc970da88de7ac603753eed68984c8492f0665c6"
+  integrity sha512-lw+IoIZ8qoX3iGOFFK//yMVC+Xmf+OcSyKkRgbBn0uG5GomLLMLiKRgjkhUsjAqJ4b3Se7H9JFnso5nL+GFEMA==
   dependencies:
     apollo-cache-inmemory "^1.6.0"
     apollo-client "^2.6.3"
