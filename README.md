@@ -5,7 +5,12 @@ Reason bindings for the official @apollo/react-hooks
 ## Installation
 
 ```
-yarn add reason-apollo-hooks reason-apollo @apollo/react-hooks
+yarn add reason-apollo-hooks reason-apollo@0.18.0 @apollo/react-hooks
+```
+
+BuckleScript <= 5.0.0
+```
+yarn add reason-apollo-hooks@3.0.0 reason-apollo@0.17.0 @apollo/react-hooks
 ```
 
 Follow the installation instructions of [graphql_ppx_re](https://github.com/baransu/graphql_ppx_re).
