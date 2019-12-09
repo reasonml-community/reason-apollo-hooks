@@ -14,8 +14,6 @@ let personsPerPage = 10;
 
 [@react.component]
 let make = () => {
-  let skipRef = React.useRef(0);
-
   let (_simple, full) =
     ApolloHooks.useQuery(
       ~variables=
@@ -25,8 +23,11 @@ let make = () => {
     );
 
   let handleLoadMore = _ => {
-    let skip = React.Ref.current(skipRef) + personsPerPage;
-    skipRef->React.Ref.setCurrent(skip);
+    let skip =
+      switch (full) {
+      | {data: Some(data)} => data##allPersons->Belt.Array.length
+      | _ => 0
+      };
 
     full.fetchMore(
       ~variables=
