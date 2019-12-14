@@ -15,6 +15,15 @@
         "doc",
         "ideas"
       ]
+    },
+    {
+      "login": "arielschiavoni",
+      "name": "Ariel Schiavoni",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1364564?v=4",
+      "profile": "https://github.com/arielschiavoni",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
