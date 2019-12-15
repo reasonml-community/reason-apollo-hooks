@@ -61,6 +61,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "athaeryn",
+      "name": "Mike Anderson",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1226972?v=4",
+      "profile": "http://mkndrsn.com",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
