@@ -79,6 +79,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "MargaretKrutikova",
+      "name": "Margarita Krutikova",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/5932274?v=4",
+      "profile": "https://twitter.com/rita_krutikova",
+      "contributions": [
+        "code",
+        "review",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
