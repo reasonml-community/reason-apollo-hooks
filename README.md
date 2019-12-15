@@ -1,6 +1,6 @@
 # reason-apollo-hooks
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Reason bindings for the official @apollo/react-hooks
@@ -310,6 +310,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://playqup.com"><img src="https://avatars0.githubusercontent.com/u/3103241?v=4" width="100px;" alt=""/><br /><sub><b>Matt</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=hew" title="Code">💻</a></td>
     <td align="center"><a href="https://twitter.com/_cichocinski"><img src="https://avatars2.githubusercontent.com/u/9558691?v=4" width="100px;" alt=""/><br /><sub><b>Tomasz Cichocinski</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/issues?q=author%3Abaransu" title="Bug reports">🐛</a> <a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=baransu" title="Code">💻</a></td>
     <td align="center"><a href="https://tmattio.github.io/"><img src="https://avatars0.githubusercontent.com/u/6162008?v=4" width="100px;" alt=""/><br /><sub><b>Thibaut Mattio</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=tmattio" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Emilios1995"><img src="https://avatars1.githubusercontent.com/u/12430923?v=4" width="100px;" alt=""/><br /><sub><b>Emilio Srougo</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/issues?q=author%3AEmilios1995" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
