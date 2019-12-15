@@ -3,7 +3,7 @@
 ReactDOMRe.renderToElementWithId(
   <ReasonApollo.Provider client=Client.instance>
     <ApolloHooks.Provider client=Client.instance>
-      <> <EditPerson /> <Persons /> </>
+      <Root />
     </ApolloHooks.Provider>
   </ReasonApollo.Provider>,
   "root",

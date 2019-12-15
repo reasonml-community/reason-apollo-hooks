@@ -21,6 +21,29 @@ type updateQueryOptions = {
 
 type updateQueryT = (Js.Json.t, updateQueryOptions) => Js.Json.t;
 
+/**
+ * https://github.com/apollographql/apollo-client/blob/master/packages/apollo-client/src/core/watchQueryOptions.ts#L139
+ */
+type updateSubscriptionOptionsJs = {
+  .
+  "subscriptionData": {. "data": Js.Json.t},
+  "variables": Js.Nullable.t(Js.Json.t),
+};
+
+type updateQuerySubscribeToMoreT =
+  (Js.Json.t, updateSubscriptionOptionsJs) => Js.Json.t;
+
+[@bs.deriving abstract]
+type subscribeToMoreOptionsJs = {
+  document: ReasonApolloTypes.queryString,
+  [@bs.optional]
+  variables: Js.Json.t,
+  [@bs.optional]
+  updateQuery: updateQuerySubscribeToMoreT,
+};
+
+type unsubscribeFnT = unit => unit;
+
 type refetch('a) = (~variables: Js.Json.t=?, unit) => Js.Promise.t('a);
 type queryResult('a) = {
   data: option('a),
@@ -31,6 +54,14 @@ type queryResult('a) = {
     (~variables: Js.Json.t=?, ~updateQuery: updateQueryT, unit) =>
     Js.Promise.t(unit),
   networkStatus: ApolloHooksTypes.networkStatus,
+  subscribeToMore:
+    (
+      ~document: ReasonApolloTypes.queryString,
+      ~variables: Js.Json.t=?,
+      ~updateQuery: updateQuerySubscribeToMoreT=?,
+      unit
+    ) =>
+    unsubscribeFnT,
 };
 
 /**
@@ -75,6 +106,7 @@ external useQueryJs:
     "refetch": Js.Nullable.t(Js.Json.t) => Js.Promise.t(Js.Json.t),
     [@bs.meth] "fetchMore": fetchMoreOptions => Js.Promise.t(unit),
     "networkStatus": Js.Nullable.t(int),
+    [@bs.meth] "subscribeToMore": subscribeToMoreOptionsJs => unsubscribeFnT,
   } =
   "useQuery";
 
@@ -148,6 +180,15 @@ let useQuery:
             fetchMore: (~variables=?, ~updateQuery, ()) =>
               jsResult##fetchMore(
                 fetchMoreOptions(~variables?, ~updateQuery, ()),
+              ),
+            subscribeToMore: (~document, ~variables=?, ~updateQuery=?, ()) =>
+              jsResult##subscribeToMore(
+                subscribeToMoreOptionsJs(
+                  ~document,
+                  ~variables?,
+                  ~updateQuery?,
+                  (),
+                ),
               ),
           },
         [|jsResult|],
