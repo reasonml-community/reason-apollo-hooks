@@ -43,6 +43,15 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "tmattio",
+      "name": "Thibaut Mattio",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6162008?v=4",
+      "profile": "https://tmattio.github.io/",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
