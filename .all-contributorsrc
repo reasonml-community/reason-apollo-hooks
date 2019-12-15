@@ -119,6 +119,15 @@
         "review",
         "ideas"
       ]
+    },
+    {
+      "login": "believer",
+      "name": "Rickard Laurin",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1478102?v=4",
+      "profile": "https://willcodefor.beer/",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
