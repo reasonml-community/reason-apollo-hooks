@@ -128,6 +128,17 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "medson10",
+      "name": "Medson Oliveira",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/17956325?v=4",
+      "profile": "http://medson.me",
+      "contributions": [
+        "code",
+        "review",
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,

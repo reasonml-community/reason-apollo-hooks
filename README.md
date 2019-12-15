@@ -1,6 +1,6 @@
 # reason-apollo-hooks
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-14-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Reason bindings for the official @apollo/react-hooks
@@ -320,6 +320,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/lukashambsch"><img src="https://avatars3.githubusercontent.com/u/7560008?v=4" width="100px;" alt=""/><br /><sub><b>Lukas Hambsch</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/issues?q=author%3Alukashambsch" title="Bug reports">🐛</a></td>
     <td align="center"><a href="http://www.familyfive.app"><img src="https://avatars1.githubusercontent.com/u/579279?v=4" width="100px;" alt=""/><br /><sub><b>Jaap Frolich</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=jfrolich" title="Code">💻</a> <a href="https://github.com/Astrocoders/reason-apollo-hooks/pulls?q=is%3Apr+reviewed-by%3Ajfrolich" title="Reviewed Pull Requests">👀</a> <a href="#ideas-jfrolich" title="Ideas, Planning, & Feedback">🤔</a></td>
     <td align="center"><a href="https://willcodefor.beer/"><img src="https://avatars1.githubusercontent.com/u/1478102?v=4" width="100px;" alt=""/><br /><sub><b>Rickard Laurin</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/issues?q=author%3Abeliever" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://medson.me"><img src="https://avatars0.githubusercontent.com/u/17956325?v=4" width="100px;" alt=""/><br /><sub><b>Medson Oliveira</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=medson10" title="Code">💻</a> <a href="https://github.com/Astrocoders/reason-apollo-hooks/pulls?q=is%3Apr+reviewed-by%3Amedson10" title="Reviewed Pull Requests">👀</a> <a href="#ideas-medson10" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
