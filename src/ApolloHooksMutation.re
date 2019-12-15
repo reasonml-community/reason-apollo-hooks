@@ -48,6 +48,8 @@ type options('a) = {
   awaitRefetchQueries: bool,
   [@bs.optional]
   update: (ApolloClient.generatedApolloClient, mutationResult('a)) => unit,
+  [@bs.optional]
+  optimisticResponse: Js.Json.t,
 };
 
 type jsResult = {
@@ -65,6 +67,7 @@ type mutation('a) =
     ~client: ApolloClient.generatedApolloClient=?,
     ~refetchQueries: refetchQueries=?,
     ~awaitRefetchQueries: bool=?,
+    ~optimisticResponse: Js.Json.t=?,
     unit
   ) =>
   Js.Promise.t(controlledVariantResult('a));
@@ -85,6 +88,7 @@ let useMutation:
     ~update: (ApolloClient.generatedApolloClient, mutationResult('data)) =>
              unit
                =?,
+    ~optimisticResponse: Js.Json.t=?,
     ApolloHooksTypes.graphqlDefinition('data, _, _)
   ) =>
   (
@@ -98,6 +102,7 @@ let useMutation:
     ~refetchQueries=?,
     ~awaitRefetchQueries=?,
     ~update=?,
+    ~optimisticResponse=?,
     (parse, query, _),
   ) => {
     let (jsMutate, jsResult) =
@@ -109,6 +114,7 @@ let useMutation:
           ~refetchQueries?,
           ~awaitRefetchQueries?,
           ~update?,
+          ~optimisticResponse?,
           (),
         ),
       );
@@ -121,6 +127,7 @@ let useMutation:
           ~client=?,
           ~refetchQueries=?,
           ~awaitRefetchQueries=?,
+          ~optimisticResponse=?,
           (),
         ) =>
           jsMutate(.
@@ -129,6 +136,7 @@ let useMutation:
               ~client?,
               ~refetchQueries?,
               ~awaitRefetchQueries?,
+              ~optimisticResponse?,
               (),
             ),
           )
