@@ -90,6 +90,15 @@
         "review",
         "ideas"
       ]
+    },
+    {
+      "login": "Yakimych",
+      "name": "Kyrylo Yakymenko",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/5010901?v=4",
+      "profile": "https://github.com/Yakimych",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
