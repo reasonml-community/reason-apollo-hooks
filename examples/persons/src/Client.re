@@ -6,5 +6,33 @@ let httpLink =
     (),
   );
 
+/* WebSocket client */
+let webSocketLink =
+  ApolloLinks.webSocketLink(
+    ~uri="wss://subscriptions.graph.cool/v1/cjdgba1jw4ggk0185ig4bhpsn",
+    ~reconnect=true,
+    (),
+  );
+
+/* based on test, execute left or right */
+let webSocketHttpLink =
+  ApolloLinks.split(
+    operation => {
+      let operationDefition =
+        ApolloUtilities.getMainDefinition(operation##query);
+      Js.log(operationDefition);
+      operationDefition##kind == "OperationDefinition"
+      &&
+      operationDefition##operation == "subscription";
+    },
+    webSocketLink,
+    httpLink,
+  );
+
 let instance =
   ReasonApollo.createApolloClient(~link=httpLink, ~cache=inMemoryCache, ());
+ReasonApollo.createApolloClient(
+  ~link=webSocketHttpLink,
+  ~cache=inMemoryCache,
+  (),
+);
