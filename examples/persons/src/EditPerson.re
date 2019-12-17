@@ -12,6 +12,13 @@ module EditPersonMutation = [%graphql
 ];
 
 module OptimisticResponse = {
+  /* We need to manually serialise the mutation response into an object that apollo-client understands.
+   * See the docs here https://www.apollographql.com/docs/react/performance/optimistic-ui/
+   *
+   * There is a PR at graphql_ppx_re (https://github.com/baransu/graphql_ppx_re/pull/20) that adds a
+   * serialisation function directly to the generated mutation. That should make this step unnecessary for most
+   * usecases.
+   */
   type t = {
     .
     "__typename": string,
