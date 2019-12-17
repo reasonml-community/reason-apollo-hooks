@@ -11,6 +11,34 @@ module EditPersonMutation = [%graphql
   |}
 ];
 
+module OptimisticResponse = {
+  type t = {
+    .
+    "__typename": string,
+    "updatePerson": {
+      .
+      "__typename": string,
+      "age": int,
+      "id": string,
+      "name": string,
+    },
+  };
+
+  external cast: t => Js.Json.t = "%identity";
+
+  let make = (~id, ~name, ~age) =>
+    {
+      "__typename": "Mutation",
+      "updatePerson": {
+        "__typename": "Person",
+        "id": id,
+        "name": name,
+        "age": age,
+      },
+    }
+    ->cast;
+};
+
 type state = {
   id: string,
   age: option(int),
@@ -72,6 +100,8 @@ let make = () => {
             ~name=state.name,
             (),
           ),
+        ~optimisticResponse=
+          OptimisticResponse.make(~id=state.id, ~name=state.name, ~age),
         (),
       )
       |> ignore
