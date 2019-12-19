@@ -3,7 +3,7 @@
 ReactDOMRe.renderToElementWithId(
   <ReasonApollo.Provider client=Client.instance>
     <ApolloHooks.Provider client=Client.instance>
-      <Root />
+      <SubscribeToMore />
     </ApolloHooks.Provider>
   </ReasonApollo.Provider>,
   "root",

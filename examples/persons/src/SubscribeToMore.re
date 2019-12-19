@@ -31,7 +31,6 @@ let make = () => {
 
   let (simple, full) = ApolloHooks.useQuery(GetAllPersons.definition);
 
-  Js.log(full);
   let subscribe = full.subscribeToMore;
   React.useEffect1(
     () => {
@@ -41,16 +40,17 @@ let make = () => {
           ~document=newPersonDocument,
           ~updateQuery=[%bs.raw
             {|
-                 function(prevResult, { subscriptionData }) {
-                   if (!prevResult || !subscriptionData.data || !subscriptionData.data.person)
-                     return prevResult;
+              function(prevResult, { subscriptionData }) {
+                console.log(subscriptionData)
+                if (!prevResult || !subscriptionData.data || !subscriptionData.data.Person)
+                  return prevResult;
 
-                   return {
-                     ...prevResult,
-                     allPersons: prevResult.allPersons.concat(subscriptionData.data.person)
-                   };
-                 }
-               |}
+                return {
+                  ...prevResult,
+                  allPersons: prevResult.allPersons.concat(subscriptionData.data.Person.node)
+                };
+              }
+            |}
           ],
           (),
         );

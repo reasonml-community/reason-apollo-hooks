@@ -30,9 +30,8 @@ let webSocketHttpLink =
   );
 
 let instance =
-  ReasonApollo.createApolloClient(~link=httpLink, ~cache=inMemoryCache, ());
-ReasonApollo.createApolloClient(
-  ~link=webSocketHttpLink,
-  ~cache=inMemoryCache,
-  (),
-);
+  ReasonApollo.createApolloClient(
+    ~link=webSocketHttpLink,
+    ~cache=inMemoryCache,
+    (),
+  );
