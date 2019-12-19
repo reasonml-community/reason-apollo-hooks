@@ -1,9 +1,8 @@
 open ApolloHooksTypes;
-type queryError = {. "message": string};
 
 type variant('a) =
   | Data('a)
-  | Error(queryError)
+  | Error(apolloError)
   | Loading
   | NoData;
 
@@ -25,7 +24,7 @@ type refetch('a) = (~variables: Js.Json.t=?, unit) => Js.Promise.t('a);
 type queryResult('a) = {
   data: option('a),
   loading: bool,
-  error: option(queryError),
+  error: option(apolloError),
   refetch: refetch('a),
   fetchMore:
     (~variables: Js.Json.t=?, ~updateQuery: updateQueryT, unit) =>
@@ -70,7 +69,7 @@ external useQueryJs:
     .
     "data": Js.Nullable.t(Js.Json.t),
     "loading": bool,
-    "error": Js.Nullable.t(queryError),
+    "error": Js.Nullable.t(apolloError),
     [@bs.meth]
     "refetch": Js.Nullable.t(Js.Json.t) => Js.Promise.t(Js.Json.t),
     [@bs.meth] "fetchMore": fetchMoreOptions => Js.Promise.t(unit),

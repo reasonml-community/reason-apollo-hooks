@@ -1,10 +1,4 @@
-type graphqlErrors;
-
-type error = {
-  .
-  "message": string,
-  "graphqlErrors": graphqlErrors,
-};
+open ApolloHooksTypes;
 
 type refetchQueries =
   ReasonApolloTypes.executionResult => array(ApolloClient.queryObj);
@@ -12,7 +6,7 @@ type refetchQueries =
 /* Result that is return by the hook */
 type result('a) =
   | Data('a)
-  | Error(error)
+  | Error(apolloError)
   | NoData;
 
 /* Result that is return by the hook */
@@ -20,14 +14,14 @@ type controlledResult('a) = {
   loading: bool,
   called: bool,
   data: option('a),
-  error: option(error),
+  error: option(apolloError),
 };
 
 type controlledVariantResult('a) =
   | Loading
   | NotCalled
   | Data('a)
-  | Error(error)
+  | Error(apolloError)
   | NoData;
 
 [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
@@ -57,7 +51,7 @@ type jsResult = {
   "data": Js.Nullable.t(Js.Json.t),
   "loading": bool,
   "called": bool,
-  "error": Js.Nullable.t(error),
+  "error": Js.Nullable.t(apolloError),
 };
 
 type jsMutate('a) = (. options('a)) => Js.Promise.t(jsResult);
@@ -158,12 +152,14 @@ let useMutation:
 
     let full =
       React.useMemo1(
-        () => {
-          loading: jsResult##loading,
-          called: jsResult##called,
-          data: jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
-          error: jsResult##error->Js.Nullable.toOption,
-        },
+        () =>
+          {
+            loading: jsResult##loading,
+            called: jsResult##called,
+            data:
+              jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
+            error: jsResult##error->Js.Nullable.toOption,
+          },
         [|jsResult|],
       );
 
