@@ -20,7 +20,6 @@ let webSocketHttpLink =
     operation => {
       let operationDefition =
         ApolloUtilities.getMainDefinition(operation##query);
-      Js.log(operationDefition);
       operationDefition##kind == "OperationDefinition"
       &&
       operationDefition##operation == "subscription";
