@@ -1,27 +1,25 @@
 module GetAllPersons = [%graphql
   {|
-  query getAllPersons {
-    allPersons {
-      id
-      age
-      name
+    query getAllPersons {
+      allPersons {
+        id
+        name
+      }
     }
-  }
-|}
+  |}
 ];
 
 module NewPerson = [%graphql
   {|
-  subscription {
-    Person {
-      node {
-        id
-        age
-        name
+    subscription {
+      Person {
+        node {
+          id
+          name
+        }
       }
     }
-  }
-|}
+  |}
 ];
 
 [@react.component]
@@ -34,14 +32,12 @@ let make = () => {
   let subscribe = full.subscribeToMore;
   React.useEffect1(
     () => {
-      Js.log("subscribe changed");
       let unsubscribe =
         subscribe(
           ~document=newPersonDocument,
           ~updateQuery=[%bs.raw
             {|
               function(prevResult, { subscriptionData }) {
-                console.log(subscriptionData)
                 if (!prevResult || !subscriptionData.data || !subscriptionData.data.Person)
                   return prevResult;
 
@@ -65,6 +61,7 @@ let make = () => {
      | Loading => <p> {React.string("Loading...")} </p>
      | Data(data) =>
        data##allPersons
+       ->Belt.Array.reverse
        ->Belt.Array.map(person =>
            <div key=person##id className="person">
              <div className="person-field">

@@ -34,5 +34,9 @@ let make = () => {
       </div>
     </div>
     <Persons />
+    <div className="add-person-container">
+      <div className="add-person"> <AddPerson /> </div>
+    </div>
+    <SubscribeToMore />
   </>;
 };
