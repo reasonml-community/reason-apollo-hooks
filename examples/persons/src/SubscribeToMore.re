@@ -22,6 +22,29 @@ module NewPerson = [%graphql
   |}
 ];
 
+type person = {
+  id: string,
+  name: string,
+};
+
+type allPersons = {
+  __typename: string,
+  allPersons: array(person),
+};
+
+type subscriptionNode = {node: person};
+
+[@bs.deriving abstract]
+type newPerson = {
+  [@bs.as "Person"]
+  person: subscriptionNode,
+};
+
+external resultToJson: allPersons => Js.Json.t = "%identity";
+external toPrevResult: Js.Json.t => Js.Nullable.t(allPersons) = "%identity";
+external toSubscriptionData: Js.Json.t => Js.Nullable.t(newPerson) =
+  "%identity";
+
 [@react.component]
 let make = () => {
   let newPerson = NewPerson.make();
@@ -35,19 +58,24 @@ let make = () => {
       let unsubscribe =
         subscribe(
           ~document=newPersonDocument,
-          ~updateQuery=[%bs.raw
-            {|
-              function(prevResult, { subscriptionData }) {
-                if (!prevResult || !subscriptionData.data || !subscriptionData.data.Person)
-                  return prevResult;
-
-                return {
-                  ...prevResult,
-                  allPersons: prevResult.allPersons.concat(subscriptionData.data.Person.node)
-                };
-              }
-            |}
-          ],
+          ~updateQuery=
+            (maybePrevResult, maybeSubscriptionPayload) =>
+              switch (
+                maybePrevResult |> toPrevResult |> Js.Nullable.toOption,
+                maybeSubscriptionPayload##subscriptionData##data
+                |> toSubscriptionData
+                |> Js.Nullable.toOption,
+              ) {
+              | (Some(prev), Some(newData)) =>
+                {
+                  ...prev, // NOTE: This only works with BuckleScript 7
+                  allPersons:
+                    prev.allPersons
+                    ->Belt.Array.concat([|newData->personGet.node|]),
+                }
+                ->resultToJson
+              | _ => maybePrevResult
+              },
           (),
         );
 
