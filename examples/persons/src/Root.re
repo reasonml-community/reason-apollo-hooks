@@ -3,8 +3,14 @@ open ApolloHooks;
 let filterAgeLimit = 42;
 let filterName = "Bob";
 
+type example =
+  | LoadMore
+  | SubscribeToMore;
+
 [@react.component]
 let make = () => {
+  let (activeExample, setActiveExample) = React.useState(_ => LoadMore);
+
   let editPersonRefetchQueries = _ => {
     let query =
       FilterByAge.PersonsOlderThanQuery.make(~age=filterAgeLimit, ());
@@ -22,21 +28,46 @@ let make = () => {
     };
   };
 
+  let getTabClassName = tabExample =>
+    "tab" ++ (tabExample == activeExample ? " selected-tab" : "");
+
   <>
-    <div className="edit-person-container">
-      <div className="edit-person">
-        <EditPerson
-          refetchQueries=editPersonRefetchQueries
-          update=editPersonUpdate
-        />
-        <FilterByAge age=filterAgeLimit />
-        <FilterByNameCache name=filterName />
-      </div>
+    <div className="tabs">
+      <button
+        className={getTabClassName(LoadMore)}
+        onClick={_ => setActiveExample(_ => LoadMore)}>
+        {React.string("Load More")}
+      </button>
+      <button
+        className={getTabClassName(SubscribeToMore)}
+        onClick={_ => setActiveExample(_ => SubscribeToMore)}>
+        {React.string("Subscribe to More")}
+      </button>
     </div>
-    <Persons />
-    <div className="add-person-container">
-      <div className="add-person"> <AddPerson /> </div>
+    <div className="tab-content">
+      {switch (activeExample) {
+       | LoadMore =>
+         <>
+           <div className="edit-person-container">
+             <div className="edit-person">
+               <EditPerson
+                 refetchQueries=editPersonRefetchQueries
+                 update=editPersonUpdate
+               />
+               <FilterByAge age=filterAgeLimit />
+               <FilterByNameCache name=filterName />
+             </div>
+           </div>
+           <LoadMore />
+         </>
+       | SubscribeToMore =>
+         <>
+           <div className="add-person-container">
+             <div className="add-person"> <AddPerson /> </div>
+           </div>
+           <SubscribeToMore />
+         </>
+       }}
     </div>
-    <SubscribeToMore />
   </>;
 };

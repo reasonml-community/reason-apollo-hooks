@@ -9,6 +9,8 @@ module GetAllPersons = [%graphql
   |}
 ];
 
+// NOTE: The shape of the returned data should exactly match the shape of the GetAllPersons query
+// See https://www.apollographql.com/docs/react/data/subscriptions/#subscribetomore for more information
 module NewPerson = [%graphql
   {|
     subscription {
@@ -22,6 +24,8 @@ module NewPerson = [%graphql
   |}
 ];
 
+// Defining those types and "%identity" converters below allows us to
+// write the updateQuery in pure Reason and avoid bs.raw alltogether
 type person = {
   id: string,
   name: string,

@@ -1,6 +1,13 @@
 #root {
   padding: 10px 40px;
   display: flex;
+  flex-direction: column;
+}
+
+.tab-content {
+  padding: 10px 40px;
+  display: flex;
+  border: 1px solid black;
 }
 
 input {
@@ -31,10 +38,25 @@ input {
   font-weight: bold;
 }
 
-.edit-person {
+.edit-person,
+.add-person {
   position: fixed;
 }
 
-.edit-person-container {
+.edit-person-container,
+.add-person-container {
   width: 300px;
+}
+
+.tab {
+  font-size: x-large;
+  border-width: 2px 2px 0px 2px;
+  border-color: black;
+  margin: 2px 2px 0px 2px;
+  padding: 5px 10px 10px 5px;
+  background-color: lightgrey;
+}
+
+.selected-tab {
+  background-color: white;
 }
