@@ -30,6 +30,8 @@ type queryResult('a) = {
     (~variables: Js.Json.t=?, ~updateQuery: updateQueryT, unit) =>
     Js.Promise.t(unit),
   networkStatus: ApolloHooksTypes.networkStatus,
+  startPolling: int => unit,
+  stopPolling: unit => unit,
 };
 
 /**
@@ -74,6 +76,8 @@ external useQueryJs:
     "refetch": Js.Nullable.t(Js.Json.t) => Js.Promise.t(Js.Json.t),
     [@bs.meth] "fetchMore": fetchMoreOptions => Js.Promise.t(unit),
     "networkStatus": Js.Nullable.t(int),
+    [@bs.meth] "stopPolling": unit => unit,
+    [@bs.meth] "startPolling": int => unit,
   } =
   "useQuery";
 
@@ -148,6 +152,8 @@ let useQuery:
               jsResult##fetchMore(
                 fetchMoreOptions(~variables?, ~updateQuery, ()),
               ),
+            stopPolling: () => jsResult##stopPolling(),
+            startPolling: interval => jsResult##startPolling(interval),
           },
         [|jsResult|],
       );
