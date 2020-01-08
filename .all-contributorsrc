@@ -100,6 +100,64 @@
         "bug",
         "code"
       ]
+    },
+    {
+      "login": "lukashambsch",
+      "name": "Lukas Hambsch",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/7560008?v=4",
+      "profile": "https://github.com/lukashambsch",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "jfrolich",
+      "name": "Jaap Frolich",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/579279?v=4",
+      "profile": "http://www.familyfive.app",
+      "contributions": [
+        "code",
+        "review",
+        "ideas"
+      ]
+    },
+    {
+      "login": "believer",
+      "name": "Rickard Laurin",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1478102?v=4",
+      "profile": "https://willcodefor.beer/",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "medson10",
+      "name": "Medson Oliveira",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/17956325?v=4",
+      "profile": "http://medson.me",
+      "contributions": [
+        "code",
+        "review",
+        "ideas"
+      ]
+    },
+    {
+      "login": "soulplant",
+      "name": "soulplant",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/16846?v=4",
+      "profile": "https://github.com/soulplant",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mbirkegaard",
+      "name": "mbirkegaard",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/18616185?v=4",
+      "profile": "https://github.com/mbirkegaard",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

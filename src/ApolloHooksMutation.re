@@ -1,10 +1,4 @@
-type graphqlErrors;
-
-type error = {
-  .
-  "message": string,
-  "graphqlErrors": graphqlErrors,
-};
+open ApolloHooksTypes;
 
 type refetchQueries =
   ReasonApolloTypes.executionResult => array(ApolloClient.queryObj);
@@ -12,7 +6,7 @@ type refetchQueries =
 /* Result that is return by the hook */
 type result('a) =
   | Data('a)
-  | Error(error)
+  | Error(apolloError)
   | NoData;
 
 /* Result that is return by the hook */
@@ -20,14 +14,14 @@ type controlledResult('a) = {
   loading: bool,
   called: bool,
   data: option('a),
-  error: option(error),
+  error: option(apolloError),
 };
 
 type controlledVariantResult('a) =
   | Loading
-  | Called
+  | NotCalled
   | Data('a)
-  | Error(error)
+  | Error(apolloError)
   | NoData;
 
 [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
@@ -48,6 +42,8 @@ type options('a) = {
   awaitRefetchQueries: bool,
   [@bs.optional]
   update: (ApolloClient.generatedApolloClient, mutationResult('a)) => unit,
+  [@bs.optional]
+  optimisticResponse: Js.Json.t,
 };
 
 type jsResult = {
@@ -55,7 +51,7 @@ type jsResult = {
   "data": Js.Nullable.t(Js.Json.t),
   "loading": bool,
   "called": bool,
-  "error": Js.Nullable.t(error),
+  "error": Js.Nullable.t(apolloError),
 };
 
 type jsMutate('a) = (. options('a)) => Js.Promise.t(jsResult);
@@ -65,6 +61,7 @@ type mutation('a) =
     ~client: ApolloClient.generatedApolloClient=?,
     ~refetchQueries: refetchQueries=?,
     ~awaitRefetchQueries: bool=?,
+    ~optimisticResponse: Js.Json.t=?,
     unit
   ) =>
   Js.Promise.t(controlledVariantResult('a));
@@ -85,6 +82,7 @@ let useMutation:
     ~update: (ApolloClient.generatedApolloClient, mutationResult('data)) =>
              unit
                =?,
+    ~optimisticResponse: Js.Json.t=?,
     ApolloHooksTypes.graphqlDefinition('data, _, _)
   ) =>
   (
@@ -98,6 +96,7 @@ let useMutation:
     ~refetchQueries=?,
     ~awaitRefetchQueries=?,
     ~update=?,
+    ~optimisticResponse=?,
     (parse, query, _),
   ) => {
     let (jsMutate, jsResult) =
@@ -109,6 +108,7 @@ let useMutation:
           ~refetchQueries?,
           ~awaitRefetchQueries?,
           ~update?,
+          ~optimisticResponse?,
           (),
         ),
       );
@@ -121,6 +121,7 @@ let useMutation:
           ~client=?,
           ~refetchQueries=?,
           ~awaitRefetchQueries=?,
+          ~optimisticResponse=?,
           (),
         ) =>
           jsMutate(.
@@ -129,6 +130,7 @@ let useMutation:
               ~client?,
               ~refetchQueries?,
               ~awaitRefetchQueries?,
+              ~optimisticResponse?,
               (),
             ),
           )
@@ -168,7 +170,7 @@ let useMutation:
           | {loading: true} => Loading
           | {error: Some(error)} => Error(error)
           | {data: Some(data)} => Data(data)
-          | {called: true} => Called
+          | {called: false} => NotCalled
           | _ => NoData
           },
         [|full|],
