@@ -16,7 +16,7 @@
     "@apollo/react-hooks": "^3.0.0",
     "@commitlint/cli": "^8.2.0",
     "@commitlint/config-conventional": "^8.2.0",
-    "bs-platform": "^5.0.6",
+    "bs-platform": "^7.0.1",
     "husky": "^3.0.5",
     "lint-staged": "^9.4.0",
     "reason-apollo": "^0.18.0",

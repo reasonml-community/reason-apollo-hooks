@@ -9,7 +9,6 @@
     "webpack": "webpack -w",
     "webpack:production": "NODE_ENV=production webpack",
     "server": "webpack-dev-server",
-    "get-schema": "yarn send-introspection-query https://api.graph.cool/simple/v1/cjdgba1jw4ggk0185ig4bhpsn",
     "update-deps": "rm -rf node_modules/reason-apollo-hooks && yarn install --check-files && npm run dedupe:react",
     "dedupe:react": "npm dedupe reason-react --no-package-lock"
   },

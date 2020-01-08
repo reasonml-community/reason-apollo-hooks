@@ -20,6 +20,29 @@ type updateQueryOptions = {
 
 type updateQueryT = (Js.Json.t, updateQueryOptions) => Js.Json.t;
 
+/**
+ * https://github.com/apollographql/apollo-client/blob/master/packages/apollo-client/src/core/watchQueryOptions.ts#L139
+ */
+type updateSubscriptionOptionsJs = {
+  .
+  "subscriptionData": {. "data": Js.Json.t},
+  "variables": Js.Nullable.t(Js.Json.t),
+};
+
+type updateQuerySubscribeToMoreT =
+  (Js.Json.t, updateSubscriptionOptionsJs) => Js.Json.t;
+
+[@bs.deriving abstract]
+type subscribeToMoreOptionsJs = {
+  document: ReasonApolloTypes.queryString,
+  [@bs.optional]
+  variables: Js.Json.t,
+  [@bs.optional]
+  updateQuery: updateQuerySubscribeToMoreT,
+};
+
+type unsubscribeFnT = unit => unit;
+
 type refetch('a) = (~variables: Js.Json.t=?, unit) => Js.Promise.t('a);
 type queryResult('a) = {
   data: option('a),
@@ -32,6 +55,14 @@ type queryResult('a) = {
   networkStatus: ApolloHooksTypes.networkStatus,
   startPolling: int => unit,
   stopPolling: unit => unit,
+  subscribeToMore:
+    (
+      ~document: ReasonApolloTypes.queryString,
+      ~variables: Js.Json.t=?,
+      ~updateQuery: updateQuerySubscribeToMoreT=?,
+      unit
+    ) =>
+    unsubscribeFnT,
 };
 
 /**
@@ -78,6 +109,7 @@ external useQueryJs:
     "networkStatus": Js.Nullable.t(int),
     [@bs.meth] "stopPolling": unit => unit,
     [@bs.meth] "startPolling": int => unit,
+    [@bs.meth] "subscribeToMore": subscribeToMoreOptionsJs => unsubscribeFnT,
   } =
   "useQuery";
 
@@ -154,6 +186,15 @@ let useQuery:
               ),
             stopPolling: () => jsResult##stopPolling(),
             startPolling: interval => jsResult##startPolling(interval),
+            subscribeToMore: (~document, ~variables=?, ~updateQuery=?, ()) =>
+              jsResult##subscribeToMore(
+                subscribeToMoreOptionsJs(
+                  ~document,
+                  ~variables?,
+                  ~updateQuery?,
+                  (),
+                ),
+              ),
           },
         [|jsResult|],
       );
