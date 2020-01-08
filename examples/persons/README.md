@@ -27,3 +27,6 @@ npm start
 ```
 
 Since `reason-apollo-hooks` uses `react` and `reason-react` as peer dependencies, you might end up with duplicated `react` packages in `node_modules` due to `yarn`/`npm` not being able to handle them properly while developing locally. This will cause a runtime error. To remove those packages, run `npm run dedupe:react`.
+
+## Changelog
+Check the releases page for releasing notes
