@@ -3,13 +3,13 @@ open ApolloHooksTypes;
 type refetchQueries =
   ReasonApolloTypes.executionResult => array(ApolloClient.queryObj);
 
-/* Result that is return by the hook */
+/* The type of that the promise returned by the mutate function resolves to */
 type result('a) =
   | Data('a)
   | Error(apolloError)
   | NoData;
 
-/* Result that is return by the hook */
+/* The type of the 'full' result returned by the hook */
 type controlledResult('a) = {
   loading: bool,
   called: bool,
@@ -17,6 +17,7 @@ type controlledResult('a) = {
   error: option(apolloError),
 };
 
+/* The type of the 'simple' result returned by the hook */
 type controlledVariantResult('a) =
   | Loading
   | NotCalled
@@ -55,6 +56,7 @@ type jsResult = {
 };
 
 type jsMutate('a) = (. options('a)) => Js.Promise.t(jsResult);
+
 type mutation('a) =
   (
     ~variables: Js.Json.t=?,
@@ -64,7 +66,7 @@ type mutation('a) =
     ~optimisticResponse: Js.Json.t=?,
     unit
   ) =>
-  Js.Promise.t(controlledVariantResult('a));
+  Js.Promise.t(result('a));
 
 [@bs.module "@apollo/react-hooks"]
 external useMutationJs:
@@ -140,7 +142,7 @@ let useMutation:
                    Js.Nullable.toOption(jsResult##data),
                    Js.Nullable.toOption(jsResult##error),
                  ) {
-                 | (Some(data), _) => Data(parse(data))
+                 | (Some(data), _) => (Data(parse(data)): result('data))
                  | (None, Some(error)) => Error(error)
                  | (None, None) => NoData
                  }
