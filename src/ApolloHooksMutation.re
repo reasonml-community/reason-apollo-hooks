@@ -142,8 +142,8 @@ let useMutation:
                    Js.Nullable.toOption(jsResult##data),
                    Js.Nullable.toOption(jsResult##error),
                  ) {
-                 | (Some(data), _) => (Data(parse(data)): result('data))
-                 | (None, Some(error)) => Error(error)
+                 | (_, Some(error)) => (Error(error): result('data))
+                 | (Some(data), _) => Data(parse(data))
                  | (None, None) => NoData
                  }
                )
