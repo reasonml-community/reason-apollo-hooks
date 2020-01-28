@@ -95,7 +95,6 @@ type graphqlDefinition('data, 'returnType, 'hookReturnType) = (
 );
 
 module Context = {
-  type t('a) = Js.Dict.t('a);
-  let make = (context: list((string, 'a))): t('a) =>
-    Js.Dict.fromList(context);
+  type t = Js.Dict.t(string);
+  let make = (context): t => Js.Dict.fromList(context);
 };
