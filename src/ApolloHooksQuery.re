@@ -93,6 +93,8 @@ type options = {
   skip: bool,
   [@bs.optional]
   pollInterval: int,
+  [@bs.optional]
+  context: Context.t,
 };
 
 [@bs.module "@apollo/react-hooks"]
@@ -122,6 +124,7 @@ let useQuery:
     ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
     ~skip: bool=?,
     ~pollInterval: int=?,
+    ~context: Context.t=?,
     graphqlDefinition('data, _, _)
   ) =>
   (variant('data), queryResult('data)) =
@@ -133,6 +136,7 @@ let useQuery:
     ~errorPolicy=?,
     ~skip=?,
     ~pollInterval=?,
+    ~context=?,
     (parse, query, _),
   ) => {
     let jsResult =
@@ -148,6 +152,7 @@ let useQuery:
             errorPolicy->Belt.Option.map(ApolloHooksTypes.errorPolicyToJs),
           ~skip?,
           ~pollInterval?,
+          ~context?,
           (),
         ),
       );
