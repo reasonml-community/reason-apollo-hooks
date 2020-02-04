@@ -6,7 +6,7 @@ type refetchQueries =
 /* The type of that the promise returned by the mutate function resolves to */
 type result('a) =
   | Data('a)
-  | Error(apolloError)
+  | Error(array(graphqlError))
   | NoData;
 
 /* The type of the 'full' result returned by the hook */
@@ -55,7 +55,13 @@ type jsResult = {
   "error": Js.Nullable.t(apolloError),
 };
 
-type jsMutate('a) = (. options('a)) => Js.Promise.t(jsResult);
+type executionResult = {
+  .
+  "data": Js.Nullable.t(Js.Json.t),
+  "errors": Js.Nullable.t(array(graphqlError)),
+};
+
+type jsMutate('a) = (. options('a)) => Js.Promise.t(executionResult);
 
 type mutation('a) =
   (
@@ -140,11 +146,13 @@ let useMutation:
                (
                  switch (
                    Js.Nullable.toOption(jsResult##data),
-                   Js.Nullable.toOption(jsResult##error),
+                   Js.Nullable.toOption(jsResult##errors),
                  ) {
-                 | (_, Some(error)) => (Error(error): result('data))
+                 | (_, Some(errors)) when Js.Array.length(errors) > 0 => (
+                     Error(errors): result('data)
+                   )
                  | (Some(data), _) => Data(parse(data))
-                 | (None, None) => NoData
+                 | (None, _) => NoData
                  }
                )
                |> Js.Promise.resolve
