@@ -61,8 +61,7 @@ let errorPolicyToJs = errorPolicy =>
   | All => "all"
   };
 
-module type Config = {
-  type t;
-  let query: string;
-  let parse: Js.Json.t => t;
-};
+type parse('a) = Js.Json.t => 'a;
+type query = string;
+
+type graphqlDefinition('data, 'b, 'c) = (parse('data), query, 'b);

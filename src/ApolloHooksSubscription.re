@@ -1,3 +1,4 @@
+open ApolloHooksTypes;
 type error = {. "message": string};
 
 type variant('a) =
@@ -26,8 +27,8 @@ type options = {
   client: ApolloClient.generatedApolloClient,
 };
 
-[@bs.module "@apollo/react-hooks"]
-external useSubscriptionJs:
+[@bs.module "@apollo/client"]
+external useSubscription:
   (ReasonApolloTypes.queryString, options) =>
   {
     .
@@ -38,23 +39,23 @@ external useSubscriptionJs:
   "useSubscription";
 
 let useSubscription:
-  type t.
+
     (
       ~variables: Js.Json.t=?,
       ~client: ApolloClient.generatedApolloClient=?,
-      (module ApolloHooksTypes.Config with type t = t)
+      graphqlDefinition('data, _, _)
     ) =>
-    (variant(t), result(t)) =
-  (~variables=?, ~client=?, (module Config)) => {
+    (variant('data), result('data)) =
+  (~variables=?, ~client=?,  (parse, query, _)) => {
     let jsResult =
-      useSubscriptionJs(
-        gql(. Config.query),
+      useSubscription(
+        gql(. query),
         options(~variables?, ~client?, ()),
       );
 
     let result = {
       data:
-        jsResult##data->Js.Nullable.toOption->Belt.Option.map(Config.parse),
+        jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
       loading: jsResult##loading,
       error: jsResult##error->Js.Nullable.toOption,
     };

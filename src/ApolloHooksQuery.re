@@ -12,14 +12,14 @@ type variant('a) =
  *  apollo-client/src/core/ObservableQuery.ts
  */
 [@bs.deriving abstract]
-type updateQueryOptions = {
+type updateQueryOptions('a) = {
   [@bs.optional]
-  fetchMoreResult: Js.Json.t,
+  fetchMoreResult: option('a),
   [@bs.optional]
   variables: Js.Json.t,
 };
 
-type updateQueryT = (Js.Json.t, updateQueryOptions) => Js.Json.t;
+type updateQueryT('a) = ('a, updateQueryOptions('a)) => 'a;
 
 type refetch('a) = (~variables: Js.Json.t=?, unit) => Js.Promise.t('a);
 type queryResult('a) = {
@@ -28,7 +28,7 @@ type queryResult('a) = {
   error: option(queryError),
   refetch: refetch('a),
   fetchMore:
-    (~variables: Js.Json.t=?, ~updateQuery: updateQueryT, unit) =>
+    (~variables: Js.Json.t=?, ~updateQuery: updateQueryT('a), unit) =>
     Js.Promise.t(unit),
   networkStatus: ApolloHooksTypes.networkStatus,
 };
@@ -37,10 +37,10 @@ type queryResult('a) = {
  * apollo-client/src/core/watchQueryOptions.ts
  */
 [@bs.deriving abstract]
-type fetchMoreOptions = {
+type fetchMoreOptions('a) = {
   [@bs.optional]
   variables: Js.Json.t,
-  updateQuery: updateQueryT,
+  updateQuery: updateQueryT('a),
 };
 
 [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
@@ -63,7 +63,7 @@ type options = {
   pollInterval: int,
 };
 
-[@bs.module "@apollo/react-hooks"]
+[@bs.module "@apollo/client"]
 external useQueryJs:
   (ReasonApolloTypes.queryString, options) =>
   {
@@ -73,24 +73,23 @@ external useQueryJs:
     "error": Js.Nullable.t(queryError),
     [@bs.meth]
     "refetch": Js.Nullable.t(Js.Json.t) => Js.Promise.t(Js.Json.t),
-    [@bs.meth] "fetchMore": fetchMoreOptions => Js.Promise.t(unit),
+    [@bs.meth] "fetchMore": fetchMoreOptions('a) => Js.Promise.t(unit),
     "networkStatus": Js.Nullable.t(int),
   } =
   "useQuery";
 
 let useQuery:
-  type t.
-    (
-      ~client: ApolloClient.generatedApolloClient=?,
-      ~variables: Js.Json.t=?,
-      ~notifyOnNetworkStatusChange: bool=?,
-      ~fetchPolicy: ApolloHooksTypes.fetchPolicy=?,
-      ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
-      ~skip: bool=?,
-      ~pollInterval: int=?,
-      (module Config with type t = t)
-    ) =>
-    (variant(t), queryResult(t)) =
+  (
+    ~client: ApolloClient.generatedApolloClient=?,
+    ~variables: Js.Json.t=?,
+    ~notifyOnNetworkStatusChange: bool=?,
+    ~fetchPolicy: ApolloHooksTypes.fetchPolicy=?,
+    ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
+    ~skip: bool=?,
+    ~pollInterval: int=?,
+    graphqlDefinition('data, _, _)
+  ) =>
+  (variant('data), queryResult('data)) =
   (
     ~client=?,
     ~variables=?,
@@ -99,11 +98,138 @@ let useQuery:
     ~errorPolicy=?,
     ~skip=?,
     ~pollInterval=?,
-    (module Config),
+    (parse, query, _),
   ) => {
     let jsResult =
       useQueryJs(
         gql(. Config.query),
+        options(
+          ~variables?,
+          ~client?,
+          ~notifyOnNetworkStatusChange?,
+          ~fetchPolicy=?
+            fetchPolicy->Belt.Option.map(ApolloHooksTypes.fetchPolicyToJs),
+          ~errorPolicy=?
+            errorPolicy->Belt.Option.map(ApolloHooksTypes.errorPolicyToJs),
+          ~skip?,
+          ~pollInterval?,
+          (),
+        ),
+      );
+
+    let getData = obj =>
+      obj
+      ->Js.Json.decodeObject
+      ->Belt.Option.flatMap(x => Js.Dict.get(x, "data"))
+      ->Belt.Option.getExn;
+
+    let data =
+      React.useMemo1(
+        () =>
+          jsResult##data
+          ->Js.Nullable.toOption
+          ->Belt.Option.flatMap(data =>
+              switch (parse(data)) {
+              | parsedData => Some(parsedData)
+              | exception _ => None
+              }
+            ),
+        [|jsResult|],
+      );
+
+    let result = {
+      data,
+      loading: jsResult##loading,
+      error: jsResult##error->Js.Nullable.toOption,
+      networkStatus:
+        ApolloHooksTypes.toNetworkStatus(jsResult##networkStatus),
+      refetch: (~variables=?, ()) =>
+        jsResult##refetch(Js.Nullable.fromOption(variables))
+        |> Js.Promise.then_(result =>
+             parse(result->getData) |> Js.Promise.resolve
+           ),
+      fetchMore: (~variables=?, ~updateQuery, ()) =>
+        jsResult##fetchMore(fetchMoreOptions(~variables?, ~updateQuery, ())),
+    };
+
+    let simple =
+      React.useMemo1(
+        () =>
+          switch (result) {
+          | {loading: true} => Loading
+          | {error: Some(error)} => Error(error)
+          | {data: Some(data)} => Data(data)
+          | _ => NoData
+          },
+        [|result|],
+      );
+
+    (simple, result);
+  };
+
+type lazyVariant('a) =
+  | Data('a)
+  | Error(queryError)
+  | Loading
+  | NoData
+  | NotCalled;
+
+type lazyQueryResult('a) = {
+  called: bool,
+  data: option('a),
+  loading: bool,
+  error: option(queryError),
+  refetch: refetch('a),
+  fetchMore:
+    (~variables: Js.Json.t=?, ~updateQuery: updateQueryT('a), unit) =>
+    Js.Promise.t(unit),
+  networkStatus: ApolloHooksTypes.networkStatus,
+};
+
+[@bs.module "@apollo/client"]
+external useLazyQueryJs:
+  (ReasonApolloTypes.queryString, options) =>
+  (
+    unit => unit,
+    {
+      .
+      "data": Js.Nullable.t(Js.Json.t),
+      "loading": bool,
+      "error": Js.Nullable.t(queryError),
+      [@bs.meth]
+      "refetch": Js.Nullable.t(Js.Json.t) => Js.Promise.t(Js.Json.t),
+      [@bs.meth] "fetchMore": fetchMoreOptions('a) => Js.Promise.t(unit),
+      "networkStatus": Js.Nullable.t(int),
+      "called": bool,
+    },
+  ) =
+  "useLazyQuery";
+
+let useLazyQuery:
+  (
+    ~client: ApolloClient.generatedApolloClient=?,
+    ~variables: Js.Json.t=?,
+    ~notifyOnNetworkStatusChange: bool=?,
+    ~fetchPolicy: ApolloHooksTypes.fetchPolicy=?,
+    ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
+    ~skip: bool=?,
+    ~pollInterval: int=?,
+    graphqlDefinition('data, _, _)
+  ) =>
+  (unit => unit, lazyVariant('data), lazyQueryResult('data)) =
+  (
+    ~client=?,
+    ~variables=?,
+    ~notifyOnNetworkStatusChange=?,
+    ~fetchPolicy=?,
+    ~errorPolicy=?,
+    ~skip=?,
+    ~pollInterval=?,
+    (parse, query, _),
+  ) => {
+    let (load, jsResult) =
+      useLazyQueryJs(
+        gql(. query),
         options(
           ~variables?,
           ~client?,
@@ -151,6 +277,7 @@ let useQuery:
               jsResult##fetchMore(
                 fetchMoreOptions(~variables?, ~updateQuery, ()),
               ),
+            called: jsResult##called,
           },
         [|jsResult|],
       );
@@ -162,6 +289,7 @@ let useQuery:
           | {loading: true} => Loading
           | {error: Some(error)} => Error(error)
           | {data: Some(data)} => Data(data)
+          | {called: false} => NotCalled
           | _ => NoData
           },
         [|result|],

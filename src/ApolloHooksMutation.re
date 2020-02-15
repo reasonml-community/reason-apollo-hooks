@@ -23,6 +23,8 @@ type controlledResult('a) = {
   error: option(error),
 };
 
+type optimisticResult;
+
 type controlledVariantResult('a) =
   | Loading
   | Called
@@ -48,6 +50,8 @@ type options('a) = {
   awaitRefetchQueries: bool,
   [@bs.optional]
   update: (ApolloClient.generatedApolloClient, mutationResult('a)) => unit,
+  [@bs.optional]
+  optimisticResponse: optimisticResult,
 };
 
 type jsResult = {
@@ -65,11 +69,12 @@ type mutation('a) =
     ~client: ApolloClient.generatedApolloClient=?,
     ~refetchQueries: refetchQueries=?,
     ~awaitRefetchQueries: bool=?,
+    ~optimisticResponse: optimisticResult=?,
     unit
   ) =>
   Js.Promise.t(controlledVariantResult('a));
 
-[@bs.module "@apollo/react-hooks"]
+[@bs.module "@apollo/client"]
 external useMutationJs:
   (. ReasonApolloTypes.queryString, options('a)) => (jsMutate('a), jsResult) =
   "useMutation";
@@ -83,29 +88,35 @@ let useMutation:
       ~variables: Js.Json.t=?,
       ~refetchQueries: refetchQueries=?,
       ~awaitRefetchQueries: bool=?,
-      ~update: (ApolloClient.generatedApolloClient, mutationResult('a)) =>
-               unit
+      ~update: (ApolloClient.generatedApolloClient, mutationResult(t)) => unit
                  =?,
-      (module ApolloHooksTypes.Config with type t = t)
+      ~optimisticResponse: optimisticResult=?,
+      ApolloHooksTypes.graphqlDefinition('data, _, _)
     ) =>
-    (mutation(t), controlledVariantResult(t), controlledResult(t)) =
+    (
+      mutation('data),
+      controlledVariantResult('data),
+      controlledResult('data),
+    ) =
   (
     ~client=?,
     ~variables=?,
     ~refetchQueries=?,
     ~awaitRefetchQueries=?,
     ~update=?,
-    (module Config),
+    ~optimisticResponse=?,
+    (parse, query, _),
   ) => {
     let (jsMutate, jsResult) =
       useMutationJs(.
-        gql(. Config.query),
+        gql(. query),
         options(
           ~client?,
           ~variables?,
           ~refetchQueries?,
           ~awaitRefetchQueries?,
           ~update?,
+          ~optimisticResponse?,
           (),
         ),
       );
@@ -118,6 +129,7 @@ let useMutation:
           ~client=?,
           ~refetchQueries=?,
           ~awaitRefetchQueries=?,
+          ~optimisticResponse=?,
           (),
         ) =>
           jsMutate(.
@@ -126,6 +138,7 @@ let useMutation:
               ~client?,
               ~refetchQueries?,
               ~awaitRefetchQueries?,
+              ~optimisticResponse?,
               (),
             ),
           )
@@ -135,7 +148,7 @@ let useMutation:
                    Js.Nullable.toOption(jsResult##data),
                    Js.Nullable.toOption(jsResult##error),
                  ) {
-                 | (Some(data), _) => Data(Config.parse(data))
+                 | (Some(data), _) => Data(parse(data))
                  | (None, Some(error)) => Error(error)
                  | (None, None) => NoData
                  }
@@ -152,9 +165,7 @@ let useMutation:
             loading: jsResult##loading,
             called: jsResult##called,
             data:
-              jsResult##data
-              ->Js.Nullable.toOption
-              ->Belt.Option.map(Config.parse),
+              jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
             error: jsResult##error->Js.Nullable.toOption,
           },
         [|jsResult|],
