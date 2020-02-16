@@ -6,7 +6,7 @@
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:docs": "yarn build && rm -rf docs/ && bsdoc support-files && bsdoc build --debug --verbose ReasonApolloHooks && mv docs/ReasonApolloHooks/* docs/"
+    "build:docs": "yarn build && bsdoc build --debug --verbose ReasonApolloHooks"
   },
   "keywords": [
     "BuckleScript"
