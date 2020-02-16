@@ -146,18 +146,25 @@ let useQuery = Query.useQuery;
           })
       }
 
-      <button>{React.string("Click me")}</button>
+      <button onClick>{React.string("Click me")}</button>
     }
   ]}
   */
 let useMutation = Mutation.useMutation;
+
+/** useSubscription bindings */
 let useSubscription = Subscription.useSubscription;
 
+/** Helper to generate the shape of a query for [refetchQueries] mutation param. Take a look in examples/persons/src/EditPerson.re for a more complete demo of usage. */
 let toQueryObj = (result): ApolloClient.queryObj => {
   "query": ApolloClient.gql(. result##query),
   "variables": result##variables,
 };
 
+/**
+  Helper to generate the shape of a query for [ApolloClient.ReadQuery.readQuery]. Used for optimistic UI.
+  Take a look in examples/persons/src/FilterByNameCache.re for a more complete demo of usage.
+ */
 let toReadQueryOptions = result => {
   "query": ApolloClient.gql(. result##query),
   "variables": Js.Nullable.fromOption(Some(result##variables)),
