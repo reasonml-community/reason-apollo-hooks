@@ -499,6 +499,11 @@ bs-platform@^7.0.1:
   resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-7.0.1.tgz#1d7b0ef6088b998dceee5db74a7cd8f01c20a3bd"
   integrity sha512-UjStdtHhbtC/l6vKJ1XRDqrPk7rFf5PLYHtRX3akDXEYVnTbN36z0g4DEr5mU8S0N945e33HYts9x+i7hKKpZQ==
 
+bsdoc@6.0.1-alpha:
+  version "6.0.1-alpha"
+  resolved "https://registry.yarnpkg.com/bsdoc/-/bsdoc-6.0.1-alpha.tgz#51dc2ed4daa1adea4ddd2d94abda3ea8e644f793"
+  integrity sha512-MoXrv2kWkyFXlFeFTd2aQgQlcGdn3dUwjQxSku/dO38e+wz7emVO2GlcSrY6ONKa4LVtThrmCjvidD9IIMYjlQ==
+
 caller-callsite@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/caller-callsite/-/caller-callsite-2.0.0.tgz#847e0fce0a223750a9a027c54b33731ad3154134"

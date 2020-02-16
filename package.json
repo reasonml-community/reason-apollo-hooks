@@ -5,7 +5,8 @@
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:docs": "yarn build && rm -rf docs/ && bsdoc support-files && bsdoc build --debug --verbose ReasonApolloHooks && mv docs/ReasonApolloHooks/* docs/"
   },
   "keywords": [
     "BuckleScript"
@@ -17,6 +18,7 @@
     "@commitlint/cli": "^8.2.0",
     "@commitlint/config-conventional": "^8.2.0",
     "bs-platform": "^7.0.1",
+    "bsdoc": "6.0.1-alpha",
     "husky": "^3.0.5",
     "lint-staged": "^9.4.0",
     "reason-apollo": "^0.18.0",
