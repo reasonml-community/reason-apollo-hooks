@@ -1,12 +1,30 @@
 open ApolloHooksTypes;
 
-type refetchQueries =
-  ReasonApolloTypes.executionResult => array(ApolloClient.queryObj);
+type jsResult = {
+  .
+  "data": Js.Nullable.t(Js.Json.t),
+  "loading": bool,
+  "called": bool,
+  "error": Js.Nullable.t(apolloError),
+};
 
-/* The type of that the promise returned by the mutate function resolves to */
-type result('a) =
+type jsExecutionResult = {
+  .
+  "data": Js.Nullable.t(Js.Json.t),
+  "errors": Js.Nullable.t(array(graphqlError)),
+};
+
+type refetchQueries = jsExecutionResult => array(ApolloClient.queryObj);
+
+/* The type that the promise returned by the mutate function resolves to */
+type executionResult('a) = {
+  data: option('a),
+  errors: option(array(graphqlError)),
+};
+
+type executionVariantResult('a) =
   | Data('a)
-  | Error(array(graphqlError))
+  | Errors(array(graphqlError))
   | NoData;
 
 /* The type of the 'full' result returned by the hook */
@@ -47,21 +65,7 @@ type options('a) = {
   optimisticResponse: Js.Json.t,
 };
 
-type jsResult = {
-  .
-  "data": Js.Nullable.t(Js.Json.t),
-  "loading": bool,
-  "called": bool,
-  "error": Js.Nullable.t(apolloError),
-};
-
-type executionResult = {
-  .
-  "data": Js.Nullable.t(Js.Json.t),
-  "errors": Js.Nullable.t(array(graphqlError)),
-};
-
-type jsMutate('a) = (. options('a)) => Js.Promise.t(executionResult);
+type jsMutate('a) = (. options('a)) => Js.Promise.t(jsExecutionResult);
 
 type mutation('a) =
   (
@@ -72,7 +76,7 @@ type mutation('a) =
     ~optimisticResponse: Js.Json.t=?,
     unit
   ) =>
-  Js.Promise.t(result('a));
+  Js.Promise.t((executionVariantResult('a), executionResult('a)));
 
 [@bs.module "@apollo/react-hooks"]
 external useMutationJs:
@@ -142,21 +146,30 @@ let useMutation:
               (),
             ),
           )
-          |> Js.Promise.then_(jsResult =>
-               (
-                 switch (
-                   Js.Nullable.toOption(jsResult##data),
-                   Js.Nullable.toOption(jsResult##errors),
-                 ) {
-                 | (_, Some(errors)) when Js.Array.length(errors) > 0 => (
-                     Error(errors): result('data)
+          |> Js.Promise.then_(jsResult => {
+               let full = {
+                 data:
+                   Js.Nullable.toOption(jsResult##data)
+                   ->Belt.Option.map(parse),
+                 errors:
+                   switch (Js.Nullable.toOption(jsResult##errors)) {
+                   | Some(errors) when Js.Array.length(errors) > 0 =>
+                     Some(errors)
+                   | _ => None
+                   },
+               };
+
+               let simple =
+                 switch (full) {
+                 | {errors: Some(errors)} => (
+                     Errors(errors): executionVariantResult('data)
                    )
-                 | (Some(data), _) => Data(parse(data))
-                 | (None, _) => NoData
-                 }
-               )
-               |> Js.Promise.resolve
-             ),
+                 | {data: Some(data)} => Data(data)
+                 | {errors: None, data: None} => NoData
+                 };
+
+               (simple, full) |> Js.Promise.resolve;
+             }),
         [|variables|],
       );
 
