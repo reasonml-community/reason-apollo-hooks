@@ -35,6 +35,8 @@ type options('data) = {
   onSubscriptionData: onSubscriptionDataJsT('data) => unit,
   [@bs.optional]
   client: ApolloClient.generatedApolloClient,
+  [@bs.optional]
+  shouldResubscribe: bool,
 };
 
 [@bs.module "@apollo/react-hooks"]
@@ -53,10 +55,17 @@ let useSubscription:
     ~variables: Js.Json.t=?,
     ~client: ApolloClient.generatedApolloClient=?,
     ~onSubscriptionData: onSubscriptionDataT('data) => unit=?,
+    ~shouldResubscribe: bool=?,
     ApolloHooksTypes.graphqlDefinition('data, _, _)
   ) =>
   (variant('data), result('data)) =
-  (~variables=?, ~client=?, ~onSubscriptionData=?, (parse, query, _)) => {
+  (
+    ~variables=?,
+    ~client=?,
+    ~onSubscriptionData=?,
+    ~shouldResubscribe=?,
+    (parse, query, _),
+  ) => {
     let jsResult =
       useSubscriptionJs(
         gql(. query),
@@ -70,6 +79,7 @@ let useSubscription:
                 subscriptionData: x##subscriptionData##data,
               })
             ),
+          ~shouldResubscribe?,
           (),
         ),
       );
