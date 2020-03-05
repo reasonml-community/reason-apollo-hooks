@@ -1,15 +1,15 @@
-type error = {. "message": string};
+open ApolloHooksTypes;
 
 type variant('a) =
   | Data('a)
-  | Error(error)
+  | Error(apolloError)
   | Loading
   | NoData;
 
 type result('a) = {
   data: option('a),
   loading: bool,
-  error: option(error),
+  error: option(apolloError),
 };
 
 [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
@@ -33,7 +33,7 @@ external useSubscriptionJs:
     .
     "data": Js.Nullable.t(Js.Json.t),
     "loading": bool,
-    "error": Js.Nullable.t(error),
+    "error": Js.Nullable.t(apolloError),
   } =
   "useSubscription";
 
