@@ -14,14 +14,19 @@ type result('a) = {
 
 [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
 
-type onSubscriptionDataJsT('a) = {
+type onSubscriptionDataJsT = {
   .
-  "subscriptionData": {. "data": 'a},
+  "subscriptionData": {. "data": Js.Json.t},
   "client": ApolloClient.generatedApolloClient,
 };
 
-type onSubscriptionDataT('a) = {
-  subscriptionData: 'a,
+type onSubscriptionDataResult('data) = {
+  unparsedData: Js.Json.t,
+  data: 'data,
+};
+
+type onSubscriptionDataT('data) = {
+  subscriptionData: onSubscriptionDataResult('data),
   client: ApolloClient.generatedApolloClient,
 };
 
@@ -32,7 +37,7 @@ type options('data) = {
   [@bs.optional]
   skip: bool,
   [@bs.optional]
-  onSubscriptionData: onSubscriptionDataJsT('data) => unit,
+  onSubscriptionData: onSubscriptionDataJsT => unit,
   [@bs.optional]
   client: ApolloClient.generatedApolloClient,
   [@bs.optional]
@@ -76,7 +81,10 @@ let useSubscription:
             onSubscriptionData->Belt.Option.map((f, x) =>
               f({
                 client: x##client,
-                subscriptionData: x##subscriptionData##data,
+                subscriptionData: {
+                  unparsedData: x##subscriptionData##data,
+                  data: parse(x##subscriptionData##data),
+                },
               })
             ),
           ~shouldResubscribe?,
