@@ -93,3 +93,8 @@ type graphqlDefinition('data, 'returnType, 'hookReturnType) = (
   query,
   composeVariables('returnType, 'hookReturnType),
 );
+
+module Context = {
+  type t = Js.Dict.t(string);
+  let make = (context): t => Js.Dict.fromList(context);
+};
