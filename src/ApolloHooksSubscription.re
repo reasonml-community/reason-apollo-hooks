@@ -41,12 +41,16 @@ let useSubscription:
   (
     ~variables: Js.Json.t=?,
     ~client: ApolloClient.generatedApolloClient=?,
+    ~skip: bool=?,
     ApolloHooksTypes.graphqlDefinition('data, _, _)
   ) =>
   (variant('data), result('data)) =
-  (~variables=?, ~client=?, (parse, query, _)) => {
+  (~variables=?, ~client=?, ~skip=?, (parse, query, _)) => {
     let jsResult =
-      useSubscriptionJs(gql(. query), options(~variables?, ~client?, ()));
+      useSubscriptionJs(
+        gql(. query),
+        options(~variables?, ~client?, ~skip?, ()),
+      );
 
     let result = {
       data: jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
