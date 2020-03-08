@@ -156,7 +156,7 @@ let useMutation = Mutation.useMutation;
 let useSubscription = Subscription.useSubscription;
 
 /** Helper to generate the shape of a query for [refetchQueries] mutation param. Take a look in examples/persons/src/EditPerson.re for a more complete demo of usage. */
-let toQueryObj = (result): ApolloClient.queryObj => {
+let toQueryObj = result => {
   "query": ApolloClient.gql(. result##query),
   "variables": result##variables,
 };
