@@ -158,6 +158,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "strdr4605",
+      "name": "Dragoș Străinu",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/16056918?v=4",
+      "profile": "https://strdr4605.github.io",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
