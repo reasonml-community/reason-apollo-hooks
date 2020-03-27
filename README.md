@@ -15,7 +15,7 @@ Reason bindings for the official [@apollo/react-hooks](https://www.npmjs.com/pac
   - [useMutation](#usemutation-arrow_up)
 - [Cache](#cache-arrow_up)
 
-## Installation [:arrow_up:](#table-of-content)
+## Installation [:arrow_up:](#table-of-contents)
 
 ```
 yarn add reason-apollo-hooks reason-apollo@0.18.0 @apollo/react-hooks
@@ -38,7 +38,7 @@ Then update your bsconfig.json
 ]
 ```
 
-## Setting up [:arrow_up:](#table-of-content)
+## Setting up [:arrow_up:](#table-of-contents)
 
 Add the provider in the top of the tree
 
@@ -59,7 +59,7 @@ let app =
  </ApolloHooks.Provider>
 ```
 
-### Usage with reason-apollo [:arrow_up:](#table-of-content)
+### Usage with reason-apollo [:arrow_up:](#table-of-contents)
 
 To use with `reason-apollo`'s `ReasonApollo.Provider` already present in your project:
 
@@ -76,9 +76,9 @@ ReactDOMRe.renderToElementWithId(
 );
 ```
 
-## Available hooks [:arrow_up:](#table-of-content)
+## Available hooks [:arrow_up:](#table-of-contents)
 
-### useQuery [:arrow_up:](#table-of-content)
+### useQuery [:arrow_up:](#table-of-contents)
 
 ```reason
 open ApolloHooks
@@ -158,7 +158,7 @@ let (simple, _full) =
   );
 ```
 
-### useMutation [:arrow_up:](#table-of-content)
+### useMutation [:arrow_up:](#table-of-contents)
 
 ```reason
 module ScreamMutation = [%graphql {|
@@ -222,7 +222,7 @@ let make = () => {
 }
 ```
 
-## Cache [:arrow_up:](#table-of-content)
+## Cache [:arrow_up:](#table-of-contents)
 
 There are a couple of caveats with manual cache updates.
 
