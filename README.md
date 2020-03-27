@@ -3,9 +3,19 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-16-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-Reason bindings for the official @apollo/react-hooks
+Reason bindings for the official [@apollo/react-hooks](https://www.npmjs.com/package/@apollo/react-hooks)
 
-## Installation
+## Table of contents
+
+- [Installation](#installation-arrow_up)
+- [Setting up](#setting-up-arrow_up)
+  - [Usage with reason-apollo](#usage-with-reason-apollo-arrow_up)
+- [Available hooks](#available-hooks-arrow_up)
+  - [useQuery](#usequery-arrow_up)
+  - [useMutation](#usemutation-arrow_up)
+- [Cache](#cache-arrow_up)
+
+## Installation [:arrow_up:](#table-of-content)
 
 ```
 yarn add reason-apollo-hooks reason-apollo@0.18.0 @apollo/react-hooks
@@ -28,7 +38,7 @@ Then update your bsconfig.json
 ]
 ```
 
-## Setting up
+## Setting up [:arrow_up:](#table-of-content)
 
 Add the provider in the top of the tree
 
@@ -49,7 +59,7 @@ let app =
  </ApolloHooks.Provider>
 ```
 
-### Usage with reason-apollo
+### Usage with reason-apollo [:arrow_up:](#table-of-content)
 
 To use with `reason-apollo`'s `ReasonApollo.Provider` already present in your project:
 
@@ -66,9 +76,9 @@ ReactDOMRe.renderToElementWithId(
 );
 ```
 
-# Available hooks
+## Available hooks [:arrow_up:](#table-of-content)
 
-## useQuery
+### useQuery [:arrow_up:](#table-of-content)
 
 ```reason
 open ApolloHooks
@@ -148,7 +158,7 @@ let (simple, _full) =
   );
 ```
 
-## useMutation
+### useMutation [:arrow_up:](#table-of-content)
 
 ```reason
 module ScreamMutation = [%graphql {|
@@ -212,7 +222,7 @@ let make = () => {
 }
 ```
 
-## Cache
+## Cache [:arrow_up:](#table-of-content)
 
 There are a couple of caveats with manual cache updates.
 
@@ -292,8 +302,8 @@ By default, apollo will add field `__typename` to the queries and will use it to
 ## Getting it running
 
 ```sh
-npm install
-npm start
+yarn
+yarn start
 ```
 
 ## Contributors ✨
