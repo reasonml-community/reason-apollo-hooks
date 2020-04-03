@@ -45,13 +45,20 @@ let updateFiltered = (person: person, name, filteredPersons: array(person)) =>
 
 let updateCache = (client, person, name) => {
   let filterByNameQuery = PersonsNameFilterQuery.make(~name, ());
-  let readQueryOptions = toReadQueryOptions(filterByNameQuery);
 
   // By default, apollo adds field __typename to the query and will use it
   // to normalize data. Parsing the result with Config.parse will remove the field,
   // which won't allow to save the data back to cache. This means we can't use ReadQuery.make,
   // which parses cache result, and have to use the readQuery which returns Json.t.
-  switch (PersonsNameFilterReadQuery.readQuery(client, readQueryOptions)) {
+  switch (
+    PersonsNameFilterReadQuery.readQuery(
+      client,
+      {
+        query: ApolloClient.gql(. filterByNameQuery##query),
+        variables: Js.Nullable.return(filterByNameQuery##variables),
+      },
+    )
+  ) {
   | exception _ => ()
   | cachedResponse =>
     switch (cachedResponse |> Js.Nullable.toOption) {
