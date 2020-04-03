@@ -18,7 +18,7 @@ Reason bindings for the official [@apollo/react-hooks](https://www.npmjs.com/pac
 ## Installation [:arrow_up:](#table-of-contents)
 
 ```
-yarn add reason-apollo-hooks reason-apollo@0.18.0 @apollo/react-hooks
+yarn add reason-apollo-hooks reason-apollo@0.19.0 @apollo/react-hooks
 ```
 
 BuckleScript <= 5.0.0
