@@ -1,6 +1,9 @@
 # reason-apollo-hooks
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-18-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Reason bindings for the official [@apollo/react-hooks](https://www.npmjs.com/package/@apollo/react-hooks)
@@ -27,6 +30,7 @@ yarn add reason-apollo-hooks reason-apollo@0.19.0 @apollo/react-hooks
 ```
 
 BuckleScript <= 5.0.0
+
 ```
 yarn add reason-apollo-hooks@3.0.0 reason-apollo@0.17.0 @apollo/react-hooks
 ```
@@ -251,7 +255,7 @@ let httpLink =
 +
 +/* Using the ability to split links, you can send data to each link
 +   depending on what kind of operation is being sent */
-+let webSocketHttpLink =
++let link =
 +  ApolloLinks.split(
 +    operation => {
 +      let operationDefition =
@@ -422,6 +426,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
