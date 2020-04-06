@@ -7,13 +7,18 @@ Reason bindings for the official [@apollo/react-hooks](https://www.npmjs.com/pac
 
 ## Table of contents
 
-- [Installation](#installation-arrow_up)
-- [Setting up](#setting-up-arrow_up)
-  - [Usage with reason-apollo](#usage-with-reason-apollo-arrow_up)
-- [Available hooks](#available-hooks-arrow_up)
-  - [useQuery](#usequery-arrow_up)
-  - [useMutation](#usemutation-arrow_up)
-- [Cache](#cache-arrow_up)
+- [reason-apollo-hooks](#reason-apollo-hooks)
+  - [Table of contents](#table-of-contents)
+  - [Installation :arrow_up:](#installation-arrowup)
+  - [Setting up :arrow_up:](#setting-up-arrowup)
+    - [Usage with reason-apollo :arrow_up:](#usage-with-reason-apollo-arrowup)
+  - [Available hooks :arrow_up:](#available-hooks-arrowup)
+    - [useQuery :arrow_up:](#usequery-arrowup)
+    - [useMutation :arrow_up:](#usemutation-arrowup)
+    - [useSubscription :arrow_up:](#usesubscription-arrowup)
+  - [Cache :arrow_up:](#cache-arrowup)
+  - [Getting it running](#getting-it-running)
+  - [Contributors ✨](#contributors-%e2%9c%a8)
 
 ## Installation [:arrow_up:](#table-of-contents)
 
@@ -220,6 +225,81 @@ let make = () => {
     </button>
   </div>
 }
+```
+
+### useSubscription [:arrow_up:](#table-of-contents)
+
+In order to use subscriptions, you first need to set up your websocket link:
+
+```diff
+/* Create an InMemoryCache */
+let inMemoryCache = ApolloInMemoryCache.createInMemoryCache();
+
+/* Create an HTTP Link */
+let httpLink =
+  ApolloLinks.createHttpLink(~uri="http://localhost:3010/graphql", ());
++
++/* Create a WS Link */
++let webSocketLink =
++  ApolloLinks.webSocketLink({
++    uri: "wss://localhost:3010/graphql",
++    options: {
++      reconnect: true,
++      connectionParams: None,
++    },
++  });
++
++/* Using the ability to split links, you can send data to each link
++   depending on what kind of operation is being sent */
++let webSocketHttpLink =
++  ApolloLinks.split(
++    operation => {
++      let operationDefition =
++        ApolloUtilities.getMainDefinition(operation.query);
++      operationDefition.kind == "OperationDefinition"
++      && operationDefition.operation == "subscription";
++    },
++    webSocketLink,
++    httpLink,
++  );
+
+let client =
+-  ReasonApollo.createApolloClient(~link=httpLink, ~cache=inMemoryCache, ());
++  ReasonApollo.createApolloClient(~link, ~cache=inMemoryCache, ());
+
+let app =
+ <ApolloHooks.Provider client>
+   ...
+ </ApolloHooks.Provider>
+```
+
+Then, you can implement `useSubscription` in a similar manner to `useQuery`
+
+```reason
+module UserAdded = [%graphql {|
+  subscription userAdded {
+    userAdded {
+      id
+      name
+    }
+  }
+|}];
+
+
+[@react.component]
+let make = () => {
+  let (userAddedSubscription, _full) = ApolloHooks.useSubscription(UserAdded.definition);
+
+  switch (userAddedSubscription) {
+    | Loading => <div> {ReasonReact.string("Loading")} </div>
+    | Error(error) => <div> {ReasonReact.string(error##message)} </div>
+    | Data(_response) =>
+      <audio autoPlay=true>
+      <source src="notification.ogg" type_="audio/ogg" />
+      <source src="notification.mp3" type_="audio/mpeg" />
+    </audio>
+  };
+};
 ```
 
 ## Cache [:arrow_up:](#table-of-contents)
