@@ -32,7 +32,7 @@ let makeOptions =
       ~fetchPolicy=?,
       ~errorPolicy=?,
       ~pollInterval=?,
-      (_, query, _): graphqlDefinition('data, _, _, _),
+      (_, query, _): graphqlDefinition('data, _, _),
     ) => {
   doMakeOptions(
     ~query=gql(. query),

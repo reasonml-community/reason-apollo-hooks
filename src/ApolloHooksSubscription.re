@@ -43,7 +43,7 @@ let useSubscription:
     ~variables: Js.Json.t=?,
     ~client: ApolloClient.generatedApolloClient('raw_t)=?,
     ~skip: bool=?,
-    ApolloHooksTypes.graphqlDefinition('t, 'raw_t, _, _)
+    ApolloHooksTypes.graphqlDefinition('t, 'raw_t, _)
   ) =>
   (variant('t), result('t)) =
   (~variables=?, ~client=?, ~skip=?, (parse, query, _)) => {

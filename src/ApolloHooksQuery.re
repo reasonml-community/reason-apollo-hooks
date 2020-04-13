@@ -128,7 +128,7 @@ let useQuery:
     ~skip: bool=?,
     ~pollInterval: int=?,
     ~context: Context.t=?,
-    graphqlDefinition('t, 'raw_t, _, _)
+    graphqlDefinition('t, 'raw_t, _)
   ) =>
   (variant('t), queryResult('t)) =
   (

@@ -85,14 +85,8 @@ type apolloError = {
 
 type parse('raw_t, 't) = 'raw_t => 't;
 type query = string;
-type composeVariables('t, 'returnType, 'hookReturnType) =
-  ('t => 'returnType) => 'hookReturnType;
 
-type graphqlDefinition('t, 'raw_t, 'returnType, 'hookReturnType) = (
-  parse('raw_t, 't),
-  query,
-  composeVariables('t, 'returnType, 'hookReturnType),
-);
+type graphqlDefinition('t, 'raw_t, 'b) = (parse('raw_t, 't), query, 'b);
 
 module Context = {
   type t = Js.Dict.t(string);
