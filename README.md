@@ -1,14 +1,41 @@
 # reason-apollo-hooks
 
-Reason bindings for the official @apollo/react-hooks
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 
-## Installation
+[![All Contributors](https://img.shields.io/badge/all_contributors-18-orange.svg?style=flat-square)](#contributors-)
+
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
+
+Reason bindings for the official [@apollo/react-hooks](https://www.npmjs.com/package/@apollo/react-hooks)
+
+## Table of contents
+
+- [reason-apollo-hooks](#reason-apollo-hooks)
+  - [Table of contents](#table-of-contents)
+  - [Installation :arrow_up:](#installation-arrowup)
+  - [Setting up :arrow_up:](#setting-up-arrowup)
+    - [Usage with reason-apollo :arrow_up:](#usage-with-reason-apollo-arrowup)
+  - [Available hooks :arrow_up:](#available-hooks-arrowup)
+    - [useQuery :arrow_up:](#usequery-arrowup)
+    - [useMutation :arrow_up:](#usemutation-arrowup)
+    - [useSubscription :arrow_up:](#usesubscription-arrowup)
+  - [Cache :arrow_up:](#cache-arrowup)
+  - [Getting it running](#getting-it-running)
+  - [Contributors ✨](#contributors-%e2%9c%a8)
+
+## Installation [:arrow_up:](#table-of-contents)
 
 ```
-yarn add reason-apollo-hooks reason-apollo @apollo/react-hooks
+yarn add reason-apollo-hooks reason-apollo@0.19.0 @apollo/react-hooks
 ```
 
-Follow the installation instructions of [graphql_ppx](https://github.com/mhallin/graphql_ppx).
+BuckleScript <= 5.0.0
+
+```
+yarn add reason-apollo-hooks@3.0.0 reason-apollo@0.17.0 @apollo/react-hooks
+```
+
+Follow the installation instructions of [graphql_ppx_re](https://github.com/baransu/graphql_ppx_re).
 
 Then update your bsconfig.json
 
@@ -20,7 +47,7 @@ Then update your bsconfig.json
 ]
 ```
 
-## Setting up
+## Setting up [:arrow_up:](#table-of-contents)
 
 Add the provider in the top of the tree
 
@@ -41,7 +68,7 @@ let app =
  </ApolloHooks.Provider>
 ```
 
-### Usage with reason-apollo
+### Usage with reason-apollo [:arrow_up:](#table-of-contents)
 
 To use with `reason-apollo`'s `ReasonApollo.Provider` already present in your project:
 
@@ -58,9 +85,9 @@ ReactDOMRe.renderToElementWithId(
 );
 ```
 
-# Available hooks
+## Available hooks [:arrow_up:](#table-of-contents)
 
-## useQuery
+### useQuery [:arrow_up:](#table-of-contents)
 
 ```reason
 open ApolloHooks
@@ -76,7 +103,7 @@ module UserQuery = [%graphql {|
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (simple, _full) = useQuery((module UserQuery));
+  let (simple, _full) = useQuery(UserQuery.definition);
 
   <div>
   {
@@ -98,7 +125,7 @@ Using the `full` record for more advanced cases
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let (_simple, full) = useQuery((module UserQuery));
+  let (_simple, full) = useQuery(UserQuery.definition);
 
   <div>
   {
@@ -117,13 +144,13 @@ let make = () => {
 Using `fetchPolicy` to change interactions with the `apollo` cache, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionsfetchpolicy).
 
 ```reason
-let (_simple, full) = useQuery(~fetchPolicy=NetworkOnly, (module UserQuery));
+let (_simple, full) = useQuery(~fetchPolicy=NetworkOnly, UserQuery.definition);
 ```
 
 Using `errorPolicy` to change how errors are handled, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#optionserrorpolicy).
 
 ```reason
-let (simple, _full) = useQuery(~errorPolicy=All, (module UserQuery));
+let (simple, _full) = useQuery(~errorPolicy=All, UserQuery.definition);
 ```
 
 Using `skip` to skip query entirely, see [apollo docs](https://www.apollographql.com/docs/react/api/react-apollo/#configskip).
@@ -136,11 +163,11 @@ let (simple, _full) =
       | None => true
       | _ => false
       },
-    (module UserQuery),
+    UserQuery.definition,
   );
 ```
 
-## useMutation
+### useMutation [:arrow_up:](#table-of-contents)
 
 ```reason
 module ScreamMutation = [%graphql {|
@@ -154,7 +181,7 @@ module ScreamMutation = [%graphql {|
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), (module ScreamMutation));
+  let ( screamMutation, _simple, _full ) = useMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), ScreamMutation.definition);
   let scream = (_) => {
     screamMutation()
       |> Js.Promise.then_(result => {
@@ -182,7 +209,7 @@ If you don't know the value of the variables yet you can pass them in later
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation((module ScreamMutation));
+  let ( screamMutation, _simple, _full ) = useMutation(ScreamMutation.definition);
   let scream = (_) => {
     screamMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), ())
       |> Js.Promise.then_(result => {
@@ -204,7 +231,82 @@ let make = () => {
 }
 ```
 
-## Cache
+### useSubscription [:arrow_up:](#table-of-contents)
+
+In order to use subscriptions, you first need to set up your websocket link:
+
+```diff
+/* Create an InMemoryCache */
+let inMemoryCache = ApolloInMemoryCache.createInMemoryCache();
+
+/* Create an HTTP Link */
+let httpLink =
+  ApolloLinks.createHttpLink(~uri="http://localhost:3010/graphql", ());
++
++/* Create a WS Link */
++let webSocketLink =
++  ApolloLinks.webSocketLink({
++    uri: "wss://localhost:3010/graphql",
++    options: {
++      reconnect: true,
++      connectionParams: None,
++    },
++  });
++
++/* Using the ability to split links, you can send data to each link
++   depending on what kind of operation is being sent */
++let link =
++  ApolloLinks.split(
++    operation => {
++      let operationDefition =
++        ApolloUtilities.getMainDefinition(operation.query);
++      operationDefition.kind == "OperationDefinition"
++      && operationDefition.operation == "subscription";
++    },
++    webSocketLink,
++    httpLink,
++  );
+
+let client =
+-  ReasonApollo.createApolloClient(~link=httpLink, ~cache=inMemoryCache, ());
++  ReasonApollo.createApolloClient(~link, ~cache=inMemoryCache, ());
+
+let app =
+ <ApolloHooks.Provider client>
+   ...
+ </ApolloHooks.Provider>
+```
+
+Then, you can implement `useSubscription` in a similar manner to `useQuery`
+
+```reason
+module UserAdded = [%graphql {|
+  subscription userAdded {
+    userAdded {
+      id
+      name
+    }
+  }
+|}];
+
+
+[@react.component]
+let make = () => {
+  let (userAddedSubscription, _full) = ApolloHooks.useSubscription(UserAdded.definition);
+
+  switch (userAddedSubscription) {
+    | Loading => <div> {ReasonReact.string("Loading")} </div>
+    | Error(error) => <div> {ReasonReact.string(error##message)} </div>
+    | Data(_response) =>
+      <audio autoPlay=true>
+      <source src="notification.ogg" type_="audio/ogg" />
+      <source src="notification.mp3" type_="audio/mpeg" />
+    </audio>
+  };
+};
+```
+
+## Cache [:arrow_up:](#table-of-contents)
 
 There are a couple of caveats with manual cache updates.
 
@@ -284,6 +386,47 @@ By default, apollo will add field `__typename` to the queries and will use it to
 ## Getting it running
 
 ```sh
-npm install
-npm start
+yarn
+yarn start
 ```
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="http://twitter.com/fakenickels"><img src="https://avatars0.githubusercontent.com/u/1283200?v=4" width="100px;" alt=""/><br /><sub><b>Gabriel Rubens</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=fakenickels" title="Code">💻</a> <a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=fakenickels" title="Documentation">📖</a> <a href="#ideas-fakenickels" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/arielschiavoni"><img src="https://avatars2.githubusercontent.com/u/1364564?v=4" width="100px;" alt=""/><br /><sub><b>Ariel Schiavoni</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=arielschiavoni" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://playqup.com"><img src="https://avatars0.githubusercontent.com/u/3103241?v=4" width="100px;" alt=""/><br /><sub><b>Matt</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=hew" title="Code">💻</a></td>
+    <td align="center"><a href="https://twitter.com/_cichocinski"><img src="https://avatars2.githubusercontent.com/u/9558691?v=4" width="100px;" alt=""/><br /><sub><b>Tomasz Cichocinski</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/issues?q=author%3Abaransu" title="Bug reports">🐛</a> <a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=baransu" title="Code">💻</a></td>
+    <td align="center"><a href="https://tmattio.github.io/"><img src="https://avatars0.githubusercontent.com/u/6162008?v=4" width="100px;" alt=""/><br /><sub><b>Thibaut Mattio</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=tmattio" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/Emilios1995"><img src="https://avatars1.githubusercontent.com/u/12430923?v=4" width="100px;" alt=""/><br /><sub><b>Emilio Srougo</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/issues?q=author%3AEmilios1995" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://mkndrsn.com"><img src="https://avatars0.githubusercontent.com/u/1226972?v=4" width="100px;" alt=""/><br /><sub><b>Mike Anderson</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=athaeryn" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/yurijean"><img src="https://avatars0.githubusercontent.com/u/6414876?v=4" width="100px;" alt=""/><br /><sub><b>Yuri Jean Fabris</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=yurijean" title="Code">💻</a></td>
+    <td align="center"><a href="https://twitter.com/rita_krutikova"><img src="https://avatars2.githubusercontent.com/u/5932274?v=4" width="100px;" alt=""/><br /><sub><b>Margarita Krutikova</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=MargaretKrutikova" title="Code">💻</a> <a href="https://github.com/Astrocoders/reason-apollo-hooks/pulls?q=is%3Apr+reviewed-by%3AMargaretKrutikova" title="Reviewed Pull Requests">👀</a> <a href="#ideas-MargaretKrutikova" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/Yakimych"><img src="https://avatars1.githubusercontent.com/u/5010901?v=4" width="100px;" alt=""/><br /><sub><b>Kyrylo Yakymenko</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/issues?q=author%3AYakimych" title="Bug reports">🐛</a> <a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=Yakimych" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/lukashambsch"><img src="https://avatars3.githubusercontent.com/u/7560008?v=4" width="100px;" alt=""/><br /><sub><b>Lukas Hambsch</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/issues?q=author%3Alukashambsch" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://www.familyfive.app"><img src="https://avatars1.githubusercontent.com/u/579279?v=4" width="100px;" alt=""/><br /><sub><b>Jaap Frolich</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=jfrolich" title="Code">💻</a> <a href="https://github.com/Astrocoders/reason-apollo-hooks/pulls?q=is%3Apr+reviewed-by%3Ajfrolich" title="Reviewed Pull Requests">👀</a> <a href="#ideas-jfrolich" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://willcodefor.beer/"><img src="https://avatars1.githubusercontent.com/u/1478102?v=4" width="100px;" alt=""/><br /><sub><b>Rickard Laurin</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/issues?q=author%3Abeliever" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="http://medson.me"><img src="https://avatars0.githubusercontent.com/u/17956325?v=4" width="100px;" alt=""/><br /><sub><b>Medson Oliveira</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=medson10" title="Code">💻</a> <a href="https://github.com/Astrocoders/reason-apollo-hooks/pulls?q=is%3Apr+reviewed-by%3Amedson10" title="Reviewed Pull Requests">👀</a> <a href="#ideas-medson10" title="Ideas, Planning, & Feedback">🤔</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/soulplant"><img src="https://avatars3.githubusercontent.com/u/16846?v=4" width="100px;" alt=""/><br /><sub><b>soulplant</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=soulplant" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/mbirkegaard"><img src="https://avatars0.githubusercontent.com/u/18616185?v=4" width="100px;" alt=""/><br /><sub><b>mbirkegaard</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=mbirkegaard" title="Code">💻</a></td>
+    <td align="center"><a href="https://strdr4605.github.io"><img src="https://avatars3.githubusercontent.com/u/16056918?v=4" width="100px;" alt=""/><br /><sub><b>Dragoș Străinu</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=strdr4605" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/bdunn313"><img src="https://avatars3.githubusercontent.com/u/867683?v=4" width="100px;" alt=""/><br /><sub><b>Brad Dunn</b></sub></a><br /><a href="https://github.com/Astrocoders/reason-apollo-hooks/commits?author=bdunn313" title="Documentation">📖</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!

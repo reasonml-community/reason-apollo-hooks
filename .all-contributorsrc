@@ -1,0 +1,187 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "fakenickels",
+      "name": "Gabriel Rubens",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1283200?v=4",
+      "profile": "http://twitter.com/fakenickels",
+      "contributions": [
+        "code",
+        "doc",
+        "ideas"
+      ]
+    },
+    {
+      "login": "arielschiavoni",
+      "name": "Ariel Schiavoni",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/1364564?v=4",
+      "profile": "https://github.com/arielschiavoni",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "hew",
+      "name": "Matt",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/3103241?v=4",
+      "profile": "https://playqup.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "baransu",
+      "name": "Tomasz Cichocinski",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/9558691?v=4",
+      "profile": "https://twitter.com/_cichocinski",
+      "contributions": [
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "tmattio",
+      "name": "Thibaut Mattio",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6162008?v=4",
+      "profile": "https://tmattio.github.io/",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "Emilios1995",
+      "name": "Emilio Srougo",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/12430923?v=4",
+      "profile": "https://github.com/Emilios1995",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "athaeryn",
+      "name": "Mike Anderson",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/1226972?v=4",
+      "profile": "http://mkndrsn.com",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "yurijean",
+      "name": "Yuri Jean Fabris",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6414876?v=4",
+      "profile": "https://github.com/yurijean",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "MargaretKrutikova",
+      "name": "Margarita Krutikova",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/5932274?v=4",
+      "profile": "https://twitter.com/rita_krutikova",
+      "contributions": [
+        "code",
+        "review",
+        "ideas"
+      ]
+    },
+    {
+      "login": "Yakimych",
+      "name": "Kyrylo Yakymenko",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/5010901?v=4",
+      "profile": "https://github.com/Yakimych",
+      "contributions": [
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "lukashambsch",
+      "name": "Lukas Hambsch",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/7560008?v=4",
+      "profile": "https://github.com/lukashambsch",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "jfrolich",
+      "name": "Jaap Frolich",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/579279?v=4",
+      "profile": "http://www.familyfive.app",
+      "contributions": [
+        "code",
+        "review",
+        "ideas"
+      ]
+    },
+    {
+      "login": "believer",
+      "name": "Rickard Laurin",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/1478102?v=4",
+      "profile": "https://willcodefor.beer/",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "medson10",
+      "name": "Medson Oliveira",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/17956325?v=4",
+      "profile": "http://medson.me",
+      "contributions": [
+        "code",
+        "review",
+        "ideas"
+      ]
+    },
+    {
+      "login": "soulplant",
+      "name": "soulplant",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/16846?v=4",
+      "profile": "https://github.com/soulplant",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mbirkegaard",
+      "name": "mbirkegaard",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/18616185?v=4",
+      "profile": "https://github.com/mbirkegaard",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "strdr4605",
+      "name": "Dragoș Străinu",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/16056918?v=4",
+      "profile": "https://strdr4605.github.io",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "bdunn313",
+      "name": "Brad Dunn",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/867683?v=4",
+      "profile": "https://github.com/bdunn313",
+      "contributions": [
+        "doc"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "reason-apollo-hooks",
+  "projectOwner": "Astrocoders",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}

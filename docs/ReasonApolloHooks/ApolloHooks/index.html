@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"><head><title>ApolloHooks (ReasonApolloHooks.ApolloHooks)</title><link rel="stylesheet" href="../../odoc.css"/><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><script src="../../highlight.pack.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body><div class="content"><header><nav><a href="../">Up</a> – <a href="../">ReasonApolloHooks</a> &#x00BB; ApolloHooks</nav><h1>Module <code>ApolloHooks</code></h1></header><div class="spec module" id="module-Mutation"><a href="#module-Mutation" class="anchor"></a><code><span class="keyword">module</span> Mutation = <a href="../ApolloHooksMutation">ApolloHooksMutation</a>;</code></div><div class="spec module" id="module-Query"><a href="#module-Query" class="anchor"></a><code><span class="keyword">module</span> Query = <a href="../ApolloHooksQuery">ApolloHooksQuery</a>;</code></div><div class="spec module" id="module-Provider"><a href="#module-Provider" class="anchor"></a><code><span class="keyword">module</span> Provider = <a href="../ApolloHooksProvider">ApolloHooksProvider</a>;</code></div><div class="spec module" id="module-Subscription"><a href="#module-Subscription" class="anchor"></a><code><span class="keyword">module</span> Subscription = <a href="../ApolloHooksSubscription">ApolloHooksSubscription</a>;</code></div><dl><dt class="spec value" id="val-useQuery"><a href="#val-useQuery" class="anchor"></a><code><span class="keyword">let</span> useQuery: ?&#8288;client:ApolloClient.generatedApolloClient <span>=&gt;</span> ?&#8288;variables:Js.Json.t <span>=&gt;</span> ?&#8288;notifyOnNetworkStatusChange:bool <span>=&gt;</span> ?&#8288;fetchPolicy:<a href="../ApolloHooksTypes#type-fetchPolicy">ApolloHooksTypes.fetchPolicy</a> <span>=&gt;</span> ?&#8288;errorPolicy:<a href="../ApolloHooksTypes#type-errorPolicy">ApolloHooksTypes.errorPolicy</a> <span>=&gt;</span> ?&#8288;skip:bool <span>=&gt;</span> ?&#8288;pollInterval:int <span>=&gt;</span> <a href="../ApolloHooksTypes#type-graphqlDefinition">ApolloHooksTypes.graphqlDefinition</a>(<span class="type-var">'a</span>, <span class="type-var">'b</span>, <span class="type-var">'c</span>) <span>=&gt;</span> (<a href="../ApolloHooksQuery#type-variant">Query.variant</a>(<span class="type-var">'a</span>), <a href="../ApolloHooksQuery#type-queryResult">Query.queryResult</a>(<span class="type-var">'a</span>));</code></dt><dd><p>This is probably the one hook you'll use the most. A quick demo:</p><pre><code class="ml">open ApolloHooks;
+
+module Query = [%graphql {|
+  query MyQuery {
+    me { id, name }
+  }
+|}];
+
+[@react.component]
+let make = () =&gt; {
+  /* In Reason we prefix variables that we are not going to use with _ */
+  let (simple, _full) = useQuery(Query.definitions);
+
+  /* When using simple with Reason's pattern-matching operator, the compiler will force you to cover every single branch of the variant type */
+  switch(simple) {
+    | Loading =&gt; React.string(&quot;loading...&quot;)
+    | Error(error) =&gt;
+      Js.log(error);
+      React.string(&quot;Something went wrong!&quot;)
+    | Data(data) =&gt;
+      React.string(&quot;Hello, &quot; ++ data##me##name)
+    /* Every. Single. One. Of Them. */
+    | NoData =&gt;
+      React.string(&quot;Woa something went really wrong! Glady we use Reason and it forced us to handle this! Report this issue&quot;)
+  }
+}</code></pre><p>Why we return a tuple? While designing and using the API we came to the conclusion that would be much more convient to have a value that would attend the majority of simple usages and a full for when you need to do a complex UI, such as infinite scroll.</p><p>The value <code>simple</code> (<span class="xref-unresolved" title="unresolved reference to &quot;Query.variant('a)&quot;"><a href="#module-Query"><code>Query</code></a>.variant('a)</span>) helps you to consume your data with simplicity, type safety and exhaustiveness check. But for those cases where you really want do do a fine-grained control of your data flow – such as when you have <code>loading</code> and <code>data</code> at the same time – that's when <code>full</code> (<span class="xref-unresolved" title="unresolved reference to &quot;Query.queryResult('a)&quot;"><a href="#module-Query"><code>Query</code></a>.queryResult('a)</span>) becomes more useful.</p><pre><code class="ml">module Query = [%graphql {|
+  query MyQuery {
+    me { id, name }
+  }
+|}];
+
+[@react.component]
+let make = () =&gt; {
+  let (_simple, full) = useQuery(Query.definitions);
+
+  /* `full` is a record type so you pattern against it's possible combos of values */
+  switch(full) {
+    /* Initial loading */
+    | { loading: true, data: None } =&gt; React.string(&quot;loading...&quot;)
+    /* Error but no data */
+    | { loading: false, data: None, error: Some(error) } =&gt; React.string(&quot;Something went wrong&quot;)
+    /* When we have some data and we tried to refetch but got an error */
+    | { loading: false, data: Some(data), error: Some(error)  } =&gt;
+      &lt;&gt;
+        {React.string(&quot;Something went wrong&quot;)}
+        &lt;RenderData data onLoadMore={full.refetch} /&gt;
+      &lt;/&gt;
+    /* Just data */
+    | { loading: false, data: Some(data), error: None } =&gt;
+      &lt;&gt;
+        {React.string(&quot;Something went wrong&quot;)}
+        &lt;RenderData data onLoadMore={full.refetch} /&gt;
+      &lt;/&gt;
+    | Data(data) =&gt;
+      React.string(&quot;Hello, &quot; ++ data##me##name)
+    /* Not loading? No data? No error? That's weird */
+    | {loading: false, data: None, error: null} =&gt;
+      React.string(&quot;Woa something went really wrong! But the programmer remembered to handle this case! Report to us&quot;)
+  }
+}</code></pre><p>Quite more complex right? Gladly it's not always that we have that level of complexity.</p><p>That covers the most common cases of usage. If you want to see more complex usages check out the examples folder.</p></dd></dl><dl><dt class="spec value" id="val-useMutation"><a href="#val-useMutation" class="anchor"></a><code><span class="keyword">let</span> useMutation: ?&#8288;client:ApolloClient.generatedApolloClient <span>=&gt;</span> ?&#8288;variables:Js.Json.t <span>=&gt;</span> ?&#8288;refetchQueries:<a href="../ApolloHooksMutation#type-refetchQueries">Mutation.refetchQueries</a> <span>=&gt;</span> ?&#8288;awaitRefetchQueries:bool <span>=&gt;</span> ?&#8288;update:(ApolloClient.generatedApolloClient <span>=&gt;</span> <a href="../ApolloHooksMutation#type-mutationResult">Mutation.mutationResult</a>(<span class="type-var">'a</span>) <span>=&gt;</span> unit) <span>=&gt;</span> ?&#8288;optimisticResponse:Js.Json.t <span>=&gt;</span> <a href="../ApolloHooksTypes#type-graphqlDefinition">ApolloHooksTypes.graphqlDefinition</a>(<span class="type-var">'a</span>, <span class="type-var">'b</span>, <span class="type-var">'c</span>) <span>=&gt;</span> (<a href="../ApolloHooksMutation#type-mutation">Mutation.mutation</a>(<span class="type-var">'a</span>), <a href="../ApolloHooksMutation#type-controlledVariantResult">Mutation.controlledVariantResult</a>(<span class="type-var">'a</span>), <a href="../ApolloHooksMutation#type-controlledResult">Mutation.controlledResult</a>(<span class="type-var">'a</span>));</code></dt><dd><p>Second most used! Here's a quick demo:</p><pre><code class="ml">open ApolloHooks;
+
+module Mutation = [%graphql {|
+  mutation MyMutation($input: MyMutationInput!) {
+    myMutation(input: $input) { error }
+  }
+|}];
+
+[@react.component]
+let make = () =&gt; {
+  /* `simple` and `full` follow the same principle of `useQuery`. */
+  let (mutate, simple, _full) = useMutation(Mutation.definitions);
+
+  /* When using simple with Reason's pattern-matching operator, the compiler will force you to cover every single branch of the variant type */
+  switch(simple) {
+    | Loading =&gt; React.string(&quot;loading...&quot;)
+    | Error(error) =&gt;
+      Js.log(error);
+      React.string(&quot;Something went wrong!&quot;)
+    | Data(data) =&gt;
+      &lt;div&gt;
+        {React.string(&quot;Hello, &quot; ++ data##me##name)}
+      &lt;/div&gt;
+    /* Every. Single. One. Of Them. */
+    | NotCalled =&gt; &lt;button onClick={_ =&gt; mutate()}&gt;{React.string(&quot;Click me&quot;)}
+    | NoData =&gt;
+      React.string(&quot;Woa something went really wrong! Glady we use Reason and it forced us to handle this! Report this issue&quot;)
+  }
+}</code></pre><p>Or if you only care about calling <code>mutate</code></p><pre><code class="ml">open ApolloHooks;
+
+module Mutation = [%graphql {|
+  mutation MyMutation {
+    me { id, name }
+  }
+|}];
+
+[@react.component]
+let make = () =&gt; {
+  let (mutate, _simple, _full) = useMutation(Mutation.definitions);
+  let onClick = _event =&gt; {
+    mutate()
+      |&gt; Js.Promise.then_(result =&gt; {
+        switch(result) {
+          | Data(data) =&gt; do anything here
+          | Error(error) =&gt; handle your error
+          | NoData =&gt; ...something went wrong...
+        }
+      })
+  }
+
+  &lt;button onClick&gt;{React.string(&quot;Click me&quot;)}&lt;/button&gt;
+}</code></pre></dd></dl><dl><dt class="spec value" id="val-useSubscription"><a href="#val-useSubscription" class="anchor"></a><code><span class="keyword">let</span> useSubscription: ?&#8288;variables:Js.Json.t <span>=&gt;</span> ?&#8288;client:ApolloClient.generatedApolloClient <span>=&gt;</span> <a href="../ApolloHooksTypes#type-graphqlDefinition">ApolloHooksTypes.graphqlDefinition</a>(<span class="type-var">'a</span>, <span class="type-var">'b</span>, <span class="type-var">'c</span>) <span>=&gt;</span> (<a href="../ApolloHooksSubscription#type-variant">Subscription.variant</a>(<span class="type-var">'a</span>), <a href="../ApolloHooksSubscription#type-result">Subscription.result</a>(<span class="type-var">'a</span>));</code></dt><dd><p>useSubscription bindings</p></dd></dl><dl><dt class="spec value" id="val-toQueryObj"><a href="#val-toQueryObj" class="anchor"></a><code><span class="keyword">let</span> toQueryObj: Js.t({.. query: string, variables: Js.Json.t, }) <span>=&gt;</span> ApolloClient.queryObj;</code></dt><dd><p>Helper to generate the shape of a query for <code>refetchQueries</code> mutation param. Take a look in examples/persons/src/EditPerson.re for a more complete demo of usage.</p></dd></dl><dl><dt class="spec value" id="val-toReadQueryOptions"><a href="#val-toReadQueryOptions" class="anchor"></a><code><span class="keyword">let</span> toReadQueryOptions: Js.t({.. query: string, variables: <span class="type-var">'a</span>, }) <span>=&gt;</span> Js.t({. query: ReasonApolloTypes.queryString, variables: Js.Nullable.t(<span class="type-var">'a</span>), });</code></dt><dd><p>Helper to generate the shape of a query for <code>ApolloClient.ReadQuery.readQuery</code>. Used for optimistic UI. Take a look in examples/persons/src/FilterByNameCache.re for a more complete demo of usage.</p></dd></dl></div></body></html>

@@ -15,7 +15,7 @@ let make = (~age) => {
   let (simple, _full) =
     useQuery(
       ~variables=PersonsOlderThanQuery.makeVariables(~age, ()),
-      (module PersonsOlderThanQuery),
+      PersonsOlderThanQuery.definition,
     );
 
   <div>

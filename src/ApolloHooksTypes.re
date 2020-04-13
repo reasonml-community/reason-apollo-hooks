@@ -61,7 +61,40 @@ let errorPolicyToJs = errorPolicy =>
   | All => "all"
   };
 
+/**
+ * apollo-client/src/errors/ApolloError.ts
+ */
+type apolloErrorExtensions = {. "code": Js.Nullable.t(string)};
+
+type graphqlError = {
+  .
+  "message": string,
+  "name": Js.Nullable.t(string),
+  "extensions": Js.Nullable.t(apolloErrorExtensions),
+  "locations": Js.Nullable.t(array(string)),
+  "path": Js.Nullable.t(array(string)),
+  "nodes": Js.Nullable.t(array(string)),
+};
+
+type apolloError = {
+  .
+  "message": string,
+  "graphQLErrors": Js.Nullable.t(array(graphqlError)),
+  "networkError": Js.Nullable.t(string),
+};
+
 type parse('raw_t, 't) = 'raw_t => 't;
 type query = string;
+type composeVariables('t, 'returnType, 'hookReturnType) =
+  ('t => 'returnType) => 'hookReturnType;
 
-type graphqlDefinition('t, 'raw_t, 'b) = (parse('raw_t, 't), query, 'b);
+type graphqlDefinition('t, 'raw_t, 'returnType, 'hookReturnType) = (
+  parse('raw_t, 't),
+  query,
+  composeVariables('t, 'returnType, 'hookReturnType),
+);
+
+module Context = {
+  type t = Js.Dict.t(string);
+  let make = (context): t => Js.Dict.fromList(context);
+};

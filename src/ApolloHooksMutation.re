@@ -1,35 +1,49 @@
-type graphqlErrors;
+open ApolloHooksTypes;
 
-type error = {
+type jsResult('raw_t) = {
   .
-  "message": string,
-  "graphqlErrors": graphqlErrors,
+  "data": Js.Nullable.t('raw_t),
+  "loading": bool,
+  "called": bool,
+  "error": Js.Nullable.t(apolloError),
+};
+
+type jsExecutionResult('raw_t) = {
+  .
+  "data": Js.Nullable.t('raw_t),
+  "errors": Js.Nullable.t(array(graphqlError)),
 };
 
 type refetchQueries('raw_t) =
-  ReasonApolloTypes.executionResult('raw_t) => array(ApolloClient.queryObj);
+  jsExecutionResult('raw_t) => array(ApolloClient.queryObj);
 
-/* Result that is return by the hook */
-type result('a) =
+/* The type that the promise returned by the mutate function resolves to */
+type executionResult('a) = {
+  data: option('a),
+  errors: option(array(graphqlError)),
+};
+
+type executionVariantResult('a) =
   | Data('a)
-  | Error(error)
+  | Errors(array(graphqlError))
   | NoData;
 
-/* Result that is return by the hook */
+/* The type of the 'full' result returned by the hook */
 type controlledResult('t) = {
   loading: bool,
   called: bool,
   data: option('t),
-  error: option(error),
+  error: option(apolloError),
 };
 
 type optimisticResult;
 
+/* The type of the 'simple' result returned by the hook */
 type controlledVariantResult('t) =
   | Loading
-  | Called
+  | NotCalled
   | Data('t)
-  | Error(error)
+  | Error(apolloError)
   | NoData;
 
 [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
@@ -56,16 +70,9 @@ type options('raw_t) = {
   optimisticResponse: optimisticResult,
 };
 
-type jsResult('raw_t) = {
-  .
-  "data": Js.Nullable.t('raw_t),
-  "loading": bool,
-  "called": bool,
-  "error": Js.Nullable.t(error),
-};
-
 type jsMutate('raw_t) =
-  (. options('raw_t)) => Js.Promise.t(jsResult('raw_t));
+  (. options('raw_t)) => Js.Promise.t(jsExecutionResult('raw_t));
+
 type mutation('t, 'raw_t) =
   (
     ~variables: Js.Json.t=?,
@@ -75,7 +82,7 @@ type mutation('t, 'raw_t) =
     ~optimisticResponse: optimisticResult=?,
     unit
   ) =>
-  Js.Promise.t(controlledVariantResult('t));
+  Js.Promise.t((executionVariantResult('t), executionResult('t)));
 
 [@bs.module "@apollo/client"]
 external useMutationJs:
@@ -98,7 +105,7 @@ let useMutation:
              unit
                =?,
     ~optimisticResponse: optimisticResult=?,
-    ApolloHooksTypes.graphqlDefinition('t, 'raw_t, _)
+    ApolloHooksTypes.graphqlDefinition('t, 'raw_t, _, _)
   ) =>
   (mutation('t, 'raw_t), controlledVariantResult('t), controlledResult('t)) =
   (
@@ -145,19 +152,30 @@ let useMutation:
               (),
             ),
           )
-          |> Js.Promise.then_(jsResult =>
-               (
-                 switch (
-                   Js.Nullable.toOption(jsResult##data),
-                   Js.Nullable.toOption(jsResult##error),
-                 ) {
-                 | (Some(data), _) => Data(parse(data))
-                 | (None, Some(error)) => Error(error)
-                 | (None, None) => NoData
-                 }
-               )
-               |> Js.Promise.resolve
-             ),
+          |> Js.Promise.then_(jsResult => {
+               let full = {
+                 data:
+                   Js.Nullable.toOption(jsResult##data)
+                   ->Belt.Option.map(parse),
+                 errors:
+                   switch (Js.Nullable.toOption(jsResult##errors)) {
+                   | Some(errors) when Js.Array.length(errors) > 0 =>
+                     Some(errors)
+                   | _ => None
+                   },
+               };
+
+               let simple =
+                 switch (full) {
+                 | {errors: Some(errors)} => (
+                     Errors(errors): executionVariantResult('data)
+                   )
+                 | {data: Some(data)} => Data(data)
+                 | {errors: None, data: None} => NoData
+                 };
+
+               (simple, full) |> Js.Promise.resolve;
+             }),
         [|variables|],
       );
 
@@ -181,7 +199,7 @@ let useMutation:
           | {loading: true} => Loading
           | {error: Some(error)} => Error(error)
           | {data: Some(data)} => Data(data)
-          | {called: true} => Called
+          | {called: false} => NotCalled
           | _ => NoData
           },
         [|full|],

@@ -1,9 +1,8 @@
 open ApolloHooksTypes;
-type queryError = {. "message": string};
 
 type variant('a) =
   | Data('a)
-  | Error(queryError)
+  | Error(apolloError)
   | Loading
   | NoData;
 
@@ -21,16 +20,49 @@ type updateQueryOptions('a) = {
 
 type updateQueryT('a) = ('a, updateQueryOptions('a)) => 'a;
 
+/**
+ * https://github.com/apollographql/apollo-client/blob/master/packages/apollo-client/src/core/watchQueryOptions.ts#L139
+ */
+type updateSubscriptionOptionsJs = {
+  .
+  "subscriptionData": {. "data": Js.Json.t},
+  "variables": Js.Nullable.t(Js.Json.t),
+};
+
+type updateQuerySubscribeToMoreT =
+  (Js.Json.t, updateSubscriptionOptionsJs) => Js.Json.t;
+
+[@bs.deriving abstract]
+type subscribeToMoreOptionsJs = {
+  document: ReasonApolloTypes.queryString,
+  [@bs.optional]
+  variables: Js.Json.t,
+  [@bs.optional]
+  updateQuery: updateQuerySubscribeToMoreT,
+};
+
+type unsubscribeFnT = unit => unit;
+
 type refetch('a) = (~variables: Js.Json.t=?, unit) => Js.Promise.t('a);
 type queryResult('a) = {
   data: option('a),
   loading: bool,
-  error: option(queryError),
+  error: option(apolloError),
   refetch: refetch('a),
   fetchMore:
     (~variables: Js.Json.t=?, ~updateQuery: updateQueryT('a), unit) =>
     Js.Promise.t(unit),
   networkStatus: ApolloHooksTypes.networkStatus,
+  startPolling: int => unit,
+  stopPolling: unit => unit,
+  subscribeToMore:
+    (
+      ~document: ReasonApolloTypes.queryString,
+      ~variables: Js.Json.t=?,
+      ~updateQuery: updateQuerySubscribeToMoreT=?,
+      unit
+    ) =>
+    unsubscribeFnT,
 };
 
 /**
@@ -61,6 +93,8 @@ type options('raw_t) = {
   skip: bool,
   [@bs.optional]
   pollInterval: int,
+  [@bs.optional]
+  context: Context.t,
 };
 
 type refetchResult('raw_t) = {data: Js.Nullable.t('raw_t)};
@@ -72,12 +106,15 @@ external useQueryJs:
     .
     "data": Js.Nullable.t('raw_t),
     "loading": bool,
-    "error": Js.Nullable.t(queryError),
+    "error": Js.Nullable.t(apolloError),
     [@bs.meth]
     "refetch":
       Js.Nullable.t(Js.Json.t) => Js.Promise.t(refetchResult('raw_t)),
     [@bs.meth] "fetchMore": fetchMoreOptions('a) => Js.Promise.t(unit),
     "networkStatus": Js.Nullable.t(int),
+    [@bs.meth] "stopPolling": unit => unit,
+    [@bs.meth] "startPolling": int => unit,
+    [@bs.meth] "subscribeToMore": subscribeToMoreOptionsJs => unsubscribeFnT,
   } =
   "useQuery";
 
@@ -90,7 +127,8 @@ let useQuery:
     ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
     ~skip: bool=?,
     ~pollInterval: int=?,
-    graphqlDefinition('t, 'raw_t, _)
+    ~context: Context.t=?,
+    graphqlDefinition('t, 'raw_t, _, _)
   ) =>
   (variant('t), queryResult('t)) =
   (
@@ -101,11 +139,12 @@ let useQuery:
     ~errorPolicy=?,
     ~skip=?,
     ~pollInterval=?,
+    ~context=?,
     (parse, query, _),
   ) => {
     let jsResult =
       useQueryJs(
-        gql(. Config.query),
+        gql(. query),
         options(
           ~variables?,
           ~client?,
@@ -116,39 +155,54 @@ let useQuery:
             errorPolicy->Belt.Option.map(ApolloHooksTypes.errorPolicyToJs),
           ~skip?,
           ~pollInterval?,
+          ~context?,
           (),
         ),
       );
 
-    let data =
+    let result =
       React.useMemo1(
         () =>
-          jsResult##data
-          ->Js.Nullable.toOption
-          ->Belt.Option.flatMap(data => {
-              switch (parse(data)) {
-              | parsedData => Some(parsedData)
-              | exception _ => None
-              }
-            }),
+          {
+            data:
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.flatMap(data =>
+                  switch (parse(data)) {
+                  | parsedData => Some(parsedData)
+                  | exception _ => None
+                  }
+                ),
+            loading: jsResult##loading,
+            error: jsResult##error->Js.Nullable.toOption,
+            networkStatus:
+              ApolloHooksTypes.toNetworkStatus(jsResult##networkStatus),
+            refetch: (~variables=?, ()) =>
+              jsResult##refetch(Js.Nullable.fromOption(variables))
+              |> Js.Promise.then_(result =>
+                   parse(
+                     result.data->Js.Nullable.toOption->Belt.Option.getExn,
+                   )
+                   |> Js.Promise.resolve
+                 ),
+            fetchMore: (~variables=?, ~updateQuery, ()) =>
+              jsResult##fetchMore(
+                fetchMoreOptions(~variables?, ~updateQuery, ()),
+              ),
+            stopPolling: () => jsResult##stopPolling(),
+            startPolling: interval => jsResult##startPolling(interval),
+            subscribeToMore: (~document, ~variables=?, ~updateQuery=?, ()) =>
+              jsResult##subscribeToMore(
+                subscribeToMoreOptionsJs(
+                  ~document,
+                  ~variables?,
+                  ~updateQuery?,
+                  (),
+                ),
+              ),
+          },
         [|jsResult|],
       );
-
-    let result = {
-      data,
-      loading: jsResult##loading,
-      error: jsResult##error->Js.Nullable.toOption,
-      networkStatus:
-        ApolloHooksTypes.toNetworkStatus(jsResult##networkStatus),
-      refetch: (~variables=?, ()) =>
-        jsResult##refetch(Js.Nullable.fromOption(variables))
-        |> Js.Promise.then_(result =>
-             parse(result.data->Js.Nullable.toOption->Belt.Option.getExn)
-             |> Js.Promise.resolve
-           ),
-      fetchMore: (~variables=?, ~updateQuery, ()) =>
-        jsResult##fetchMore(fetchMoreOptions(~variables?, ~updateQuery, ())),
-    };
 
     let simple =
       React.useMemo1(
