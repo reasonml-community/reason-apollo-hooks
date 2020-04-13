@@ -61,7 +61,7 @@ let errorPolicyToJs = errorPolicy =>
   | All => "all"
   };
 
-type parse('a) = Js.Json.t => 'a;
+type parse('raw_t, 't) = 'raw_t => 't;
 type query = string;
 
-type graphqlDefinition('data, 'b, 'c) = (parse('data), query, 'b);
+type graphqlDefinition('t, 'raw_t, 'b) = (parse('raw_t, 't), query, 'b);

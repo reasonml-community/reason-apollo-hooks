@@ -4,13 +4,17 @@ module Provider = ApolloHooksProvider;
 module Subscription = ApolloHooksSubscription;
 
 let useQuery = Query.useQuery;
-let useLazyQuery = Query.useLazyQuery;
 let useMutation = Mutation.useMutation;
 let useSubscription = Subscription.useSubscription;
 
 let toQueryObj = (result): ApolloClient.queryObj => {
   query: ApolloClient.gql(. result##query),
   variables: result##variables,
+};
+
+let toQueryObj2 = (query, variables): ApolloClient.queryObj => {
+  query: ApolloClient.gql(. query),
+  variables,
 };
 
 let toReadQueryOptions = result => {

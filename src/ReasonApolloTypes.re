@@ -31,15 +31,16 @@ type graphqlError = {
   nodes: Js.Nullable.t(array(string)),
 };
 
-type executionResult = {
+type executionResult('raw_t) = {
   errors: Js.Nullable.t(Js.Array.t(graphqlError)),
-  data: Js.Nullable.t(Js.Json.t),
+  data: Js.Nullable.t('raw_t),
 };
 
 module type Config = {
   let query: string;
   type t;
-  let parse: Js.Json.t => t;
+  module Raw: {type t;};
+  let parse: Raw.t => t;
 };
 
 type apolloError = {

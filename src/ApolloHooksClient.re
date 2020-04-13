@@ -23,8 +23,7 @@ external doMakeOptions:
     ~pollInterval: int=?,
     unit
   ) =>
-  options('data) =
-  "";
+  options('data);
 
 let makeOptions =
     (
@@ -48,9 +47,9 @@ let makeOptions =
 
 [@bs.send]
 external query:
-  (ApolloClient.generatedApolloClient, options('data)) =>
+  (ApolloClient.generatedApolloClient('raw_t), options('data)) =>
   Js.Promise.t(queryResult('data)) =
   "query";
 
 [@bs.module "../../../apolloClient"]
-external client: ApolloClient.generatedApolloClient = "default";
+external client: ApolloClient.generatedApolloClient('raw_t) = "default";
