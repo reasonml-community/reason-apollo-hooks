@@ -7,82 +7,97 @@ type variant('a) =
   | NoData;
 
 /**
- *
- *  apollo-client/src/core/ObservableQuery.ts
- */
-[@bs.deriving abstract]
-type updateQueryOptions = {
-  [@bs.optional]
-  fetchMoreResult: Js.Json.t,
-  [@bs.optional]
-  variables: Js.Json.t,
-};
-
-type updateQueryT = (Js.Json.t, updateQueryOptions) => Js.Json.t;
-
-/**
  * https://github.com/apollographql/apollo-client/blob/master/packages/apollo-client/src/core/watchQueryOptions.ts#L139
  */
-type updateSubscriptionOptionsJs = {
+type updateSubscriptionOptionsJs('raw_t, 'raw_t_variables) = {
   .
-  "subscriptionData": {. "data": Js.Json.t},
-  "variables": Js.Nullable.t(Js.Json.t),
+  "subscriptionData": {. "data": 'raw_t},
+  "variables": Js.Nullable.t('raw_t_variables),
 };
 
-type updateQuerySubscribeToMoreT =
-  (Js.Json.t, updateSubscriptionOptionsJs) => Js.Json.t;
+type updateQuerySubscribeToMoreT('raw_t, 'raw_t_variables) =
+  ('raw_t, updateSubscriptionOptionsJs('raw_t, 'raw_t_variables)) => 'raw_t;
 
 [@bs.deriving abstract]
-type subscribeToMoreOptionsJs = {
+type subscribeToMoreOptionsJs('raw_t, 'raw_t_variables) = {
   document: ReasonApolloTypes.queryString,
   [@bs.optional]
-  variables: Js.Json.t,
+  variables: 'raw_t_variables,
   [@bs.optional]
-  updateQuery: updateQuerySubscribeToMoreT,
+  updateQuery: updateQuerySubscribeToMoreT('raw_t, 'raw_t_variables),
 };
 
 type unsubscribeFnT = unit => unit;
 
-type refetch('a) = (~variables: Js.Json.t=?, unit) => Js.Promise.t('a);
-type queryResult('a) = {
-  data: option('a),
+type updateQueryOptions('t, 'raw_t_variables) = {
+  fetchMoreResult: option('t),
+  variables: option('raw_t_variables),
+};
+
+module Raw = {
+  /**
+   *
+   *  apollo-client/src/core/ObservableQuery.ts
+   */
+  type updateQueryOptions('raw_t, 'raw_t_variables) = {
+    fetchMoreResult: Js.Nullable.t('raw_t),
+    variables: Js.Nullable.t('raw_t_variables),
+  };
+
+  /**
+   * apollo-client/src/core/watchQueryOptions.ts
+   */
+  type fetchMoreOptions('raw_t, 'raw_t_variables) = {
+    variables: option('raw_t_variables),
+    updateQuery:
+      ('raw_t, updateQueryOptions('raw_t, 'raw_t_variables)) => 'raw_t,
+  };
+};
+
+type queryResult('t, 'raw_t, 'raw_t_variables) = {
+  data: option('t),
   loading: bool,
   error: option(apolloError),
-  refetch: refetch('a),
-  fetchMore:
-    (~variables: Js.Json.t=?, ~updateQuery: updateQueryT, unit) =>
-    Js.Promise.t(unit),
   networkStatus: ApolloHooksTypes.networkStatus,
+  refetch: (~variables: 'raw_t_variables=?, unit) => Js.Promise.t('t),
+  fetchMore:
+    (
+      ~variables: 'raw_t_variables=?,
+      ~updateQuery: ('t, updateQueryOptions('t, 'raw_t_variables)) => 't,
+      unit
+    ) =>
+    Js.Promise.t(unit),
+  rawFetchMore:
+    (
+      ~variables: 'raw_t_variables=?,
+      ~updateQuery: (
+                      'raw_t,
+                      Raw.updateQueryOptions('raw_t, 'raw_t_variables)
+                    ) =>
+                    'raw_t,
+      unit
+    ) =>
+    Js.Promise.t(unit),
   startPolling: int => unit,
   stopPolling: unit => unit,
   subscribeToMore:
     (
       ~document: ReasonApolloTypes.queryString,
-      ~variables: Js.Json.t=?,
-      ~updateQuery: updateQuerySubscribeToMoreT=?,
+      ~variables: 'raw_t_variables=?,
+      ~updateQuery: updateQuerySubscribeToMoreT('raw_t, 'raw_t_variables)=?,
       unit
     ) =>
     unsubscribeFnT,
 };
 
-/**
- * apollo-client/src/core/watchQueryOptions.ts
- */
-[@bs.deriving abstract]
-type fetchMoreOptions = {
-  [@bs.optional]
-  variables: Js.Json.t,
-  updateQuery: updateQueryT,
-};
-
 [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
 
 [@bs.deriving abstract]
-type options = {
+type options('raw_t_variables) = {
   [@bs.optional]
-  variables: Js.Json.t,
+  variables: 'raw_t_variables,
   [@bs.optional]
-  client: ApolloClient.generatedApolloClient,
+  client: ApolloClient.t,
   [@bs.optional]
   notifyOnNetworkStatusChange: bool,
   [@bs.optional]
@@ -97,37 +112,44 @@ type options = {
   context: Context.t,
 };
 
-[@bs.module "@apollo/react-hooks"]
+type refetchResult('raw_t) = {data: Js.Nullable.t('raw_t)};
+
+[@bs.module "@apollo/client"]
 external useQueryJs:
-  (ReasonApolloTypes.queryString, options) =>
+  (ReasonApolloTypes.queryString, options('raw_t_variables)) =>
   {
     .
-    "data": Js.Nullable.t(Js.Json.t),
+    "data": Js.Nullable.t('raw_t),
     "loading": bool,
     "error": Js.Nullable.t(apolloError),
     [@bs.meth]
-    "refetch": Js.Nullable.t(Js.Json.t) => Js.Promise.t(Js.Json.t),
-    [@bs.meth] "fetchMore": fetchMoreOptions => Js.Promise.t(unit),
+    "refetch":
+      Js.Nullable.t('raw_t_variables) => Js.Promise.t(refetchResult('raw_t)),
+    [@bs.meth]
+    "fetchMore":
+      Raw.fetchMoreOptions('raw_t, 'raw_t_variables) => Js.Promise.t(unit),
     "networkStatus": Js.Nullable.t(int),
     [@bs.meth] "stopPolling": unit => unit,
     [@bs.meth] "startPolling": int => unit,
-    [@bs.meth] "subscribeToMore": subscribeToMoreOptionsJs => unsubscribeFnT,
+    [@bs.meth]
+    "subscribeToMore":
+      subscribeToMoreOptionsJs('raw_t, 'raw_t_variables) => unsubscribeFnT,
   } =
   "useQuery";
 
 let useQuery:
   (
-    ~client: ApolloClient.generatedApolloClient=?,
-    ~variables: Js.Json.t=?,
+    ~client: ApolloClient.t=?,
+    ~variables: 'raw_t_variables=?,
     ~notifyOnNetworkStatusChange: bool=?,
     ~fetchPolicy: ApolloHooksTypes.fetchPolicy=?,
     ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
     ~skip: bool=?,
     ~pollInterval: int=?,
     ~context: Context.t=?,
-    graphqlDefinition('data, _, _)
+    graphqlDefinition('t, 'raw_t)
   ) =>
-  (variant('data), queryResult('data)) =
+  (variant('t), queryResult('t, 'raw_t, 'raw_t_variables)) =
   (
     ~client=?,
     ~variables=?,
@@ -137,7 +159,7 @@ let useQuery:
     ~skip=?,
     ~pollInterval=?,
     ~context=?,
-    (parse, query, _),
+    (parse, query, serialize),
   ) => {
     let jsResult =
       useQueryJs(
@@ -156,12 +178,6 @@ let useQuery:
           (),
         ),
       );
-
-    let getData = obj =>
-      obj
-      ->Js.Json.decodeObject
-      ->Belt.Option.flatMap(x => Js.Dict.get(x, "data"))
-      ->Belt.Option.getExn;
 
     let result =
       React.useMemo1(
@@ -183,12 +199,35 @@ let useQuery:
             refetch: (~variables=?, ()) =>
               jsResult##refetch(Js.Nullable.fromOption(variables))
               |> Js.Promise.then_(result =>
-                   parse(result->getData) |> Js.Promise.resolve
+                   parse(
+                     result.data->Js.Nullable.toOption->Belt.Option.getExn,
+                   )
+                   |> Js.Promise.resolve
                  ),
-            fetchMore: (~variables=?, ~updateQuery, ()) =>
-              jsResult##fetchMore(
-                fetchMoreOptions(~variables?, ~updateQuery, ()),
-              ),
+            rawFetchMore: (~variables=?, ~updateQuery, ()) =>
+              jsResult##fetchMore({Raw.variables, Raw.updateQuery}),
+            fetchMore: (~variables=?, ~updateQuery, ()) => {
+              jsResult##fetchMore({
+                Raw.variables,
+                Raw.updateQuery:
+                  (previousResult, {fetchMoreResult, variables}) => {
+                  let result =
+                    updateQuery(
+                      parse(previousResult),
+                      {
+                        fetchMoreResult:
+                          switch (Js.Nullable.toOption(fetchMoreResult)) {
+                          | None => None
+                          | Some(fetchMoreResult) =>
+                            Some(parse(fetchMoreResult))
+                          },
+                        variables: Js.Nullable.toOption(variables),
+                      },
+                    );
+                  serialize(result);
+                },
+              });
+            },
             stopPolling: () => jsResult##stopPolling(),
             startPolling: interval => jsResult##startPolling(interval),
             subscribeToMore: (~document, ~variables=?, ~updateQuery=?, ()) =>

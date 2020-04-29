@@ -83,15 +83,14 @@ type apolloError = {
   "networkError": Js.Nullable.t(string),
 };
 
-type parse('a) = Js.Json.t => 'a;
+type parse('raw_t, 't) = 'raw_t => 't;
+type serialize('t, 'raw_t) = 't => 'raw_t;
 type query = string;
-type composeVariables('returnType, 'hookReturnType) =
-  (Js.Json.t => 'returnType) => 'hookReturnType;
 
-type graphqlDefinition('data, 'returnType, 'hookReturnType) = (
-  parse('data),
+type graphqlDefinition('t, 'raw_t) = (
+  parse('raw_t, 't),
   query,
-  composeVariables('returnType, 'hookReturnType),
+  serialize('t, 'raw_t),
 );
 
 module Context = {
