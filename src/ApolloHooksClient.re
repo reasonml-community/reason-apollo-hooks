@@ -16,7 +16,7 @@ type options('data);
 external doMakeOptions:
   (
     ~query: ReasonApolloTypes.queryString,
-    ~variables: Js.Json.t=?,
+    ~variables: 'raw_t_variables=?,
     ~notifyOnNetworkStatusChange: bool=?,
     ~fetchPolicy: string=?,
     ~errorPolicy: string=?,
@@ -27,12 +27,12 @@ external doMakeOptions:
 
 let makeOptions =
     (
-      ~variables=?,
+      ~variables: 'raw_t_variables=?,
       ~notifyOnNetworkStatusChange=?,
       ~fetchPolicy=?,
       ~errorPolicy=?,
       ~pollInterval=?,
-      (_, query, _): graphqlDefinition('data, _, _),
+      (_, query, _): graphqlDefinition('data, _),
     ) => {
   doMakeOptions(
     ~query=gql(. query),
@@ -47,9 +47,8 @@ let makeOptions =
 
 [@bs.send]
 external query:
-  (ApolloClient.generatedApolloClient('raw_t), options('data)) =>
-  Js.Promise.t(queryResult('data)) =
+  (ApolloClient.t, options('data)) => Js.Promise.t(queryResult('data)) =
   "query";
 
 [@bs.module "../../../apolloClient"]
-external client: ApolloClient.generatedApolloClient('raw_t) = "default";
+external client: ApolloClient.t = "default";

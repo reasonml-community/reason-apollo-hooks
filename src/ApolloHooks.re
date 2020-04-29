@@ -157,17 +157,17 @@ let toReadQueryOptions = result => {
   "variables": Js.Nullable.fromOption(Some(result##variables)),
 };
 
-external toOptimisticResult: 'a => Mutation.optimisticResult = "%identity";
-
 /** useSubscription bindings */
 let useSubscription = Subscription.useSubscription;
 
 /** Helper to generate the shape of a query for [refetchQueries] mutation param. Take a look in examples/persons/src/EditPerson.re for a more complete demo of usage. */
-let toQueryObj = result =>
-  ApolloClient.{
-    query: ApolloClient.gql(. result##query),
-    variables: result##variables,
-  };
+let toQueryObj:
+  (string, 'raw_t_variables) => ApolloClient.queryObj('raw_t_variables) =
+  (theQuery, variables) =>
+    ApolloClient.{query: ApolloClient.gql(. theQuery), variables};
 
-let toQueryObj2 = (query, variables) =>
-  ApolloClient.{query: ApolloClient.gql(. query), variables};
+let toOpaqueQueryObj: (string, 'raw_t_variables) => ApolloClient.opaqueQueryObj =
+  (theQuery, variables) =>
+    ApolloClient.toOpaqueQueryObj(
+      ApolloClient.{query: ApolloClient.gql(. theQuery), variables},
+    );

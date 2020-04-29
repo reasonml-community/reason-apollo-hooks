@@ -38,8 +38,13 @@ type executionResult('raw_t) = {
 
 module type Config = {
   let query: string;
+  module Raw: {
+    type t;
+    type t_variables;
+  };
   type t;
-  module Raw: {type t;};
+  type t_variables;
+
   let parse: Raw.t => t;
 };
 

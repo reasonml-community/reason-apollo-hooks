@@ -16,7 +16,7 @@ module Execution = {
   };
 
   type refetchQueries('raw_t) =
-    jsExecutionResult('raw_t) => array(ApolloClient.queryObj);
+    jsExecutionResult('raw_t) => array(ApolloClient.opaqueQueryObj);
 
   /* The type that the promise returned by the mutate function resolves to */
   type executionResult('a) = {
@@ -38,8 +38,6 @@ type controlledResult('t) = {
   error: option(apolloError),
 };
 
-type optimisticResult;
-
 /* The type of the 'simple' result returned by the hook */
 type controlledVariantResult('t) =
   | Loading
@@ -53,35 +51,34 @@ type controlledVariantResult('t) =
 type mutationResult('raw_t) = {. "data": option('raw_t)};
 
 [@bs.deriving abstract]
-type options('raw_t) = {
+type options('raw_t, 'raw_t_variables) = {
   [@bs.optional]
-  variables: Js.Json.t,
+  variables: 'raw_t_variables,
   [@bs.optional]
   mutation: option(ReasonApolloTypes.queryString),
   [@bs.optional]
-  client: ApolloClient.generatedApolloClient('raw_t),
+  client: ApolloClient.t,
   [@bs.optional]
   refetchQueries: Execution.refetchQueries('raw_t),
   [@bs.optional]
   awaitRefetchQueries: bool,
   [@bs.optional]
-  update:
-    (ApolloClient.generatedApolloClient('raw_t), mutationResult('raw_t)) =>
-    unit,
+  update: (ApolloClient.t, mutationResult('raw_t)) => unit,
   [@bs.optional]
-  optimisticResponse: optimisticResult,
+  optimisticResponse: 'raw_t,
 };
 
-type jsMutate('raw_t) =
-  (. options('raw_t)) => Js.Promise.t(Execution.jsExecutionResult('raw_t));
+type jsMutate('raw_t, 'raw_t_variables) =
+  (. options('raw_t, 'raw_t_variables)) =>
+  Js.Promise.t(Execution.jsExecutionResult('raw_t));
 
-type mutation('t, 'raw_t) =
+type mutation('t, 'raw_t, 'raw_t_variables) =
   (
-    ~variables: Js.Json.t=?,
-    ~client: ApolloClient.generatedApolloClient('raw_t)=?,
+    ~variables: 'raw_t_variables=?,
+    ~client: ApolloClient.t=?,
     ~refetchQueries: Execution.refetchQueries('raw_t)=?,
     ~awaitRefetchQueries: bool=?,
-    ~optimisticResponse: optimisticResult=?,
+    ~optimisticResponse: 't=?,
     unit
   ) =>
   Js.Promise.t(
@@ -90,28 +87,27 @@ type mutation('t, 'raw_t) =
 
 [@bs.module "@apollo/client"]
 external useMutationJs:
-  (. ReasonApolloTypes.queryString, options('raw_t)) =>
-  (jsMutate('raw_t), jsResult('raw_t)) =
+  (. ReasonApolloTypes.queryString, options('raw_t, 'raw_t_variables)) =>
+  (jsMutate('raw_t, 'raw_t_variables), jsResult('raw_t)) =
   "useMutation";
 
 exception Error(string);
 
 let useMutation:
   (
-    ~client: ApolloClient.generatedApolloClient('raw_t)=?,
-    ~variables: Js.Json.t=?,
+    ~client: ApolloClient.t=?,
+    ~variables: 'raw_t_variables=?,
     ~refetchQueries: Execution.refetchQueries('raw_t)=?,
     ~awaitRefetchQueries: bool=?,
-    ~update: (
-               ApolloClient.generatedApolloClient('raw_t),
-               mutationResult('raw_t)
-             ) =>
-             unit
-               =?,
-    ~optimisticResponse: optimisticResult=?,
-    ApolloHooksTypes.graphqlDefinition('t, 'raw_t, _)
+    ~update: (ApolloClient.t, mutationResult('raw_t)) => unit=?,
+    ~optimisticResponse: 't=?,
+    ApolloHooksTypes.graphqlDefinition('t, 'raw_t)
   ) =>
-  (mutation('t, 'raw_t), controlledVariantResult('t), controlledResult('t)) =
+  (
+    mutation('t, 'raw_t, 'raw_t_variables),
+    controlledVariantResult('t),
+    controlledResult('t),
+  ) =
   (
     ~client=?,
     ~variables=?,
@@ -119,7 +115,7 @@ let useMutation:
     ~awaitRefetchQueries=?,
     ~update=?,
     ~optimisticResponse=?,
-    (parse, query, _),
+    (parse, query, serialize),
   ) => {
     let (jsMutate, jsResult) =
       useMutationJs(.
@@ -130,7 +126,12 @@ let useMutation:
           ~refetchQueries?,
           ~awaitRefetchQueries?,
           ~update?,
-          ~optimisticResponse?,
+          ~optimisticResponse=?
+            switch (optimisticResponse) {
+            | Some(optimisticResponse) =>
+              Some(serialize(optimisticResponse))
+            | None => None
+            },
           (),
         ),
       );
@@ -152,7 +153,12 @@ let useMutation:
               ~client?,
               ~refetchQueries?,
               ~awaitRefetchQueries?,
-              ~optimisticResponse?,
+              ~optimisticResponse=?
+                switch (optimisticResponse) {
+                | Some(optimisticResponse) =>
+                  Some(serialize(optimisticResponse))
+                | None => None
+                },
               (),
             ),
           )
