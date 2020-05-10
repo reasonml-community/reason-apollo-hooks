@@ -85,16 +85,12 @@ let useQuery:
           jsQueryResult->React_Types.QueryResult.fromRaw(~parse, ~serialize);
 
         let simple =
-          Apollo_Client__Utils.useGuaranteedMemo1(
-            () =>
-              switch (queryResult) {
-              | {loading: true} => Loading
-              | {error: Some(error)} => Error(error)
-              | {data: Some(data)} => Data(data)
-              | _ => NoData
-              },
-            [|queryResult|],
-          );
+          switch (queryResult) {
+          | {loading: true} => Loading
+          | {error: Some(error)} => Error(error)
+          | {data: Some(data)} => Data(data)
+          | _ => NoData
+          };
 
         (simple, queryResult);
       },
