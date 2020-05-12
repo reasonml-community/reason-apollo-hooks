@@ -55,6 +55,7 @@ let make = () => {
                  update=editPersonUpdate
                />
                <FilterByAge age=filterAgeLimit />
+               <FilterByAgeErrorHandling age=filterAgeLimit />
                <FilterByNameCache name=filterName />
              </div>
            </div>
