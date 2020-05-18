@@ -1808,10 +1808,10 @@ readable-stream@~2.3.6:
     string_decoder "~1.1.1"
     util-deprecate "~1.0.1"
 
-reason-apollo@^0.18.0:
-  version "0.18.0"
-  resolved "https://registry.yarnpkg.com/reason-apollo/-/reason-apollo-0.18.0.tgz#cc970da88de7ac603753eed68984c8492f0665c6"
-  integrity sha512-lw+IoIZ8qoX3iGOFFK//yMVC+Xmf+OcSyKkRgbBn0uG5GomLLMLiKRgjkhUsjAqJ4b3Se7H9JFnso5nL+GFEMA==
+reason-apollo@^0.20.0:
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/reason-apollo/-/reason-apollo-0.20.0.tgz#102e6047bfc37d9f30462799e7f813d17dd4758a"
+  integrity sha512-L0y1mCcViRX6yhdo9dUQAhuDazE1ZbMb3IPuBnlTvQffvecmtDfl0RQ+BCzoCJEP3u8nwb88z2JDoURnaFDSkQ==
   dependencies:
     apollo-cache-inmemory "^1.6.0"
     apollo-client "^2.6.3"

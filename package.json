@@ -21,7 +21,7 @@
     "bsdoc": "6.0.1-alpha",
     "husky": "^3.0.5",
     "lint-staged": "^9.4.0",
-    "reason-apollo": "^0.18.0",
+    "reason-apollo": "^0.20.0",
     "reason-react": ">=0.7.0"
   },
   "peerDependencies": {
