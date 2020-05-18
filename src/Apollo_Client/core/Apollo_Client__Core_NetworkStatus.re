@@ -1,20 +1,13 @@
+[@bs.deriving jsConverter]
 type t =
-  | Loading
-  | SetVariables
-  | FetchMore
-  | Refetch
-  | Poll
-  | Ready
-  | Error
-  | Unknown;
+  | [@bs.as 1] Loading
+  | [@bs.as 2] SetVariables
+  | [@bs.as 3] FetchMore
+  | [@bs.as 4] Refetch
+  | [@bs.as 5] Poll
+  | [@bs.as 6] Ready
+  | [@bs.as 7] Error;
 
-let fromJs =
-  fun
-  | 1 => Loading
-  | 2 => SetVariables
-  | 3 => FetchMore
-  | 4 => Refetch
-  | 6 => Poll
-  | 7 => Ready
-  | 8 => Error
-  | _ => Unknown;
+let toJs = tToJs;
+
+let fromJs = string => tFromJs(string)->Belt.Option.getExn;

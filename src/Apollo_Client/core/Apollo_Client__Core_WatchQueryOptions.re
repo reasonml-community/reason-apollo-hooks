@@ -1,32 +1,24 @@
 module ErrorPolicy = {
-  type t =
-    | None
-    | Ignore
-    | All;
+  [@bs.deriving jsConverter]
+  type t = [ | `none | `ignore | `all];
 
-  let toJs =
-    fun
-    | None => "none"
-    | Ignore => "ignore"
-    | All => "all";
+  let toJs = tToJs;
+
+  let fromJs = string => tFromJs(string)->Belt.Option.getExn;
 };
 
 module WatchQueryFetchPolicy = {
-  type t =
-    | CacheAndNetwork
-    // ...extends FetchPolicy
-    | CacheFirst
-    | NetworkOnly
-    | CacheOnly
-    | NoCache
-    | Standby;
+  [@bs.deriving jsConverter]
+  type t = [
+    | [@bs.as "cache-and-network"] `cacheAndNetwork
+    | [@bs.as "cache-first"] `cacheFirst
+    | [@bs.as "cache-only"] `cacheOnly
+    | [@bs.as "network-only"] `networkOnly
+    | [@bs.as "no-cache"] `noCache
+    | `standby
+  ];
 
-  let toJs =
-    fun
-    | CacheFirst => "cache-first"
-    | CacheAndNetwork => "cache-and-network"
-    | NetworkOnly => "network-only"
-    | CacheOnly => "cache-only"
-    | NoCache => "no-cache"
-    | Standby => "standby";
+  let toJs = tToJs;
+
+  let fromJs = string => tFromJs(string)->Belt.Option.getExn;
 };
