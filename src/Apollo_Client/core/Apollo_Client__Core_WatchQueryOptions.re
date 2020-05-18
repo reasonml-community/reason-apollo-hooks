@@ -4,7 +4,7 @@ module ErrorPolicy = {
     | Ignore
     | All;
 
-  let toRaw =
+  let toJs =
     fun
     | None => "none"
     | Ignore => "ignore"
@@ -21,7 +21,7 @@ module WatchQueryFetchPolicy = {
     | NoCache
     | Standby;
 
-  let toRaw =
+  let toJs =
     fun
     | CacheFirst => "cache-first"
     | CacheAndNetwork => "cache-and-network"

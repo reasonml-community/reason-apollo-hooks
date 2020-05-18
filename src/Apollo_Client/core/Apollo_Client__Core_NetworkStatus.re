@@ -8,7 +8,7 @@ type t =
   | Error
   | Unknown;
 
-let fromRaw =
+let fromJs =
   fun
   | 1 => Loading
   | 2 => SetVariables

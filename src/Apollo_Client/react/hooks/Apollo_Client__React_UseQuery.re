@@ -10,14 +10,14 @@ type simpleQueryResult('a) =
   | Loading
   | NoData;
 
-module Raw = {
+module JS = {
   [@bs.module "@apollo/client"]
   external useQuery:
     (
       ~query: Graphql.Language.documentNode,
-      ~options: React_Types.QueryHookOptions.t('raw_tData, 'raw_tVariables)=?
+      ~options: React_Types.QueryHookOptions.t('jsData, 'variables)=?
     ) =>
-    React_Types.QueryResult.Raw.t('raw_tData, 'raw_tVariables) =
+    React_Types.QueryResult.JS.t('jsData, 'variables) =
     "useQuery";
 };
 
@@ -29,18 +29,18 @@ let useQuery:
     ~errorPolicy: Core.WatchQueryOptions.ErrorPolicy.t=?,
     ~fetchPolicy: Core.WatchQueryOptions.WatchQueryFetchPolicy.t=?,
     ~notifyOnNetworkStatusChange: bool=?,
-    ~onCompleted: 'raw_tData => unit=?,
+    ~onCompleted: 'jsData => unit=?,
     ~onError: Errors.ApolloError.t => unit=?,
     ~partialRefetch: bool=?,
     ~pollInterval: int=?,
     ~skip: bool=?,
     ~ssr: bool=?,
-    ~variables: 'raw_tVariables=?,
-    Apollo_Client__Types.graphqlDefinition('tData, 'raw_tData)
+    ~variables: 'variables=?,
+    Apollo_Client__Types.graphqlDefinition('parsedData, 'jsData)
   ) =>
   (
-    simpleQueryResult('tData),
-    React_Types.QueryResult.t('tData, 'raw_tVariables),
+    simpleQueryResult('parsedData),
+    React_Types.QueryResult.t('parsedData, 'variables),
   ) =
   (
     ~client=?,
@@ -59,7 +59,7 @@ let useQuery:
     (parse, query, serialize),
   ) => {
     let jsQueryResult =
-      Raw.useQuery(
+      JS.useQuery(
         ~query=GraphqlTag.gql(query),
         ~options={
           client,
@@ -82,7 +82,7 @@ let useQuery:
     Apollo_Client__Utils.useGuaranteedMemo1(
       () => {
         let queryResult =
-          jsQueryResult->React_Types.QueryResult.fromRaw(~parse, ~serialize);
+          jsQueryResult->React_Types.QueryResult.fromJs(~parse, ~serialize);
 
         let simple =
           switch (queryResult) {

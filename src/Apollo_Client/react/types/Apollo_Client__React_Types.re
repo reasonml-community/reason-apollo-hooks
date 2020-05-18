@@ -3,13 +3,13 @@ module Errors = Apollo_Client__Errors;
 module Graphql = Apollo_Client__Graphql;
 
 module QueryHookOptions = {
-  module Raw = {
-    type t('raw_tData, 'raw_tVariables) = {
+  module JS = {
+    type t('jsData, 'variables) = {
       query: option(Graphql.documentNode),
       // ...extends QueryFunctionOptions
       displayName: option(string),
       skip: option(bool),
-      onCompleted: option('raw_tData => unit),
+      onCompleted: option('jsData => unit),
       onError: option(Errors.ApolloError.t => unit),
       // ..extends BaseQueryOptions
       client: option(Apollo_Client__ApolloClient.t),
@@ -19,20 +19,20 @@ module QueryHookOptions = {
       notifyOnNetworkStatusChange: option(bool),
       pollInterval: option(int),
       ssr: option(bool),
-      variables: option('raw_tVariables),
+      variables: option('variables),
       partialRefetch: option(bool),
       // INTENTIONALLY IGNORED
       // returnPartialData: option(bool),
     };
   };
 
-  type t('raw_tData, 'raw_tVariables) = {
+  type t('jsData, 'variables) = {
     query: option(Graphql.documentNode),
     // ...extends QueryFunctionOptions
     displayName: option(string),
     skip: option(bool),
     // consider parsing?
-    onCompleted: option('raw_tData => unit),
+    onCompleted: option('jsData => unit),
     onError: option(Errors.ApolloError.t => unit),
     // ...extends BaseQueryOptions
     client: option(Apollo_Client__ApolloClient.t),
@@ -45,21 +45,20 @@ module QueryHookOptions = {
     // INTENTIONALLY IGNORED
     // returnPartialData: option(bool),
     ssr: option(bool),
-    variables: option('raw_tVariables),
+    variables: option('variables),
   };
 
-  let toRaw = (t: t(_, _)): Raw.t(_, _) => {
+  let toJs = (t: t(_, _)): JS.t(_, _) => {
     client: t.client,
     context: t.context,
     displayName: t.displayName,
     errorPolicy:
-      t.errorPolicy
-      ->Belt.Option.map(Core.WatchQueryOptions.ErrorPolicy.toRaw),
+      t.errorPolicy->Belt.Option.map(Core.WatchQueryOptions.ErrorPolicy.toJs),
     onCompleted: t.onCompleted,
     onError: t.onError,
     fetchPolicy:
       t.fetchPolicy
-      ->Belt.Option.map(Core.WatchQueryOptions.WatchQueryFetchPolicy.toRaw),
+      ->Belt.Option.map(Core.WatchQueryOptions.WatchQueryFetchPolicy.toJs),
     notifyOnNetworkStatusChange: t.notifyOnNetworkStatusChange,
     query: t.query,
     pollInterval: t.pollInterval,
@@ -71,70 +70,70 @@ module QueryHookOptions = {
 };
 
 module QueryResult = {
-  module Raw = {
-    type t_fetchMoreOptions_updateQueryOptions('tData, 'raw_tVariables) = {
-      fetchMoreResult: Js.nullable('tData),
-      variables: Js.nullable('raw_tVariables),
+  module JS = {
+    type t_fetchMoreOptions_updateQueryOptions('parsedData, 'variables) = {
+      fetchMoreResult: Js.nullable('parsedData),
+      variables: Js.nullable('variables),
     };
 
-    type t_fetchMoreOptions('raw_tData, 'raw_tVariables) = {
+    type t_fetchMoreOptions('jsData, 'variables) = {
       query: option(Graphql.Language.documentNode),
-      variables: option('raw_tVariables),
+      variables: option('variables),
       context: option(Js.Json.t),
       updateQuery:
         (
-          'raw_tData,
-          t_fetchMoreOptions_updateQueryOptions('raw_tData, 'raw_tVariables)
+          'jsData,
+          t_fetchMoreOptions_updateQueryOptions('jsData, 'variables)
         ) =>
-        'raw_tData,
+        'jsData,
     };
 
-    type t('raw_tData, 'raw_tVariables) = {
+    type t('jsData, 'variables) = {
       fetchMore:
-        t_fetchMoreOptions('raw_tData, 'raw_tVariables) =>
-        Js.Promise.t(Core.Types.ApolloQueryResult.Raw.t('raw_tData)),
+        t_fetchMoreOptions('jsData, 'variables) =>
+        Js.Promise.t(Core.Types.ApolloQueryResult.JS.t('jsData)),
       called: bool,
       client: Apollo_Client__ApolloClient.t,
-      data: Js.nullable('raw_tData),
+      data: Js.nullable('jsData),
       error: Js.nullable(Errors.ApolloError.t),
       loading: bool,
       networkStatus: Core.NetworkStatus.t,
     };
   };
 
-  type t_updateQueryOptions('tData, 'raw_tVariables) = {
-    fetchMoreResult: option('tData),
-    variables: option('raw_tVariables),
+  type t_updateQueryOptions('parsedData, 'variables) = {
+    fetchMoreResult: option('parsedData),
+    variables: option('variables),
   };
 
-  type t('tData, 'raw_tVariables) = {
+  type t('parsedData, 'variables) = {
     called: bool,
     client: Apollo_Client__ApolloClient.t,
-    data: option('tData),
+    data: option('parsedData),
     error: option(Errors.ApolloError.t),
     fetchMore:
       (
         ~context: Js.Json.t=?,
-        ~variables: 'raw_tVariables=?,
+        ~variables: 'variables=?,
         ~updateQuery: (
-                        'tData,
-                        t_updateQueryOptions('tData, 'raw_tVariables)
+                        'parsedData,
+                        t_updateQueryOptions('parsedData, 'variables)
                       ) =>
-                      'tData,
+                      'parsedData,
         unit
       ) =>
-      Js.Promise.t(Core.Types.ApolloQueryResult.t('tData)),
+      Js.Promise.t(Core.Types.ApolloQueryResult.t('parsedData)),
     loading: bool,
     networkStatus: Core.NetworkStatus.t,
   };
 
-  let fromRaw:
+  let fromJs:
     (
-      Raw.t('raw_tData, 'raw_tVariables),
-      ~parse: 'raw_tData => 'tData,
-      ~serialize: 'tData => 'raw_tData
+      JS.t('jsData, 'variables),
+      ~parse: 'jsData => 'parsedData,
+      ~serialize: 'parsedData => 'jsData
     ) =>
-    t('tData, 'raw_tVariables) =
+    t('parsedData, 'variables) =
     (raw, ~parse, ~serialize) => {
       called: raw.called,
       client: raw.client,
@@ -160,7 +159,7 @@ module QueryResult = {
         ->Js.Promise.then_(
             jsResult =>
               Js.Promise.resolve(
-                Core.Types.ApolloQueryResult.fromRaw(jsResult, ~parse),
+                Core.Types.ApolloQueryResult.fromJs(jsResult, ~parse),
               ),
             _,
           );

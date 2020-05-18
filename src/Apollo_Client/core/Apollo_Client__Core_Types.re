@@ -1,24 +1,24 @@
 module Graphql = Apollo_Client__Graphql;
 
 module ApolloQueryResult = {
-  module Raw = {
-    type t('raw_tData) = {
-      data: Js.nullable('raw_tData),
+  module JS = {
+    type t('jsData) = {
+      data: Js.nullable('jsData),
       errors: Js.nullable(array(Graphql.Error.GraphQLError.t)),
       loading: bool,
       networkStatus: int,
     };
   };
 
-  type t('tData) = {
-    data: option('tData),
+  type t('parsedData) = {
+    data: option('parsedData),
     errors: option(array(Graphql.Error.GraphQLError.t)),
     loading: bool,
     networkStatus: int,
   };
 
-  let fromRaw =
-      ({data, errors, loading, networkStatus}: Raw.t('raw_tData), ~parse) => {
+  let fromJs =
+      ({data, errors, loading, networkStatus}: JS.t('jsData), ~parse) => {
     data: data->Js.toOption->Belt.Option.map(parse),
     errors: errors->Js.toOption,
     loading,
