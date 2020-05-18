@@ -72,8 +72,8 @@ module QueryHookOptions = {
 module QueryResult = {
   module JS = {
     type t_fetchMoreOptions_updateQueryOptions('parsedData, 'variables) = {
-      fetchMoreResult: Js.nullable('parsedData),
-      variables: Js.nullable('variables),
+      fetchMoreResult: option('parsedData),
+      variables: option('variables),
     };
 
     type t_fetchMoreOptions('jsData, 'variables) = {
@@ -91,19 +91,14 @@ module QueryResult = {
     type t('jsData, 'variables) = {
       fetchMore:
         t_fetchMoreOptions('jsData, 'variables) =>
-        Js.Promise.t(Core.Types.ApolloQueryResult.JS.t('jsData)),
+        Js.Promise.t(Core.Types.ApolloQueryResult.t('jsData)),
       called: bool,
       client: Apollo_Client__ApolloClient.t,
-      data: Js.nullable('jsData),
-      error: Js.nullable(Errors.ApolloError.t),
+      data: option('jsData),
+      error: option(Errors.ApolloError.t),
       loading: bool,
       networkStatus: Core.NetworkStatus.t,
     };
-  };
-
-  type t_updateQueryOptions('parsedData, 'variables) = {
-    fetchMoreResult: option('parsedData),
-    variables: option('variables),
   };
 
   type t('parsedData, 'variables) = {
@@ -117,7 +112,10 @@ module QueryResult = {
         ~variables: 'variables=?,
         ~updateQuery: (
                         'parsedData,
-                        t_updateQueryOptions('parsedData, 'variables)
+                        JS.t_fetchMoreOptions_updateQueryOptions(
+                          'parsedData,
+                          'variables,
+                        )
                       ) =>
                       'parsedData,
         unit
@@ -134,23 +132,22 @@ module QueryResult = {
       ~serialize: 'parsedData => 'jsData
     ) =>
     t('parsedData, 'variables) =
-    (raw, ~parse, ~serialize) => {
-      called: raw.called,
-      client: raw.client,
-      data: raw.data->Js.toOption->Belt.Option.map(parse),
-      error: raw.error->Js.toOption,
+    (js, ~parse, ~serialize) => {
+      called: js.called,
+      client: js.client,
+      data: js.data->Belt.Option.map(parse),
+      error: js.error,
       fetchMore:
         (~context=?, ~variables=?, ~updateQuery as jsUpdateQuery, ()) => {
-        raw.fetchMore({
+        js.fetchMore({
           context,
           query: None,
           updateQuery: (previousResult, {fetchMoreResult, variables}) =>
             jsUpdateQuery(
               parse(previousResult),
               {
-                fetchMoreResult:
-                  fetchMoreResult->Js.toOption->Belt.Option.map(parse),
-                variables: variables->Js.toOption,
+                fetchMoreResult: fetchMoreResult->Belt.Option.map(parse),
+                variables,
               },
             )
             ->serialize,
@@ -164,7 +161,7 @@ module QueryResult = {
             _,
           );
       },
-      loading: raw.loading,
-      networkStatus: raw.networkStatus,
+      loading: js.loading,
+      networkStatus: js.networkStatus,
     };
 };
