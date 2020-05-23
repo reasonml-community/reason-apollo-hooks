@@ -1,146 +1,176 @@
-open ReasonApolloTypes;
+module Mutation = ApolloClient_Mutation;
+module Query = ApolloClient_Query;
+module Provider = ApolloClient_Provider;
+module Subscription = ApolloClient_Subscription;
+module Client = ApolloClient_Client;
 
-type queryObj('raw_t_variables) = {
-  query: ReasonApolloTypes.queryString,
-  variables: 'raw_t_variables,
+/**
+  This is probably the one hook you'll use the most. A quick demo:
+
+  {[
+    open ApolloClient;
+
+    module Query = [%graphql {|
+      query MyQuery {
+        me { id, name }
+      }
+    |}];
+
+    [@react.component]
+    let make = () => {
+      /* In Reason we prefix variables that we are not going to use with _ */
+      let (simple, _full) = useQuery(Query.definitions);
+
+      /* When using simple with Reason's pattern-matching operator, the compiler will force you to cover every single branch of the variant type */
+      switch(simple) {
+        | Loading => React.string("loading...")
+        | Error(error) =>
+          Js.log(error);
+          React.string("Something went wrong!")
+        | Data(data) =>
+          React.string("Hello, " ++ data##me##name)
+        /* Every. Single. One. Of Them. */
+        | NoData =>
+          React.string("Woa something went really wrong! Glady we use Reason and it forced us to handle this! Report this issue")
+      }
+    }
+  ]}
+
+  Why we return a tuple? While designing and using the API we came to the conclusion that would be much more convient to have a value that would attend
+  the majority of simple usages and a full for when you need to do a complex UI, such as infinite scroll.
+
+  The value [simple] ({!type:Query.variant('a)}) helps you to consume your data with simplicity, type safety and exhaustiveness check.
+  But for those cases where you really want do do a fine-grained control of your data flow – such as when you have [loading] and [data] at the same time –
+  that's when [full] ({!type:Query.queryResult('a)}) becomes more useful.
+
+  {[
+    module Query = [%graphql {|
+      query MyQuery {
+        me { id, name }
+      }
+    |}];
+
+    [@react.component]
+    let make = () => {
+      let (_simple, full) = useQuery(Query.definitions);
+
+      /* `full` is a record type so you pattern against it's possible combos of values */
+      switch(full) {
+        /* Initial loading */
+        | { loading: true, data: None } => React.string("loading...")
+        /* Error but no data */
+        | { loading: false, data: None, error: Some(error) } => React.string("Something went wrong")
+        /* When we have some data and we tried to refetch but got an error */
+        | { loading: false, data: Some(data), error: Some(error)  } =>
+          <>
+            {React.string("Something went wrong")}
+            <RenderData data onLoadMore={full.refetch} />
+          </>
+        /* Just data */
+        | { loading: false, data: Some(data), error: None } =>
+          <>
+            {React.string("Something went wrong")}
+            <RenderData data onLoadMore={full.refetch} />
+          </>
+        | Data(data) =>
+          React.string("Hello, " ++ data##me##name)
+        /* Not loading? No data? No error? That's weird */
+        | {loading: false, data: None, error: null} =>
+          React.string("Woa something went really wrong! But the programmer remembered to handle this case! Report to us")
+      }
+    }
+  ]}
+
+  Quite more complex right? Gladly it's not always that we have that level of complexity.
+
+  That covers the most common cases of usage. If you want to see more complex usages check out the examples folder.
+  */
+let useQuery = Query.useQuery;
+let useQueryLegacy = Query.useQueryLegacy;
+
+/**
+  Second most used! Here's a quick demo:
+
+  {[
+    open ApolloClient;
+
+    module Mutation = [%graphql {|
+      mutation MyMutation($input: MyMutationInput!) {
+        myMutation(input: $input) { error }
+      }
+    |}];
+
+    [@react.component]
+    let make = () => {
+      /* `simple` and `full` follow the same principle of `useQuery`. */
+      let (mutate, simple, _full) = useMutation(Mutation.definitions);
+
+      /* When using simple with Reason's pattern-matching operator, the compiler will force you to cover every single branch of the variant type */
+      switch(simple) {
+        | Loading => React.string("loading...")
+        | Error(error) =>
+          Js.log(error);
+          React.string("Something went wrong!")
+        | Data(data) =>
+          <div>
+            {React.string("Hello, " ++ data##me##name)}
+          </div>
+        /* Every. Single. One. Of Them. */
+        | NotCalled => <button onClick={_ => mutate()}>{React.string("Click me")}
+        | NoData =>
+          React.string("Woa something went really wrong! Glady we use Reason and it forced us to handle this! Report this issue")
+      }
+    }
+  ]}
+
+  Or if you only care about calling [mutate]
+
+  {[
+    open ApolloClient;
+
+    module Mutation = [%graphql {|
+      mutation MyMutation {
+        me { id, name }
+      }
+    |}];
+
+    [@react.component]
+    let make = () => {
+      let (mutate, _simple, _full) = useMutation(Mutation.definitions);
+      let onClick = _event => {
+        mutate()
+          |> Js.Promise.then_(result => {
+            switch(result) {
+              | Data(data) => do anything here
+              | Error(error) => handle your error
+              | NoData => ...something went wrong...
+            }
+          })
+      }
+
+      <button onClick>{React.string("Click me")}</button>
+    }
+  ]}
+  */
+let useMutation = Mutation.useMutation;
+let useMutationLegacy = Mutation.useMutationLegacy;
+
+let toReadQueryOptions = result => {
+  "query": Client.gql(. result##query),
+  "variables": Js.Nullable.fromOption(Some(result##variables)),
 };
 
-type opaqueQueryObj;
-external toOpaqueQueryObj: queryObj('raw_t_variables) => opaqueQueryObj =
-  "%identity";
+/** useSubscription bindings */
+let useSubscription = Subscription.useSubscription;
 
-type mutationObj('raw_t_variables) = {
-  mutation: ReasonApolloTypes.queryString,
-  variables: 'raw_t_variables,
-};
+/** Helper to generate the shape of a query for [refetchQueries] mutation param. Take a look in examples/persons/src/EditPerson.re for a more complete demo of usage. */
+let toQueryObj:
+  (string, 'raw_t_variables) => Client.queryObj('raw_t_variables) =
+  (theQuery, variables) =>
+    Client.{query: Client.gql(. theQuery), variables};
 
-type updateQueryOptions('raw_t, 'raw_t_variables) = {
-  fetchMoreResult: option('raw_t),
-  variables: option('raw_t_variables),
-};
-
-type onErrorT;
-type updateQueryT('raw_t, 'raw_t_variables) =
-  ('raw_t, updateQueryOptions('raw_t, 'raw_t_variables)) => 'raw_t;
-
-type updateSubscriptionOptions = {
-  subscriptionData: option(Js.Json.t),
-  variables: option(Js.Json.t),
-};
-type updateQuerySubscriptionT =
-  (Js.Json.t, updateSubscriptionOptions) => Js.Json.t;
-
-type subscribeToMoreOptions = {
-  document: queryString,
-  variables: option(Js.Json.t),
-  updateQuery: option(updateQuerySubscriptionT),
-  onError: option(onErrorT),
-};
-
-type fetchMoreOptions('raw_t, 'raw_t_variables) = {
-  variables: option('raw_t_variables),
-  updateQuery: updateQueryT('raw_t, 'raw_t_variables),
-};
-
-type queryResult('raw_t, 'raw_t_variables) = {
-  loading: bool,
-  data: Js.Nullable.t('raw_t),
-  error: Js.Nullable.t(apolloError),
-  refetch:
-    Js.Null_undefined.t('raw_t) =>
-    Js.Promise.t(queryResult('raw_t, 'raw_t_variables)),
-  networkStatus: Js.Nullable.t(int),
-  variables: Js.Null_undefined.t(Js.Json.t),
-  fetchMore:
-    fetchMoreOptions('raw_t, 'raw_t_variables) => Js.Promise.t(unit),
-  subscribeToMore: subscribeToMoreOptions => unit,
-};
-
-type mutationResult('raw_t) = {
-  loading: bool,
-  called: bool,
-  data: Js.Nullable.t('raw_t),
-  error: Js.Nullable.t(apolloError),
-  networkStatus: Js.Nullable.t(int),
-  variables: Js.Null_undefined.t(Js.Json.t),
-};
-
-type t;
-
-[@bs.send]
-external query:
-  (t, queryObj('raw_t_variables)) =>
-  Js.Promise.t(queryResult('raw_t, 'raw_t_variables)) =
-  "query";
-
-[@bs.send]
-external mutate:
-  (t, mutationObj('raw_t_variables)) => Js.Promise.t(mutationResult('raw_t)) =
-  "mutate";
-[@bs.send] external resetStore: t => Js.Promise.t(unit) = "resetStore";
-
-type apolloClientObjectParam = {
-  link: apolloLink,
-  cache: apolloCache,
-  ssrMode: option(bool),
-  ssrForceFetchDelay: option(int),
-  connectToDevTools: option(bool),
-  queryDeduplication: option(bool),
-};
-
-[@bs.module "@apollo/client"] [@bs.new]
-external createApolloClientJS: apolloClientObjectParam => t = "ApolloClient";
-
-[@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
-
-module ReadQuery = (Config: ReasonApolloTypes.Config) => {
-  type readQueryOptions = {
-    query: ReasonApolloTypes.queryString,
-    variables: Js.Nullable.t(Config.Raw.t_variables),
-  };
-  type response = option(Config.t);
-  [@bs.send]
-  external readQuery: (t, readQueryOptions) => Js.Nullable.t(Config.Raw.t) =
-    "readQuery";
-
-  let graphqlQueryAST = gql(. Config.query);
-  let apolloDataToRecord: Js.Nullable.t(Config.Raw.t) => response =
-    apolloData =>
-      Js.Nullable.toOption(apolloData)->(Belt.Option.map(Config.parse));
-
-  let make = (~client, ~variables: option(Config.Raw.t_variables)=?, ()) =>
-    readQuery(
-      client,
-      {query: graphqlQueryAST, variables: Js.Nullable.fromOption(variables)},
-    )
-    ->apolloDataToRecord;
-};
-
-module WriteQuery = (Config: ReasonApolloTypes.Config) => {
-  type writeQueryOptions = {
-    query: ReasonApolloTypes.queryString,
-    variables: Js.Nullable.t(Config.Raw.t_variables),
-    data: Config.t,
-  };
-
-  [@bs.send]
-  external writeQuery: (t, writeQueryOptions) => unit = "writeQuery";
-
-  let graphqlQueryAST = gql(. Config.query);
-
-  let make =
-      (
-        ~client,
-        ~variables: option(Config.Raw.t_variables)=?,
-        ~data: Config.t,
-        (),
-      ) =>
-    writeQuery(
-      client,
-      {
-        query: graphqlQueryAST,
-        variables: Js.Nullable.fromOption(variables),
-        data,
-      },
+let toOpaqueQueryObj: (string, 'raw_t_variables) => Client.opaqueQueryObj =
+  (theQuery, variables) =>
+    Client.toOpaqueQueryObj(
+      Client.{query: Client.gql(. theQuery), variables},
     );
-};

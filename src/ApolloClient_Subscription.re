@@ -1,4 +1,5 @@
-open ApolloHooksTypes;
+module Types = ApolloClient_Types;
+
 type error = {. "message": string};
 
 type variant('a) =
@@ -13,7 +14,7 @@ type result('a) = {
   error: option(error),
 };
 
-[@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
+[@bs.module "graphql-tag"] external gql: Types.gql = "default";
 
 [@bs.deriving abstract]
 type options('raw_t, 'raw_t_variables) = {
@@ -24,12 +25,12 @@ type options('raw_t, 'raw_t_variables) = {
   [@bs.optional]
   onSubscriptionData: unit => unit,
   [@bs.optional]
-  client: ApolloClient.t,
+  client: ApolloClient_Client.t,
 };
 
 [@bs.module "@apollo/client"]
 external useSubscription:
-  (ReasonApolloTypes.queryString, options('raw_t, 'raw_t_variables)) =>
+  (Types.queryString, options('raw_t, 'raw_t_variables)) =>
   {
     .
     "data": Js.Nullable.t(Js.Json.t),
@@ -41,9 +42,9 @@ external useSubscription:
 let useSubscription:
   (
     ~variables: Js.Json.t=?,
-    ~client: ApolloClient.t=?,
+    ~client: ApolloClient_Client.t=?,
     ~skip: bool=?,
-    ApolloHooksTypes.graphqlDefinition('t, 'raw_t)
+    Types.graphqlDefinition('t, 'raw_t)
   ) =>
   (variant('t), result('t)) =
   (~variables=?, ~client=?, ~skip=?, (parse, query, _)) => {

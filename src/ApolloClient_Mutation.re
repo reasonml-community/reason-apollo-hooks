@@ -1,32 +1,32 @@
-open ApolloHooksTypes;
+module Types = ApolloClient_Types;
 
 type jsResult('raw_t) = {
   .
   "data": Js.Nullable.t('raw_t),
   "loading": bool,
   "called": bool,
-  "error": Js.Nullable.t(apolloError),
+  "error": Js.Nullable.t(Types.apolloError),
 };
 
 module Execution = {
   type jsExecutionResult('raw_t) = {
     .
     "data": Js.Nullable.t('raw_t),
-    "errors": Js.Nullable.t(array(graphqlError)),
+    "errors": Js.Nullable.t(array(Types.graphqlError)),
   };
 
   type refetchQueries('raw_t) =
-    jsExecutionResult('raw_t) => array(ApolloClient.opaqueQueryObj);
+    jsExecutionResult('raw_t) => array(ApolloClient_Client.opaqueQueryObj);
 
   /* The type that the promise returned by the mutate function resolves to */
   type executionResult('a) = {
     data: option('a),
-    errors: option(array(graphqlError)),
+    errors: option(array(Types.graphqlError)),
   };
 
   type executionVariantResult('a) =
     | Data('a)
-    | Errors(array(graphqlError))
+    | Errors(array(Types.graphqlError))
     | NoData;
 };
 
@@ -35,7 +35,7 @@ type controlledResult('t) = {
   loading: bool,
   called: bool,
   data: option('t),
-  error: option(apolloError),
+  error: option(Types.apolloError),
 };
 
 /* The type of the 'simple' result returned by the hook */
@@ -43,10 +43,10 @@ type controlledVariantResult('t) =
   | Loading
   | NotCalled
   | Data('t)
-  | Error(apolloError)
+  | Error(Types.apolloError)
   | NoData;
 
-[@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
+[@bs.module "graphql-tag"] external gql: Types.gql = "default";
 
 type mutationResult('raw_t) = {. "data": option('raw_t)};
 
@@ -55,15 +55,15 @@ type options('raw_t, 'raw_t_variables) = {
   [@bs.optional]
   variables: 'raw_t_variables,
   [@bs.optional]
-  mutation: option(ReasonApolloTypes.queryString),
+  mutation: option(Types.queryString),
   [@bs.optional]
-  client: ApolloClient.t,
+  client: ApolloClient_Client.t,
   [@bs.optional]
   refetchQueries: Execution.refetchQueries('raw_t),
   [@bs.optional]
   awaitRefetchQueries: bool,
   [@bs.optional]
-  update: (ApolloClient.t, mutationResult('raw_t)) => unit,
+  update: (ApolloClient_Client.t, mutationResult('raw_t)) => unit,
   [@bs.optional]
   optimisticResponse: 'raw_t,
 };
@@ -75,7 +75,7 @@ type jsMutate('raw_t, 'raw_t_variables) =
 type mutation('t, 'raw_t, 'raw_t_variables) =
   (
     ~variables: 'raw_t_variables=?,
-    ~client: ApolloClient.t=?,
+    ~client: ApolloClient_Client.t=?,
     ~refetchQueries: Execution.refetchQueries('raw_t)=?,
     ~awaitRefetchQueries: bool=?,
     ~optimisticResponse: 't=?,
@@ -87,27 +87,27 @@ type mutation('t, 'raw_t, 'raw_t_variables) =
 
 [@bs.module "@apollo/client"]
 external useMutationJs:
-  (. ReasonApolloTypes.queryString, options('raw_t, 'raw_t_variables)) =>
+  (. Types.queryString, options('raw_t, 'raw_t_variables)) =>
   (jsMutate('raw_t, 'raw_t_variables), jsResult('raw_t)) =
   "useMutation";
 
 exception Error(string);
 
 let useMutation:
-  (
-    ~client: ApolloClient.t=?,
-    ~variables: 'raw_t_variables=?,
-    ~refetchQueries: Execution.refetchQueries('raw_t)=?,
-    ~awaitRefetchQueries: bool=?,
-    ~update: (ApolloClient.t, mutationResult('raw_t)) => unit=?,
-    ~optimisticResponse: 't=?,
-    ApolloHooksTypes.graphqlDefinition('t, 'raw_t)
-  ) =>
-  (
-    mutation('t, 'raw_t, 'raw_t_variables),
-    controlledVariantResult('t),
-    controlledResult('t),
-  ) =
+  type t raw_t raw_t_variables.
+    (
+      ~client: ApolloClient_Client.t=?,
+      ~variables: raw_t_variables=?,
+      ~refetchQueries: Execution.refetchQueries(raw_t)=?,
+      ~awaitRefetchQueries: bool=?,
+      ~update: (ApolloClient_Client.t, mutationResult(raw_t)) => unit=?,
+      ~optimisticResponse: t=?,
+      (module Types.Operation with
+         type t = t and
+         type Raw.t = raw_t and
+         type Raw.t_variables = raw_t_variables)
+    ) =>
+    (mutation(t, raw_t, raw_t_variables), controlledResult(t)) =
   (
     ~client=?,
     ~variables=?,
@@ -115,11 +115,11 @@ let useMutation:
     ~awaitRefetchQueries=?,
     ~update=?,
     ~optimisticResponse=?,
-    (parse, query, serialize),
+    (module Definition),
   ) => {
     let (jsMutate, jsResult) =
       useMutationJs(.
-        gql(. query),
+        gql(. Definition.query),
         options(
           ~client?,
           ~variables?,
@@ -129,7 +129,7 @@ let useMutation:
           ~optimisticResponse=?
             switch (optimisticResponse) {
             | Some(optimisticResponse) =>
-              Some(serialize(optimisticResponse))
+              Some(Definition.serialize(optimisticResponse))
             | None => None
             },
           (),
@@ -156,7 +156,7 @@ let useMutation:
               ~optimisticResponse=?
                 switch (optimisticResponse) {
                 | Some(optimisticResponse) =>
-                  Some(serialize(optimisticResponse))
+                  Some(Definition.serialize(optimisticResponse))
                 | None => None
                 },
               (),
@@ -167,7 +167,7 @@ let useMutation:
                  Execution.{
                    data:
                      Js.Nullable.toOption(jsResult##data)
-                     ->Belt.Option.map(parse),
+                     ->Belt.Option.map(Definition.parse),
                    errors:
                      switch (Js.Nullable.toOption(jsResult##errors)) {
                      | Some(errors) when Js.Array.length(errors) > 0 =>
@@ -176,12 +176,11 @@ let useMutation:
                      },
                  };
 
-               let simple =
+               let simple: Execution.executionVariantResult(Definition.t) =
                  switch (full) {
-                 | {errors: Some(errors)} => (
-                     Errors(errors): Execution.executionVariantResult('data)
-                   )
+                 | {errors: Some(errors)} => Errors(errors)
                  | {data: Some(data)} => Data(data)
+
                  | {errors: None, data: None} => NoData
                  };
 
@@ -197,24 +196,90 @@ let useMutation:
             loading: jsResult##loading,
             called: jsResult##called,
             data:
-              jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.map(Definition.parse),
             error: jsResult##error->Js.Nullable.toOption,
           },
         [|jsResult|],
       );
 
+    (mutate, full);
+  };
+
+let useMutationLegacy:
+  type t raw_t raw_t_variables.
+    (
+      ~client: ApolloClient_Client.t=?,
+      ~variables: raw_t_variables=?,
+      ~refetchQueries: Execution.refetchQueries(raw_t)=?,
+      ~awaitRefetchQueries: bool=?,
+      ~update: (ApolloClient_Client.t, mutationResult(raw_t)) => unit=?,
+      ~optimisticResponse: t=?,
+      (module Types.Operation with
+         type t = t and
+         type Raw.t = raw_t and
+         type Raw.t_variables = raw_t_variables)
+    ) =>
+    (
+      mutation(t, raw_t, raw_t_variables),
+      controlledVariantResult(t),
+      controlledResult(t),
+    ) =
+  (
+    ~client=?,
+    ~variables=?,
+    ~refetchQueries=?,
+    ~awaitRefetchQueries=?,
+    ~update=?,
+    ~optimisticResponse=?,
+    (module Definition),
+  ) => {
+    let (mutate, result) =
+      useMutation(
+        ~client?,
+        ~variables?,
+        ~refetchQueries?,
+        ~awaitRefetchQueries?,
+        ~update?,
+        ~optimisticResponse?,
+        (module Definition),
+      );
     let simple =
       React.useMemo1(
         () =>
-          switch (full) {
+          switch (result) {
           | {loading: true} => Loading
           | {error: Some(error)} => Error(error)
           | {data: Some(data)} => Data(data)
           | {called: false} => NotCalled
           | _ => NoData
           },
-        [|full|],
+        [|result|],
       );
 
-    (mutate, simple, full);
+    (mutate, simple, result);
   };
+
+module Extend = (M: Types.Operation) => {
+  let use =
+      (
+        ~client=?,
+        ~variables=?,
+        ~refetchQueries=?,
+        ~awaitRefetchQueries=?,
+        ~update=?,
+        ~optimisticResponse=?,
+        (),
+      ) => {
+    useMutation(
+      ~client?,
+      ~variables?,
+      ~refetchQueries?,
+      ~awaitRefetchQueries?,
+      ~update?,
+      ~optimisticResponse?,
+      (module M),
+    );
+  };
+};
