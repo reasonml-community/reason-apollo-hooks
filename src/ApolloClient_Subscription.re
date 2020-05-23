@@ -33,7 +33,7 @@ external useSubscription:
   (Types.queryString, options('raw_t, 'raw_t_variables)) =>
   {
     .
-    "data": Js.Nullable.t(Js.Json.t),
+    "data": Js.Nullable.t('raw_t),
     "loading": bool,
     "error": Js.Nullable.t(error),
   } =
