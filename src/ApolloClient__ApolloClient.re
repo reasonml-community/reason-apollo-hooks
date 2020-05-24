@@ -260,7 +260,7 @@ let writeQuery:
       client,
       ~options={
         broadcast,
-        data,
+        data: data->Definition.serialize,
         id,
         query: GraphqlTag.gql(Definition.query),
         variables,
