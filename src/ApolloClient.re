@@ -16,7 +16,6 @@
 // export { fromError } from './link/utils/fromError.js';
 // export { createHttpLink } from './link/http/createHttpLink.js';
 // export { HttpLink } from './link/http/HttpLink.js';
-// export { ApolloClient } from './ApolloClient.js';
 // export { ApolloCache } from './cache/core/cache.js';
 // export { Cache } from './cache/core/types/Cache.js';
 // export { MissingFieldError } from './cache/core/types/common.js';
@@ -38,10 +37,12 @@
 // export { useApolloClient } from './react/hooks/useApolloClient.js';
 // export { RenderPromises } from './react/ssr/RenderPromises.js';
 
-let useQuery = ApolloClient__React_UseQuery.useQuery;
-let useSubscription = ApolloClient__React_UseSubscription.useSubscription;
+module ApolloClient = ApolloClient__ApolloClient;
 
 module Extend = {
   module Query = ApolloClient__React_UseQuery.Extend;
   module Subscription = ApolloClient__React_UseSubscription.Extend;
 };
+
+let useQuery = ApolloClient__React_UseQuery.useQuery;
+let useSubscription = ApolloClient__React_UseSubscription.useSubscription;
