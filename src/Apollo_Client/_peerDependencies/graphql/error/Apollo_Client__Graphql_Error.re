@@ -1,1 +1,0 @@
-module GraphQLError = Apollo_Client__Graphql_Error_GraphQLError;
