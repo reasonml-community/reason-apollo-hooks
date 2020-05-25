@@ -71,7 +71,12 @@ let make = (~refetchQueries, ~update) => {
     React.useReducer(reducer, {age: None, name: "", id: ""});
 
   let (editPersonMutation, _simple, _full) =
-    useMutation(~refetchQueries, ~update, EditPersonMutation.definition);
+    useMutation(
+      ~refetchQueries,
+      ~update,
+      ~errorPolicy=All, // See note below on error policies
+      EditPersonMutation.definition,
+    );
 
   let handleSubmit = event => {
     ReactEvent.Form.preventDefault(event);
@@ -89,8 +94,26 @@ let make = (~refetchQueries, ~update) => {
           OptimisticResponse.make(~id=state.id, ~name=state.name, ~age),
         (),
       )
+      /* Setting error policy to All (or Ignore) means that errors show up
+       * in then_ in the promise returned by editPersonMutation
+       * Not setting it (or setting it to None) makes the promise reject
+       * on errors and you'll have to handle errors in Js.catch(e => ...) instead,
+       * where e is just Js.Promise.error and you won't get any help from the type system.
+       *
+       * See also: https://www.apollographql.com/docs/react/data/error-handling/#error-policies
+       */
+      |> Js.Promise.then_(((simple, _full) as result) => {
+           switch (simple) {
+           | ApolloHooks.Mutation.Errors(_theErrors) => Js.log("OH NO!")
+           | NoData => Js.log("NO DATA?")
+           | Data(_theData) => Js.log("DATA!")
+           };
+           // If you don't need to handle the result elsewhere,
+           // the promise can just resolve to unit
+           Js.Promise.resolve(result);
+         })
       |> ignore
-    | None => ignore()
+    | None => ()
     };
   };
 
