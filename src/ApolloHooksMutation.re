@@ -64,6 +64,8 @@ type options('a) = {
   [@bs.optional]
   optimisticResponse: Js.Json.t,
   [@bs.optional]
+  errorPolicy: string,
+  [@bs.optional]
   context: Context.t,
 };
 
@@ -97,6 +99,7 @@ let useMutation:
              unit
                =?,
     ~optimisticResponse: Js.Json.t=?,
+    ~errorPolicy: ApolloHooksTypes.errorPolicy=?,
     ~context: Context.t=?,
     ApolloHooksTypes.graphqlDefinition('data, _, _)
   ) =>
@@ -112,6 +115,7 @@ let useMutation:
     ~awaitRefetchQueries=?,
     ~update=?,
     ~optimisticResponse=?,
+    ~errorPolicy=?,
     ~context=?,
     (parse, query, _),
   ) => {
@@ -125,6 +129,8 @@ let useMutation:
           ~awaitRefetchQueries?,
           ~update?,
           ~optimisticResponse?,
+          ~errorPolicy=?
+            errorPolicy->Belt.Option.map(ApolloHooksTypes.errorPolicyToJs),
           ~context?,
           (),
         ),
