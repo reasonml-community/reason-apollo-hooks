@@ -201,7 +201,7 @@ let make = () => {
 
   // Use simple (and/or full) for (most) UI feedback
   <div>
-    {switch (_simple) {
+    {switch (simple) {
      | NotCalled
      | Data(_) => React.null
      | Loading => <div> "Screaming!"->React.string </div>
