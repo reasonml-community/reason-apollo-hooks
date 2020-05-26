@@ -38,6 +38,7 @@
 // export { RenderPromises } from './react/ssr/RenderPromises.js';
 
 module ApolloClient = ApolloClient__ApolloClient;
+module ApolloProvider = ApolloClient__React_ApolloProvider;
 
 module Extend = {
   module Query = ApolloClient__React_UseQuery.Extend;

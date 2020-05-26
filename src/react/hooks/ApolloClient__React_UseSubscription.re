@@ -1,4 +1,4 @@
-module ApolloError = ApolloClient__Errors.ApolloError;
+module ApolloError = ApolloClient__ApolloError;
 module BaseSubscriptionOptions = ApolloClient__React_Types.BaseSubscriptionOptions;
 module FetchPolicy = ApolloClient__Core_WatchQueryOptions.FetchPolicy;
 module Graphql = ApolloClient__Graphql;
@@ -7,12 +7,6 @@ module OnSubscriptionDataOptions = ApolloClient__React_Types.OnSubscriptionDataO
 module SubscriptionHookOptions = ApolloClient__React_Types.SubscriptionHookOptions;
 
 module type Operation = ApolloClient__Types.Operation;
-
-type simpleQueryResult('a) =
-  | Data('a)
-  | Error(ApolloError.t)
-  | Loading
-  | NoData;
 
 module Js_ = {
   type useSubscription_result('jsData, 'variables) = {
@@ -38,6 +32,13 @@ module Js_ = {
     "useSubscription";
 };
 
+type useSubscription_result('data, 'variables) = {
+  variables: option('variables),
+  loading: bool,
+  data: option('data),
+  error: option(ApolloError.Js_.t),
+};
+
 let useSubscription:
   type data variables jsData jsVariables.
     (
@@ -53,7 +54,7 @@ let useSubscription:
          type Raw.t = jsData and
          type Raw.t_variables = jsVariables)
     ) =>
-    simpleQueryResult(data) =
+    useSubscription_result(data, variables) =
   (
     ~client=?,
     ~fetchPolicy=?,
@@ -84,14 +85,13 @@ let useSubscription:
       );
 
     ApolloClient__Utils.useGuaranteedMemo1(
-      () => {
-        switch (jsSubscriptionResult) {
-        | {loading: true} => Loading
-        | {error: Some(error)} => Error(error)
-        | {data: Some(data)} => Data(data->Definition.parse)
-        | _ => NoData
-        }
-      },
+      () =>
+        {
+          variables: jsSubscriptionResult.variables,
+          loading: jsSubscriptionResult.loading,
+          data: jsSubscriptionResult.data->Belt.Option.map(Definition.parse),
+          error: jsSubscriptionResult.error,
+        },
       jsSubscriptionResult,
     );
   };

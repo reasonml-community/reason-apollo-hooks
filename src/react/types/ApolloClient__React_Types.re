@@ -1,8 +1,10 @@
-module ApolloError = ApolloClient__Errors.ApolloError;
-module Core = ApolloClient__Core;
-module Errors = ApolloClient__Errors;
+module ApolloError = ApolloClient__ApolloError;
+module ApolloQueryResult = ApolloClient__Core_Types.ApolloQueryResult;
+module ErrorPolicy = ApolloClient__Core_WatchQueryOptions.ErrorPolicy;
 module FetchPolicy = ApolloClient__Core_WatchQueryOptions.FetchPolicy;
 module Graphql = ApolloClient__Graphql;
+module NetworkStatus = ApolloClient__Core_NetworkStatus;
+module WatchQueryFetchPolicy = ApolloClient__Core_WatchQueryOptions.WatchQueryFetchPolicy;
 
 module QueryHookOptions = {
   module Js_ = {
@@ -15,7 +17,7 @@ module QueryHookOptions = {
       displayName: option(string),
       skip: option(bool),
       onCompleted: option('jsData => unit),
-      onError: option(Errors.ApolloError.t => unit),
+      onError: option(ApolloError.t => unit),
       // ..extends BaseQueryOptions
       client: option(ApolloClient__ApolloClient.t),
       context: option(Js.Json.t), // ACTUAL: Record<string, any>
@@ -31,19 +33,19 @@ module QueryHookOptions = {
     };
   };
 
-  type t('jsData, 'variables) = {
+  type t('data, 'variables) = {
     query: option(Graphql.documentNode),
     // ...extends QueryFunctionOptions
     displayName: option(string),
     skip: option(bool),
     // consider parsing?
-    onCompleted: option('jsData => unit),
-    onError: option(Errors.ApolloError.t => unit),
+    onCompleted: option('data => unit),
+    onError: option(ApolloError.t => unit),
     // ...extends BaseQueryOptions
     client: option(ApolloClient__ApolloClient.t),
     context: option(Js.Json.t),
-    errorPolicy: option(Core.WatchQueryOptions.ErrorPolicy.t),
-    fetchPolicy: option(Core.WatchQueryOptions.WatchQueryFetchPolicy.t),
+    errorPolicy: option(ErrorPolicy.t),
+    fetchPolicy: option(WatchQueryFetchPolicy.t),
     notifyOnNetworkStatusChange: option(bool),
     partialRefetch: option(bool),
     pollInterval: option(int),
@@ -53,17 +55,18 @@ module QueryHookOptions = {
     variables: option('variables),
   };
 
-  let toJs = (t: t(_, _)): Js_.t(_, _) => {
+  let toJs =
+      (t: t('data, 'variables), ~parse: 'jsData => 'data)
+      : Js_.t('jsData, 'variables) => {
     client: t.client,
     context: t.context,
     displayName: t.displayName,
-    errorPolicy:
-      t.errorPolicy->Belt.Option.map(Core.WatchQueryOptions.ErrorPolicy.toJs),
-    onCompleted: t.onCompleted,
+    errorPolicy: t.errorPolicy->Belt.Option.map(ErrorPolicy.toJs),
+    onCompleted:
+      t.onCompleted
+      ->Belt.Option.map((onCompleted, jsData) => onCompleted(jsData->parse)),
     onError: t.onError,
-    fetchPolicy:
-      t.fetchPolicy
-      ->Belt.Option.map(Core.WatchQueryOptions.WatchQueryFetchPolicy.toJs),
+    fetchPolicy: t.fetchPolicy->Belt.Option.map(WatchQueryFetchPolicy.toJs),
     notifyOnNetworkStatusChange: t.notifyOnNetworkStatusChange,
     query: t.query,
     pollInterval: t.pollInterval,
@@ -104,13 +107,13 @@ module QueryResult = {
     type t('jsData, 'variables) = {
       fetchMore:
         t_fetchMoreOptions('jsData, 'variables) =>
-        Js.Promise.t(Core.Types.ApolloQueryResult.t('jsData)),
+        Js.Promise.t(ApolloQueryResult.t('jsData)),
       called: bool,
       client: ApolloClient__ApolloClient.t,
       data: option('jsData),
-      error: option(Errors.ApolloError.t),
+      error: option(ApolloError.t),
       loading: bool,
-      networkStatus: Core.NetworkStatus.t,
+      networkStatus: NetworkStatus.t,
     };
   };
 
@@ -118,7 +121,7 @@ module QueryResult = {
     called: bool,
     client: ApolloClient__ApolloClient.t,
     data: option('parsedData),
-    error: option(Errors.ApolloError.t),
+    error: option(ApolloError.t),
     fetchMore:
       (
         ~context: Js.Json.t=?,
@@ -133,9 +136,9 @@ module QueryResult = {
                       'parsedData,
         unit
       ) =>
-      Js.Promise.t(Core.Types.ApolloQueryResult.t('parsedData)),
+      Js.Promise.t(ApolloQueryResult.t('parsedData)),
     loading: bool,
-    networkStatus: Core.NetworkStatus.t,
+    networkStatus: NetworkStatus.t,
   };
 
   let fromJs:
@@ -168,9 +171,7 @@ module QueryResult = {
         })
         ->Js.Promise.then_(
             jsResult =>
-              Js.Promise.resolve(
-                Core.Types.ApolloQueryResult.fromJs(jsResult, ~parse),
-              ),
+              Js.Promise.resolve(ApolloQueryResult.fromJs(jsResult, ~parse)),
             _,
           );
       },

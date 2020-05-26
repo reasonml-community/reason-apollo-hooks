@@ -18,7 +18,13 @@ module FetchResult = {
     };
   };
 
-  type t('data) = Js_.t('data);
+  type t('data) = {
+    data: option('data),
+    extensions: option(Js.Json.t), // ACTUAL: Record<string, any>
+    context: option(Js.Json.t), // ACTUAL: Record<string, any>
+    // ...extends ExecutionResult
+    errors: option(GraphQLError.t),
+  };
 
   let fromJs:
     (Js_.t('jsData), ~parse: ApolloClient__Types.parse('jsData, 'data)) =>

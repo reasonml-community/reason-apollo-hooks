@@ -1,4 +1,4 @@
-module ApolloError = ApolloClient__Errors.ApolloError;
+module ApolloError = ApolloClient__ApolloError;
 module ErrorPolicy = ApolloClient__Core_WatchQueryOptions.ErrorPolicy;
 module Graphql = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__GraphqlTag;
@@ -35,7 +35,7 @@ let useQuery:
       ~errorPolicy: ErrorPolicy.t=?,
       ~fetchPolicy: WatchQueryFetchPolicy.t=?,
       ~notifyOnNetworkStatusChange: bool=?,
-      ~onCompleted: jsData => unit=?,
+      ~onCompleted: data => unit=?,
       ~onError: ApolloError.t => unit=?,
       ~partialRefetch: bool=?,
       ~pollInterval: int=?,
@@ -47,7 +47,7 @@ let useQuery:
          type Raw.t = jsData and
          type Raw.t_variables = jsVariables)
     ) =>
-    (simpleQueryResult(data), QueryResult.t(data, variables)) =
+    QueryResult.t(data, variables) =
   (
     ~client=?,
     ~context=?,
@@ -68,41 +68,33 @@ let useQuery:
       Js_.useQuery(
         ~query=GraphqlTag.gql(Definition.query),
         ~options=
-          QueryHookOptions.toJs({
-            client,
-            context,
-            displayName,
-            errorPolicy,
-            fetchPolicy,
-            onCompleted,
-            onError,
-            notifyOnNetworkStatusChange,
-            partialRefetch,
-            pollInterval,
-            query: None,
-            skip,
-            ssr,
-            variables,
-          }),
+          QueryHookOptions.toJs(
+            {
+              client,
+              context,
+              displayName,
+              errorPolicy,
+              fetchPolicy,
+              onCompleted,
+              onError,
+              notifyOnNetworkStatusChange,
+              partialRefetch,
+              pollInterval,
+              query: None,
+              skip,
+              ssr,
+              variables,
+            },
+            ~parse=Definition.parse,
+          ),
       );
 
     ApolloClient__Utils.useGuaranteedMemo1(
       () => {
-        let queryResult =
-          jsQueryResult->QueryResult.fromJs(
-            ~parse=Definition.parse,
-            ~serialize=Definition.serialize,
-          );
-
-        let simple =
-          switch (queryResult) {
-          | {loading: true} => Loading
-          | {error: Some(error)} => Error(error)
-          | {data: Some(data)} => Data(data)
-          | _ => NoData
-          };
-
-        (simple, queryResult);
+        jsQueryResult->QueryResult.fromJs(
+          ~parse=Definition.parse,
+          ~serialize=Definition.serialize,
+        )
       },
       jsQueryResult,
     );
