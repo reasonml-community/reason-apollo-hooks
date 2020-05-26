@@ -5,6 +5,7 @@ let filterName = "Bob";
 
 type example =
   | LoadMore
+  | LoadMoreFragments
   | SubscribeToMore;
 
 [@react.component]
@@ -43,6 +44,11 @@ let make = () => {
         onClick={_ => setActiveExample(_ => SubscribeToMore)}>
         {React.string("Subscribe to More")}
       </button>
+      <button
+        className={getTabClassName(LoadMoreFragments)}
+        onClick={_ => setActiveExample(_ => LoadMoreFragments)}>
+        {React.string("Load More Fragments")}
+      </button>
     </div>
     <div className="tab-content">
       {switch (activeExample) {
@@ -54,12 +60,45 @@ let make = () => {
                  refetchQueries=editPersonRefetchQueries
                  update=editPersonUpdate
                />
+               <h3> {React.string("FilterByAge.re")} </h3>
                <FilterByAge age=filterAgeLimit />
-               <FilterByAgeErrorHandling age=filterAgeLimit />
+               <section>
+                 <title>
+                   {React.string("FilterByAgeErrorHandling.re")}
+                 </title>
+                 <FilterByAgeErrorHandling age=filterAgeLimit />
+               </section>
+               <h3> {React.string("FilterByAgeFragment.re")} </h3>
+               <FilterByAgeFragment age=filterAgeLimit />
+               <h3> {React.string("FilterByNameCache.re")} </h3>
                <FilterByNameCache name=filterName />
              </div>
            </div>
            <LoadMore />
+         </>
+       | LoadMoreFragments =>
+         <>
+           <div className="edit-person-container">
+             <div className="edit-person">
+               <EditPerson
+                 refetchQueries=editPersonRefetchQueries
+                 update=editPersonUpdate
+               />
+               <h3> {React.string("FilterByAge.re")} </h3>
+               <FilterByAge age=filterAgeLimit />
+               <section>
+                 <title>
+                   {React.string("FilterByAgeErrorHandling.re")}
+                 </title>
+                 <FilterByAgeErrorHandling age=filterAgeLimit />
+               </section>
+               <h3> {React.string("FilterByAgeFragment.re")} </h3>
+               <FilterByAgeFragment age=filterAgeLimit />
+               <h3> {React.string("FilterByNameCache.re")} </h3>
+               <FilterByNameCache name=filterName />
+             </div>
+           </div>
+           <LoadMoreFragments />
          </>
        | SubscribeToMore =>
          <>
