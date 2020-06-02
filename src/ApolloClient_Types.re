@@ -14,13 +14,40 @@ type gql = (. string) => queryString;
  * An abstract type to describe an Apollo Link object.
  */
 type apolloLink;
+type documentNode;
 
 /**
  * An abstract type to describe an Apollo Cache object.
  */
 type apolloCache;
 
+type networkError = {statusCode: int};
+
 type apolloErrorExtensions = {code: Js.Nullable.t(string)};
+
+module Observable = {
+  type t('t);
+  type subscriptionObserver('t) = {
+    closed: bool,
+    next: 't => unit,
+    error: Js.Json.t => unit,
+    complete: unit => unit,
+  };
+
+  type subscription = {
+    closed: bool,
+    unsubscribe: unit => unit,
+  };
+
+  [@bs.send]
+  external subscribe: (t('t), subscriptionObserver('t)) => subscription =
+    "subscribe";
+
+  type subscriptionObserverCb = unit => unit;
+  [@bs.module "@apollo/client"] [@bs.new]
+  external make: subscriptionObserver('t) => subscriptionObserverCb =
+    "Observable";
+};
 
 type graphqlError = {
   message: string,
@@ -36,6 +63,44 @@ type executionResult('raw_t) = {
   data: Js.Nullable.t('raw_t),
 };
 
+type apolloError = {
+  graphQLErrors: Js.Nullable.t(array(graphqlError)),
+  networkError: Js.Nullable.t(string),
+};
+
+type operation('raw_t_variables) = {
+  query: documentNode,
+  variables: 'raw_t_variables,
+  operationName: string,
+  extensions: Js.Json.t,
+  setContext: Js.Json.t => Js.Json.t,
+  getContext: unit => Js.Json.t,
+};
+
+type errorResponse('raw_t, 'raw_t_variables) = {
+  graphQLErrors: Js.Nullable.t(Js.Array.t(graphqlError)),
+  networkError: Js.Nullable.t(networkError),
+  response: Js.Nullable.t(executionResult('raw_t)),
+  operation: operation('raw_t_variables),
+  forward: operation('raw_t_variables) => Observable.subscription,
+};
+
+/*
+ apollo link ws
+ */
+
+type webSocketLinkOptions = {
+  reconnect: bool,
+  connectionParams: option(Js.Json.t),
+};
+
+type webSocketLink = {
+  uri: string,
+  options: webSocketLinkOptions,
+};
+
+type splitTest = {query: documentNode};
+
 module type Definition = {
   let query: string;
 
@@ -47,12 +112,6 @@ module type Definition = {
 
   let parse: Raw.t => t;
   let serialize: t => Raw.t;
-};
-
-type apolloError = {
-  message: string,
-  graphQLErrors: Js.Nullable.t(array(graphqlError)),
-  networkError: Js.Nullable.t(string),
 };
 
 /**
@@ -117,16 +176,6 @@ let errorPolicyToJs = errorPolicy =>
   | Ignore => "ignore"
   | All => "all"
   };
-
-type parse('raw_t, 't) = 'raw_t => 't;
-type serialize('t, 'raw_t) = 't => 'raw_t;
-type query = string;
-
-type graphqlDefinition('t, 'raw_t) = (
-  parse('raw_t, 't),
-  query,
-  serialize('t, 'raw_t),
-);
 
 module Context = {
   type t = Js.Dict.t(string);

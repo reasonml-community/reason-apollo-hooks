@@ -174,3 +174,6 @@ let toOpaqueQueryObj: (string, 'raw_t_variables) => Client.opaqueQueryObj =
     Client.toOpaqueQueryObj(
       Client.{query: Client.gql(. theQuery), variables},
     );
+
+[@bs.module "@apollo/client"]
+external useApolloClient: unit => ApolloClient_Client.t = "useApolloClient";

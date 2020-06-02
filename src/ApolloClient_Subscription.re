@@ -1,17 +1,23 @@
 module Types = ApolloClient_Types;
 
-type error = {. "message": string};
-
 type variant('a) =
   | Data('a)
-  | Error(error)
+  | Error(Types.apolloError)
   | Loading
   | NoData;
 
 type result('a) = {
   data: option('a),
   loading: bool,
-  error: option(error),
+  error: option(Types.apolloError),
+};
+
+module Raw = {
+  type result('raw_t) = {
+    data: Js.Nullable.t('raw_t),
+    loading: bool,
+    error: Js.Nullable.t(Types.apolloError),
+  };
 };
 
 [@bs.module "graphql-tag"] external gql: Types.gql = "default";
@@ -19,7 +25,7 @@ type result('a) = {
 [@bs.deriving abstract]
 type options('raw_t, 'raw_t_variables) = {
   [@bs.optional]
-  variables: Js.Json.t,
+  variables: 'raw_t_variables,
   [@bs.optional]
   skip: bool,
   [@bs.optional]
@@ -31,33 +37,33 @@ type options('raw_t, 'raw_t_variables) = {
 [@bs.module "@apollo/client"]
 external useSubscription:
   (Types.queryString, options('raw_t, 'raw_t_variables)) =>
-  {
-    .
-    "data": Js.Nullable.t('raw_t),
-    "loading": bool,
-    "error": Js.Nullable.t(error),
-  } =
+  Raw.result('raw_t) =
   "useSubscription";
 
 let useSubscription:
-  (
-    ~variables: Js.Json.t=?,
-    ~client: ApolloClient_Client.t=?,
-    ~skip: bool=?,
-    Types.graphqlDefinition('t, 'raw_t)
-  ) =>
-  (variant('t), result('t)) =
-  (~variables=?, ~client=?, ~skip=?, (parse, query, _)) => {
+  type t t_variables raw_t raw_t_variables.
+    (
+      ~variables: Js.Json.t=?,
+      ~client: ApolloClient_Client.t=?,
+      ~skip: bool=?,
+      (module Types.Operation with
+         type t = t and
+         type Raw.t = raw_t and
+         type Raw.t_variables = raw_t_variables)
+    ) =>
+    (variant(t), result(t)) =
+  (~variables=?, ~client=?, ~skip=?, (module Operation)) => {
     let jsResult =
       useSubscription(
-        gql(. query),
+        gql(. Operation.query),
         options(~variables?, ~client?, ~skip?, ()),
       );
 
     let result = {
-      data: jsResult##data->Js.Nullable.toOption->Belt.Option.map(parse),
-      loading: jsResult##loading,
-      error: jsResult##error->Js.Nullable.toOption,
+      data:
+        jsResult.data->Js.Nullable.toOption->Belt.Option.map(Operation.parse),
+      loading: jsResult.loading,
+      error: jsResult.error->Js.Nullable.toOption,
     };
 
     (

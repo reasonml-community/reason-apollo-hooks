@@ -163,11 +163,11 @@ let useQuery:
     ~skip=?,
     ~pollInterval=?,
     ~context=?,
-    (module Definition),
+    (module Operation),
   ) => {
     let jsResult =
       useQueryJs(
-        gql(. Definition.query),
+        gql(. Operation.query),
         options(
           ~variables?,
           ~client?,
@@ -188,7 +188,7 @@ let useQuery:
             jsResult##data
             ->Js.Nullable.toOption
             ->Belt.Option.flatMap(data =>
-                switch (Definition.parse(data)) {
+                switch (Operation.parse(data)) {
                 | parsedData => Some(parsedData)
                 | exception _ => None
                 }
@@ -200,7 +200,7 @@ let useQuery:
           refetch: (~variables=?, ()) =>
             jsResult##refetch(Js.Nullable.fromOption(variables))
             |> Js.Promise.then_(result =>
-                 Definition.parse(
+                 Operation.parse(
                    result.data->Js.Nullable.toOption->Belt.Option.getExn,
                  )
                  |> Js.Promise.resolve
@@ -214,18 +214,18 @@ let useQuery:
                 (previousResult, {fetchMoreResult, variables}) => {
                 let result =
                   updateQuery(
-                    Definition.parse(previousResult),
+                    Operation.parse(previousResult),
                     {
                       fetchMoreResult:
                         switch (Js.Nullable.toOption(fetchMoreResult)) {
                         | None => None
                         | Some(fetchMoreResult) =>
-                          Some(Definition.parse(fetchMoreResult))
+                          Some(Operation.parse(fetchMoreResult))
                         },
                       variables: Js.Nullable.toOption(variables),
                     },
                   );
-                Definition.serialize(result);
+                Operation.serialize(result);
               },
             });
           },
@@ -271,7 +271,7 @@ let useQueryLegacy:
     ~skip=?,
     ~pollInterval=?,
     ~context=?,
-    (module Definition),
+    (module Operation),
   ) => {
     let result =
       useQuery(
@@ -283,7 +283,7 @@ let useQueryLegacy:
         ~skip?,
         ~pollInterval?,
         ~context?,
-        (module Definition),
+        (module Operation),
       );
 
     let simple =

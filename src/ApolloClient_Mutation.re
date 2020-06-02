@@ -115,11 +115,11 @@ let useMutation:
     ~awaitRefetchQueries=?,
     ~update=?,
     ~optimisticResponse=?,
-    (module Definition),
+    (module Operation),
   ) => {
     let (jsMutate, jsResult) =
       useMutationJs(.
-        gql(. Definition.query),
+        gql(. Operation.query),
         options(
           ~client?,
           ~variables?,
@@ -129,7 +129,7 @@ let useMutation:
           ~optimisticResponse=?
             switch (optimisticResponse) {
             | Some(optimisticResponse) =>
-              Some(Definition.serialize(optimisticResponse))
+              Some(Operation.serialize(optimisticResponse))
             | None => None
             },
           (),
@@ -156,7 +156,7 @@ let useMutation:
               ~optimisticResponse=?
                 switch (optimisticResponse) {
                 | Some(optimisticResponse) =>
-                  Some(Definition.serialize(optimisticResponse))
+                  Some(Operation.serialize(optimisticResponse))
                 | None => None
                 },
               (),
@@ -167,7 +167,7 @@ let useMutation:
                  Execution.{
                    data:
                      Js.Nullable.toOption(jsResult##data)
-                     ->Belt.Option.map(Definition.parse),
+                     ->Belt.Option.map(Operation.parse),
                    errors:
                      switch (Js.Nullable.toOption(jsResult##errors)) {
                      | Some(errors) when Js.Array.length(errors) > 0 =>
@@ -176,7 +176,7 @@ let useMutation:
                      },
                  };
 
-               let simple: Execution.executionVariantResult(Definition.t) =
+               let simple: Execution.executionVariantResult(Operation.t) =
                  switch (full) {
                  | {errors: Some(errors)} => Errors(errors)
                  | {data: Some(data)} => Data(data)
@@ -198,7 +198,7 @@ let useMutation:
             data:
               jsResult##data
               ->Js.Nullable.toOption
-              ->Belt.Option.map(Definition.parse),
+              ->Belt.Option.map(Operation.parse),
             error: jsResult##error->Js.Nullable.toOption,
           },
         [|jsResult|],
@@ -233,7 +233,7 @@ let useMutationLegacy:
     ~awaitRefetchQueries=?,
     ~update=?,
     ~optimisticResponse=?,
-    (module Definition),
+    (module Operation),
   ) => {
     let (mutate, result) =
       useMutation(
@@ -243,7 +243,7 @@ let useMutationLegacy:
         ~awaitRefetchQueries?,
         ~update?,
         ~optimisticResponse?,
-        (module Definition),
+        (module Operation),
       );
     let simple =
       React.useMemo1(
