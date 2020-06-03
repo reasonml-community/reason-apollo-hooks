@@ -5,6 +5,7 @@ module Graphql = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__GraphqlTag;
 module OnSubscriptionDataOptions = ApolloClient__React_Types.OnSubscriptionDataOptions;
 module SubscriptionHookOptions = ApolloClient__React_Types.SubscriptionHookOptions;
+module Types = ApolloClient__Types;
 
 module type Operation = ApolloClient__Types.Operation;
 
@@ -40,21 +41,22 @@ type useSubscription_result('data, 'variables) = {
 };
 
 let useSubscription:
-  type data variables jsData jsVariables.
+  type data jsData jsVariables.
     (
       ~client: ApolloClient__ApolloClient.t=?,
       ~fetchPolicy: FetchPolicy.t=?,
       ~onSubscriptionData: OnSubscriptionDataOptions.t(data) => unit=?,
       ~onSubscriptionComplete: unit => unit=?,
-      ~shouldResubscribe: BaseSubscriptionOptions.t(data, variables) => bool=?,
+      ~shouldResubscribe: BaseSubscriptionOptions.t(data, jsVariables) => bool
+                            =?,
       ~skip: bool=?,
-      ~variables: variables=?,
+      ~variables: Types.variablesArg(jsVariables),
       (module Operation with
          type t = data and
          type Raw.t = jsData and
          type Raw.t_variables = jsVariables)
     ) =>
-    useSubscription_result(data, variables) =
+    useSubscription_result(data, jsVariables) =
   (
     ~client=?,
     ~fetchPolicy=?,
@@ -62,9 +64,14 @@ let useSubscription:
     ~onSubscriptionComplete=?,
     ~shouldResubscribe=?,
     ~skip=?,
-    ~variables=?,
+    ~variables as variablesArg,
     (module Definition),
   ) => {
+    let variables =
+      switch (variablesArg) {
+      | Types.NoVariables => None
+      | Types.Variables(v) => Some(v)
+      };
     let jsSubscriptionResult =
       Js_.useSubscription(
         ~subscription=GraphqlTag.gql(Definition.query),
@@ -105,7 +112,7 @@ module Extend = (M: Operation) => {
         ~onSubscriptionComplete=?,
         ~shouldResubscribe=?,
         ~skip=?,
-        ~variables=?,
+        ~variables,
         (),
       ) => {
     useSubscription(
@@ -115,7 +122,7 @@ module Extend = (M: Operation) => {
       ~onSubscriptionComplete?,
       ~shouldResubscribe?,
       ~skip?,
-      ~variables?,
+      ~variables,
       (module M),
     );
   };

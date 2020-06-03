@@ -4,6 +4,7 @@ module Graphql = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__GraphqlTag;
 module QueryHookOptions = ApolloClient__React_Types.QueryHookOptions;
 module QueryResult = ApolloClient__React_Types.QueryResult;
+module Types = ApolloClient__Types;
 module WatchQueryFetchPolicy = ApolloClient__Core_WatchQueryOptions.WatchQueryFetchPolicy;
 
 module type Operation = ApolloClient__Types.Operation;
@@ -27,7 +28,7 @@ module Js_ = {
 };
 
 let useQuery:
-  type data variables jsData jsVariables.
+  type data jsData jsVariables.
     (
       ~client: ApolloClient__ApolloClient.t=?,
       ~context: Js.Json.t=?,
@@ -41,13 +42,13 @@ let useQuery:
       ~pollInterval: int=?,
       ~skip: bool=?,
       ~ssr: bool=?,
-      ~variables: variables=?,
+      ~variables: Types.variablesArg(jsVariables),
       (module Operation with
          type t = data and
          type Raw.t = jsData and
          type Raw.t_variables = jsVariables)
     ) =>
-    QueryResult.t(data, variables) =
+    QueryResult.t(data, jsVariables) =
   (
     ~client=?,
     ~context=?,
@@ -61,9 +62,15 @@ let useQuery:
     ~pollInterval=?,
     ~skip=?,
     ~ssr=?,
-    ~variables=?,
+    ~variables as variablesArg,
     (module Definition),
   ) => {
+    let variables =
+      switch (variablesArg) {
+      | Types.NoVariables => None
+      | Types.Variables(v) => Some(v)
+      };
+
     let jsQueryResult =
       Js_.useQuery(
         ~query=GraphqlTag.gql(Definition.query),
@@ -115,7 +122,7 @@ module Extend = (M: Operation) => {
         ~pollInterval=?,
         ~skip=?,
         ~ssr=?,
-        ~variables=?,
+        ~variables,
         (),
       ) => {
     useQuery(
@@ -131,7 +138,7 @@ module Extend = (M: Operation) => {
       ~pollInterval?,
       ~skip?,
       ~ssr?,
-      ~variables?,
+      ~variables,
       (module M),
     );
   };
