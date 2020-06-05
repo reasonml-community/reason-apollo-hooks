@@ -1,4 +1,29 @@
+module Graphql = ApolloClient__Graphql;
 module GraphQLError = ApolloClient__Graphql_Error_GraphQLError;
+module Observable = ApolloClient__ZenObservable.Observable;
+
+module Operation = {
+  module Js_ = {
+    // export interface Operation {
+    //     query: DocumentNode;
+    //     variables: Record<string, any>;
+    //     operationName: string;
+    //     extensions: Record<string, any>;
+    //     setContext: (context: Record<string, any>) => Record<string, any>;
+    //     getContext: () => Record<string, any>;
+    // }
+    type t = {
+      query: Graphql.documentNode,
+      variables: Js.Json.t,
+      operationName: string,
+      extensions: Js.Json.t,
+      setContext: Js.Json.t => Js.Json.t,
+      getContext: unit => Js.Json.t,
+    };
+  };
+
+  type t = Js_.t;
+};
 
 module FetchResult = {
   module Js_ = {
@@ -10,6 +35,7 @@ module FetchResult = {
     //     context?: C;
     // }
     type t('jsData) = {
+      // TODO: option(Js.nullable('jsData))
       data: option('jsData),
       extensions: option(Js.Json.t), // ACTUAL: Record<string, any>
       context: option(Js.Json.t), // ACTUAL: Record<string, any>
@@ -37,4 +63,22 @@ module FetchResult = {
         errors: js.errors,
       };
     };
+};
+
+module NextLink = {
+  module Js_ = {
+    // export declare type NextLink = (operation: Operation) => Observable<FetchResult>;
+    type t = Operation.Js_.t => Observable.t(FetchResult.Js_.t(Js.Json.t));
+  };
+};
+
+module RequestHandler = {
+  module Js_ = {
+    // export declare type RequestHandler = (operation: Operation, forward: NextLink) => Observable<FetchResult> | null;
+    type t =
+      (Operation.Js_.t, NextLink.Js_.t) =>
+      Js.nullable(Observable.t(FetchResult.Js_.t(Js.Json.t)));
+  };
+
+  type t = Js_.t;
 };

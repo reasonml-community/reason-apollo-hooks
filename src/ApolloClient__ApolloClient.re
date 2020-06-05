@@ -1,4 +1,5 @@
 module ApolloQueryResult = ApolloClient__Core_Types.ApolloQueryResult;
+module ApolloLink = ApolloClient__Link_Core_ApolloLink;
 module DataProxy = ApolloClient__Cache_Core_Types.DataProxy;
 module ErrorPolicy = ApolloClient__Core_WatchQueryOptions.ErrorPolicy;
 module FetchPolicy = ApolloClient__Core_WatchQueryOptions.FetchPolicy;
@@ -12,6 +13,7 @@ module MutationUpdaterFn = ApolloClient__Core_WatchQueryOptions.MutationUpdaterF
 module QueryOptions = ApolloClient__Core_WatchQueryOptions.QueryOptions;
 module PureQueryOptions = ApolloClient__Core_Types.PureQueryOptions;
 module RefetchQueryDescription = ApolloClient__Core_WatchQueryOptions.RefetchQueryDescription;
+module UriFunction = ApolloClient_SelectHttpOptionsAndBody.UriFunction;
 module Types = ApolloClient__Types;
 
 // /// <reference types="zen-observable" />
@@ -54,7 +56,6 @@ module Types = ApolloClient__Types;
 //     private resetStoreCallbacks;
 //     private clearStoreCallbacks;
 //     private localState;
-//     constructor(options: ApolloClientOptions<TCacheShape>);
 //     stop(): void;
 //     watchQuery<T = any, TVariables = OperationVariables>(options: WatchQueryOptions<TVariables>): ObservableQuery<T, TVariables>;
 //     subscribe<T = any, TVariables = OperationVariables>(options: SubscriptionOptions<TVariables>): Observable<FetchResult<T>>;
@@ -74,14 +75,54 @@ module Types = ApolloClient__Types;
 //     getResolvers(): Resolvers;
 //     setLocalStateFragmentMatcher(fragmentMatcher: FragmentMatcher): void;
 // }
-
-type t;
+module ApolloClientOptions = {
+  module Js_ = {
+    // export declare type ApolloClientOptions<TCacheShape> = {
+    //     uri?: string | UriFunction;
+    //     credentials?: string;
+    //     headers?: Record<string, string>;
+    //     link?: ApolloLink;
+    //     cache: ApolloCache<TCacheShape>;
+    //     ssrForceFetchDelay?: number;
+    //     ssrMode?: boolean;
+    //     connectToDevTools?: boolean;
+    //     queryDeduplication?: boolean;
+    //     defaultOptions?: DefaultOptions;
+    //     assumeImmutableResults?: boolean;
+    //     resolvers?: Resolvers | Resolvers[];
+    //     typeDefs?: string | string[] | DocumentNode | DocumentNode[];
+    //     fragmentMatcher?: FragmentMatcher;
+    //     name?: string;
+    //     version?: string;
+    // };
+    type t = {
+      uri: option(UriFunction.t),
+      credentials: option(string),
+      headers: Js.Dict.t(string),
+      link: option(ApolloLink.t),
+      // cache: ApolloCache.t('tCacheShape),
+      ssrForceFetchDelay: option(int),
+      ssrMode: option(bool),
+      connectToDevTools: option(bool),
+      queryDeduplication: option(bool),
+      // defaultOptions: option(DefaultOptions.t),
+      assumeImmutableResults: option(bool),
+      // resolvers: array(Resolvers.t),
+      typeDefs: array(GraphQL.documentNode),
+      // fragmentMatcher: option(FragmentMatcher.t),
+      name: option(string),
+      version: option(string),
+    };
+  };
+  type t = Js_.t;
+};
 
 type refetchQueryDescription =
   | PureQueryOptions(PureQueryOptions.t('variables)): refetchQueryDescription
   | String(string): refetchQueryDescription;
 
 module Js_ = {
+  type t;
   // mutate<T = any, TVariables = OperationVariables>(options: MutationOptions<T, TVariables>): Promise<FetchResult<T>>;
   [@bs.send]
   external mutate:
@@ -113,7 +154,14 @@ module Js_ = {
     (t, ~options: DataProxy.WriteQueryOptions.Js_.t('jsData, 'variables)) =>
     unit =
     "writeQuery";
+
+  [@bs.module "@apollo/client"] [@bs.new]
+  external make: ApolloClientOptions.Js_.t => t = "ApolloClient";
 };
+
+type t = Js_.t;
+
+let make: ApolloClientOptions.t => t = Js_.make;
 
 let mutate:
   type data variables jsData jsVariables.
