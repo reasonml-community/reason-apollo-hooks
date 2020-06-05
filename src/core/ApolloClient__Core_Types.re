@@ -1,6 +1,7 @@
 module Graphql = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__GraphqlTag;
 module FetchResult = ApolloClient__Link_Core_Types.FetchResult;
+module Resolver = ApolloClient__Core_LocalState.Resolver;
 module Types = ApolloClient__Types;
 
 module PureQueryOptions = {
@@ -121,4 +122,16 @@ module MutationQueryReducersMap = {
         t,
       );
     };
+};
+
+module Resolvers = {
+  module Js_ = {
+    // export interface Resolvers {
+    //     [key: string]: {
+    //         [field: string]: Resolver;
+    //     };
+    // }
+    type t = Js.Dict.t(Js.Dict.t(Resolver.Js_.t));
+  };
+  type t = Js_.t;
 };

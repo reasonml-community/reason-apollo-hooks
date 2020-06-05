@@ -5,6 +5,7 @@ module DataProxy = ApolloClient__Cache_Core_Types.DataProxy;
 module ErrorPolicy = ApolloClient__Core_WatchQueryOptions.ErrorPolicy;
 module FetchPolicy = ApolloClient__Core_WatchQueryOptions.FetchPolicy;
 module FetchPolicy__noCacheExtracted = ApolloClient__Core_WatchQueryOptions.FetchPolicy__noCacheExtracted;
+module FragmentMatcher = ApolloClient__Core_LocalState.FragmentMatcher;
 module GraphQL = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__GraphqlTag;
 module FetchResult = ApolloClient__Link_Core_Types.FetchResult;
@@ -14,6 +15,7 @@ module MutationUpdaterFn = ApolloClient__Core_WatchQueryOptions.MutationUpdaterF
 module QueryOptions = ApolloClient__Core_WatchQueryOptions.QueryOptions;
 module PureQueryOptions = ApolloClient__Core_Types.PureQueryOptions;
 module RefetchQueryDescription = ApolloClient__Core_WatchQueryOptions.RefetchQueryDescription;
+module Resolvers = ApolloClient__Core_Types.Resolvers;
 module UriFunction = ApolloClient_SelectHttpOptionsAndBody.UriFunction;
 module Types = ApolloClient__Types;
 module WatchQueryFetchPolicy = ApolloClient__Core_WatchQueryOptions.WatchQueryFetchPolicy;
@@ -195,9 +197,9 @@ module ApolloClientOptions = {
       queryDeduplication: option(bool),
       defaultOptions: option(DefaultOptions.Js_.t),
       assumeImmutableResults: option(bool),
-      // resolvers: array(Resolvers.t),
+      resolvers: array(Resolvers.Js_.t),
       typeDefs: array(GraphQL.documentNode),
-      // fragmentMatcher: option(FragmentMatcher.t),
+      fragmentMatcher: option(FragmentMatcher.Js_.t),
       name: option(string),
       version: option(string),
     };
@@ -215,9 +217,9 @@ module ApolloClientOptions = {
     queryDeduplication: option(bool),
     defaultOptions: option(DefaultOptions.t),
     assumeImmutableResults: option(bool),
-    // resolvers: array(Resolvers.t),
+    resolvers: array(Resolvers.t),
     typeDefs: array(GraphQL.documentNode),
-    // fragmentMatcher: option(FragmentMatcher.t),
+    fragmentMatcher: option(FragmentMatcher.t),
     name: option(string),
     version: option(string),
   };
@@ -235,7 +237,9 @@ module ApolloClientOptions = {
       queryDeduplication: t.queryDeduplication,
       defaultOptions: t.defaultOptions->Belt.Option.map(DefaultOptions.toJs),
       assumeImmutableResults: t.assumeImmutableResults,
+      resolvers: t.resolvers,
       typeDefs: t.typeDefs,
+      fragmentMatcher: t.fragmentMatcher,
       name: t.name,
       version: t.version,
     };
