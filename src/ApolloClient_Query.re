@@ -141,7 +141,7 @@ let useQuery:
   type t t_variables raw_t raw_t_variables.
     (
       ~client: ApolloClient_Client.t=?,
-      ~variables: raw_t_variables=?,
+      ~variables: raw_t_variables,
       ~notifyOnNetworkStatusChange: bool=?,
       ~fetchPolicy: Types.fetchPolicy=?,
       ~errorPolicy: Types.errorPolicy=?,
@@ -156,7 +156,7 @@ let useQuery:
     queryResult(t, raw_t, raw_t_variables) =
   (
     ~client=?,
-    ~variables=?,
+    ~variables,
     ~notifyOnNetworkStatusChange=?,
     ~fetchPolicy=?,
     ~errorPolicy=?,
@@ -169,7 +169,7 @@ let useQuery:
       useQueryJs(
         gql(. Operation.query),
         options(
-          ~variables?,
+          ~variables,
           ~client?,
           ~notifyOnNetworkStatusChange?,
           ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
@@ -245,6 +245,45 @@ let useQuery:
     );
   };
 
+let useQuery0:
+  type t t_variables raw_t raw_t_variables.
+    (
+      ~client: ApolloClient_Client.t=?,
+      ~notifyOnNetworkStatusChange: bool=?,
+      ~fetchPolicy: Types.fetchPolicy=?,
+      ~errorPolicy: Types.errorPolicy=?,
+      ~skip: bool=?,
+      ~pollInterval: int=?,
+      ~context: Types.Context.t=?,
+      (module Types.OperationNoRequiredVars with
+         type t = t and
+         type Raw.t = raw_t and
+         type Raw.t_variables = raw_t_variables)
+    ) =>
+    queryResult(t, raw_t, raw_t_variables) =
+  (
+    ~client=?,
+    ~notifyOnNetworkStatusChange=?,
+    ~fetchPolicy=?,
+    ~errorPolicy=?,
+    ~skip=?,
+    ~pollInterval=?,
+    ~context=?,
+    (module Operation),
+  ) => {
+    useQuery(
+      ~client?,
+      ~variables=Operation.makeDefaultVariables(),
+      ~notifyOnNetworkStatusChange?,
+      ~fetchPolicy?,
+      ~errorPolicy?,
+      ~skip?,
+      ~pollInterval?,
+      ~context?,
+      (module Operation),
+    );
+  };
+
 let useQueryLegacy:
   type t t_variables raw_t raw_t_variables.
     (
@@ -273,17 +312,84 @@ let useQueryLegacy:
     ~context=?,
     (module Operation),
   ) => {
+    let jsResult =
+      useQueryJs(
+        gql(. Operation.query),
+        options(
+          ~variables?,
+          ~client?,
+          ~notifyOnNetworkStatusChange?,
+          ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
+          ~errorPolicy=?errorPolicy->Belt.Option.map(Types.errorPolicyToJs),
+          ~skip?,
+          ~pollInterval?,
+          ~context?,
+          (),
+        ),
+      );
+
     let result =
-      useQuery(
-        ~client?,
-        ~variables?,
-        ~notifyOnNetworkStatusChange?,
-        ~fetchPolicy?,
-        ~errorPolicy?,
-        ~skip?,
-        ~pollInterval?,
-        ~context?,
-        (module Operation),
+      React.useMemo1(
+        () =>
+          {
+            data:
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.flatMap(data =>
+                  switch (Operation.parse(data)) {
+                  | parsedData => Some(parsedData)
+                  | exception _ => None
+                  }
+                ),
+            loading: jsResult##loading,
+            error: jsResult##error->Js.Nullable.toOption,
+            networkStatus:
+              ApolloClient_Types.toNetworkStatus(jsResult##networkStatus),
+            refetch: (~variables=?, ()) =>
+              jsResult##refetch(Js.Nullable.fromOption(variables))
+              |> Js.Promise.then_(result =>
+                   Operation.parse(
+                     result.data->Js.Nullable.toOption->Belt.Option.getExn,
+                   )
+                   |> Js.Promise.resolve
+                 ),
+            rawFetchMore: (~variables=?, ~updateQuery, ()) =>
+              jsResult##fetchMore({Raw.variables, Raw.updateQuery}),
+            fetchMore: (~variables=?, ~updateQuery, ()) => {
+              jsResult##fetchMore({
+                Raw.variables,
+                Raw.updateQuery:
+                  (previousResult, {fetchMoreResult, variables}) => {
+                  let result =
+                    updateQuery(
+                      Operation.parse(previousResult),
+                      {
+                        fetchMoreResult:
+                          switch (Js.Nullable.toOption(fetchMoreResult)) {
+                          | None => None
+                          | Some(fetchMoreResult) =>
+                            Some(Operation.parse(fetchMoreResult))
+                          },
+                        variables: Js.Nullable.toOption(variables),
+                      },
+                    );
+                  Operation.serialize(result);
+                },
+              });
+            },
+            stopPolling: () => jsResult##stopPolling(),
+            startPolling: interval => jsResult##startPolling(interval),
+            subscribeToMore: (~document, ~variables=?, ~updateQuery=?, ()) =>
+              jsResult##subscribeToMore(
+                subscribeToMoreOptionsJs(
+                  ~document,
+                  ~variables?,
+                  ~updateQuery?,
+                  (),
+                ),
+              ),
+          },
+        [|jsResult|],
       );
 
     let simple =
@@ -305,6 +411,33 @@ module Extend = (M: Types.Operation) => {
   let use =
       (
         ~client=?,
+        ~variables,
+        ~notifyOnNetworkStatusChange=?,
+        ~fetchPolicy=?,
+        ~errorPolicy=?,
+        ~skip=?,
+        ~pollInterval=?,
+        ~context=?,
+        (),
+      ) => {
+    useQuery(
+      ~client?,
+      ~variables,
+      ~notifyOnNetworkStatusChange?,
+      ~fetchPolicy?,
+      ~errorPolicy?,
+      ~skip?,
+      ~pollInterval?,
+      ~context?,
+      (module M),
+    );
+  };
+};
+
+module ExtendNoRequiredVars = (M: Types.OperationNoRequiredVars) => {
+  let use =
+      (
+        ~client=?,
         ~variables=?,
         ~notifyOnNetworkStatusChange=?,
         ~fetchPolicy=?,
@@ -316,7 +449,11 @@ module Extend = (M: Types.Operation) => {
       ) => {
     useQuery(
       ~client?,
-      ~variables?,
+      ~variables=
+        switch (variables) {
+        | Some(variables) => variables
+        | None => M.makeDefaultVariables()
+        },
       ~notifyOnNetworkStatusChange?,
       ~fetchPolicy?,
       ~errorPolicy?,
