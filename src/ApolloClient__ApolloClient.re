@@ -1,5 +1,6 @@
 module ApolloQueryResult = ApolloClient__Core_Types.ApolloQueryResult;
 module ApolloLink = ApolloClient__Link_Core_ApolloLink;
+module ApolloCache = ApolloClient__Cache_Core_Cache.ApolloCache;
 module DataProxy = ApolloClient__Cache_Core_Types.DataProxy;
 module ErrorPolicy = ApolloClient__Core_WatchQueryOptions.ErrorPolicy;
 module FetchPolicy = ApolloClient__Core_WatchQueryOptions.FetchPolicy;
@@ -15,66 +16,153 @@ module PureQueryOptions = ApolloClient__Core_Types.PureQueryOptions;
 module RefetchQueryDescription = ApolloClient__Core_WatchQueryOptions.RefetchQueryDescription;
 module UriFunction = ApolloClient_SelectHttpOptionsAndBody.UriFunction;
 module Types = ApolloClient__Types;
+module WatchQueryFetchPolicy = ApolloClient__Core_WatchQueryOptions.WatchQueryFetchPolicy;
+module WatchQueryOptions = ApolloClient__Core_WatchQueryOptions.QueryOptions;
 
-// /// <reference types="zen-observable" />
+module DefaultOptions = {
+  module DefaultWatchQueryOptions = {
+    module Js_ = {
+      // Partial<QueryOptions>;
+      type t = {
+        fetchPolicy: option(WatchQueryFetchPolicy.Js_.t),
+        // query: GraphQL.Language.documentNode,
+        // variables: option('variables),
+        errorPolicy: option(ErrorPolicy.Js_.t),
+        context: option(Js.Json.t),
+      };
+    };
 
-// export interface DefaultOptions {
-//     watchQuery?: Partial<WatchQueryOptions>;
-//     query?: Partial<QueryOptions>;
-//     mutate?: Partial<MutationOptions>;
-// }
+    type t = {
+      fetchPolicy: option(WatchQueryFetchPolicy.t),
+      errorPolicy: option(ErrorPolicy.t),
+      context: option(Js.Json.t),
+    };
 
-// export declare type ApolloClientOptions<TCacheShape> = {
-//     uri?: string | UriFunction;
-//     credentials?: string;
-//     headers?: Record<string, string>;
-//     link?: ApolloLink;
-//     cache: ApolloCache<TCacheShape>;
-//     ssrForceFetchDelay?: number;
-//     ssrMode?: boolean;
-//     connectToDevTools?: boolean;
-//     queryDeduplication?: boolean;
-//     defaultOptions?: DefaultOptions;
-//     assumeImmutableResults?: boolean;
-//     resolvers?: Resolvers | Resolvers[];
-//     typeDefs?: string | string[] | DocumentNode | DocumentNode[];
-//     fragmentMatcher?: FragmentMatcher;
-//     name?: string;
-//     version?: string;
-// };
+    let toJs: t => Js_.t =
+      t => {
+        fetchPolicy:
+          t.fetchPolicy->Belt.Option.map(WatchQueryFetchPolicy.toJs),
+        errorPolicy: t.errorPolicy->Belt.Option.map(ErrorPolicy.toJs),
+        context: t.context,
+      };
+  };
 
-// export declare class ApolloClient<TCacheShape> implements DataProxy {
-//     link: ApolloLink;
-//     cache: ApolloCache<TCacheShape>;
-//     disableNetworkFetches: boolean;
-//     version: string;
-//     queryDeduplication: boolean;
-//     defaultOptions: DefaultOptions;
-//     readonly typeDefs: ApolloClientOptions<TCacheShape>['typeDefs'];
-//     private queryManager;
-//     private devToolsHookCb;
-//     private resetStoreCallbacks;
-//     private clearStoreCallbacks;
-//     private localState;
-//     stop(): void;
-//     watchQuery<T = any, TVariables = OperationVariables>(options: WatchQueryOptions<TVariables>): ObservableQuery<T, TVariables>;
-//     subscribe<T = any, TVariables = OperationVariables>(options: SubscriptionOptions<TVariables>): Observable<FetchResult<T>>;
-//     readFragment<T = any, TVariables = OperationVariables>(options: DataProxy.Fragment<TVariables>, optimistic?: boolean): T | null;
-//     writeFragment<TData = any, TVariables = OperationVariables>(options: DataProxy.WriteFragmentOptions<TData, TVariables>): void;
-//     __actionHookForDevTools(cb: () => any): void;
-//     __requestRaw(payload: GraphQLRequest): Observable<ExecutionResult>;
-//     resetStore(): Promise<ApolloQueryResult<any>[] | null>;
-//     clearStore(): Promise<any[]>;
-//     onResetStore(cb: () => Promise<any>): () => void;
-//     onClearStore(cb: () => Promise<any>): () => void;
-//     reFetchObservableQueries(includeStandby?: boolean): Promise<ApolloQueryResult<any>[]>;
-//     extract(optimistic?: boolean): TCacheShape;
-//     restore(serializedState: TCacheShape): ApolloCache<TCacheShape>;
-//     addResolvers(resolvers: Resolvers | Resolvers[]): void;
-//     setResolvers(resolvers: Resolvers | Resolvers[]): void;
-//     getResolvers(): Resolvers;
-//     setLocalStateFragmentMatcher(fragmentMatcher: FragmentMatcher): void;
-// }
+  module DefaultQueryOptions = {
+    module Js_ = {
+      // Partial<QueryOptions>;
+      type t = {
+        fetchPolicy: option(FetchPolicy.Js_.t),
+        // query: GraphQL.Language.documentNode,
+        // variables: option('variables),
+        errorPolicy: option(ErrorPolicy.Js_.t),
+        context: option(Js.Json.t),
+      };
+    };
+
+    type t = {
+      fetchPolicy: option(FetchPolicy.t),
+      errorPolicy: option(ErrorPolicy.t),
+      context: option(Js.Json.t),
+    };
+
+    let toJs: t => Js_.t =
+      t => {
+        fetchPolicy: t.fetchPolicy->Belt.Option.map(FetchPolicy.toJs),
+        errorPolicy: t.errorPolicy->Belt.Option.map(ErrorPolicy.toJs),
+        context: t.context,
+      };
+  };
+
+  module DefaultMutationOptions = {
+    module Js_ = {
+      // Partial<MutationOptions>;
+      type t = {
+        context: option(Js.Json.t),
+        fetchPolicy: option(FetchPolicy__noCacheExtracted.Js_.t),
+        awaitRefetchQueries: option(bool),
+        errorPolicy: option(ErrorPolicy.Js_.t),
+        // optimisticResponse: option('variables => 'jsData),
+        // update: option(MutationUpdaterFn.Js_.t('jsData)),
+        // updateQueries: option(MutationQueryReducersMap.Js_.t('jsData)),
+        refetchQueries: option(RefetchQueryDescription.Js_.t),
+        // variables: option('variables),
+      };
+    };
+
+    type t = {
+      context: option(Js.Json.t),
+      fetchPolicy: option(FetchPolicy__noCacheExtracted.t),
+      awaitRefetchQueries: option(bool),
+      errorPolicy: option(ErrorPolicy.t),
+      refetchQueries: option(RefetchQueryDescription.t),
+    };
+
+    let toJs: t => Js_.t =
+      t => {
+        context: t.context,
+        fetchPolicy:
+          t.fetchPolicy->Belt.Option.map(FetchPolicy__noCacheExtracted.toJs),
+        awaitRefetchQueries: t.awaitRefetchQueries,
+        errorPolicy: t.errorPolicy->Belt.Option.map(ErrorPolicy.toJs),
+        refetchQueries:
+          t.refetchQueries->Belt.Option.map(RefetchQueryDescription.toJs),
+      };
+
+    let make =
+        (
+          ~context=?,
+          ~fetchPolicy=?,
+          ~awaitRefetchQueries=?,
+          ~errorPolicy=?,
+          ~refetchQueries=?,
+          (),
+        ) => {
+      context,
+      fetchPolicy,
+      awaitRefetchQueries,
+      errorPolicy,
+      refetchQueries,
+    };
+  };
+
+  module Js_ = {
+    // export interface DefaultOptions {
+    //     watchQuery?: Partial<WatchQueryOptions>;
+    //     query?: Partial<QueryOptions>;
+    //     mutate?: Partial<MutationOptions>;
+    // }
+    type t = {
+      watchQuery: option(DefaultWatchQueryOptions.Js_.t),
+      query: option(DefaultQueryOptions.Js_.t),
+      mutate: option(DefaultMutationOptions.Js_.t),
+    };
+  };
+
+  type t = {
+    watchQuery: option(DefaultWatchQueryOptions.t),
+    query: option(DefaultQueryOptions.t),
+    mutate: option(DefaultMutationOptions.t),
+  };
+
+  let toJs: t => Js_.t =
+    t => {
+      watchQuery:
+        t.watchQuery->Belt.Option.map(DefaultWatchQueryOptions.toJs),
+      query: t.query->Belt.Option.map(DefaultQueryOptions.toJs),
+      mutate: t.mutate->Belt.Option.map(DefaultMutationOptions.toJs),
+    };
+
+  let make:
+    (
+      ~mutate: DefaultMutationOptions.t=?,
+      ~query: DefaultQueryOptions.t=?,
+      ~watchQuery: DefaultWatchQueryOptions.t=?,
+      unit
+    ) =>
+    t =
+    (~mutate=?, ~query=?, ~watchQuery=?, ()) => {watchQuery, query, mutate};
+};
+
 module ApolloClientOptions = {
   module Js_ = {
     // export declare type ApolloClientOptions<TCacheShape> = {
@@ -96,16 +184,16 @@ module ApolloClientOptions = {
     //     version?: string;
     // };
     type t = {
-      uri: option(UriFunction.t),
+      uri: option(UriFunction.Js_.t),
       credentials: option(string),
       headers: Js.Dict.t(string),
-      link: option(ApolloLink.t),
-      // cache: ApolloCache.t('tCacheShape),
+      link: option(ApolloLink.Js_.t),
+      cache: ApolloCache.Js_.t(Js.Json.t),
       ssrForceFetchDelay: option(int),
       ssrMode: option(bool),
       connectToDevTools: option(bool),
       queryDeduplication: option(bool),
-      // defaultOptions: option(DefaultOptions.t),
+      defaultOptions: option(DefaultOptions.Js_.t),
       assumeImmutableResults: option(bool),
       // resolvers: array(Resolvers.t),
       typeDefs: array(GraphQL.documentNode),
@@ -114,7 +202,43 @@ module ApolloClientOptions = {
       version: option(string),
     };
   };
-  type t = Js_.t;
+
+  type t = {
+    uri: option(UriFunction.t),
+    credentials: option(string),
+    headers: Js.Dict.t(string),
+    link: option(ApolloLink.t),
+    cache: ApolloCache.Js_.t(Js.Json.t),
+    ssrForceFetchDelay: option(int),
+    ssrMode: option(bool),
+    connectToDevTools: option(bool),
+    queryDeduplication: option(bool),
+    defaultOptions: option(DefaultOptions.t),
+    assumeImmutableResults: option(bool),
+    // resolvers: array(Resolvers.t),
+    typeDefs: array(GraphQL.documentNode),
+    // fragmentMatcher: option(FragmentMatcher.t),
+    name: option(string),
+    version: option(string),
+  };
+
+  let toJs: t => Js_.t =
+    t => {
+      uri: t.uri,
+      credentials: t.credentials,
+      headers: t.headers,
+      link: t.link,
+      cache: t.cache,
+      ssrForceFetchDelay: t.ssrForceFetchDelay,
+      ssrMode: t.ssrMode,
+      connectToDevTools: t.connectToDevTools,
+      queryDeduplication: t.queryDeduplication,
+      defaultOptions: t.defaultOptions->Belt.Option.map(DefaultOptions.toJs),
+      assumeImmutableResults: t.assumeImmutableResults,
+      typeDefs: t.typeDefs,
+      name: t.name,
+      version: t.version,
+    };
 };
 
 type refetchQueryDescription =
@@ -122,6 +246,38 @@ type refetchQueryDescription =
   | String(string): refetchQueryDescription;
 
 module Js_ = {
+  // export declare class ApolloClient<TCacheShape> implements DataProxy {
+  //     link: ApolloLink;
+  //     cache: ApolloCache<TCacheShape>;
+  //     disableNetworkFetches: boolean;
+  //     version: string;
+  //     queryDeduplication: boolean;
+  //     defaultOptions: DefaultOptions;
+  //     readonly typeDefs: ApolloClientOptions<TCacheShape>['typeDefs'];
+  //     private queryManager;
+  //     private devToolsHookCb;
+  //     private resetStoreCallbacks;
+  //     private clearStoreCallbacks;
+  //     private localState;
+  //     stop(): void;
+  //     watchQuery<T = any, TVariables = OperationVariables>(options: WatchQueryOptions<TVariables>): ObservableQuery<T, TVariables>;
+  //     subscribe<T = any, TVariables = OperationVariables>(options: SubscriptionOptions<TVariables>): Observable<FetchResult<T>>;
+  //     readFragment<T = any, TVariables = OperationVariables>(options: DataProxy.Fragment<TVariables>, optimistic?: boolean): T | null;
+  //     writeFragment<TData = any, TVariables = OperationVariables>(options: DataProxy.WriteFragmentOptions<TData, TVariables>): void;
+  //     __actionHookForDevTools(cb: () => any): void;
+  //     __requestRaw(payload: GraphQLRequest): Observable<ExecutionResult>;
+  //     resetStore(): Promise<ApolloQueryResult<any>[] | null>;
+  //     clearStore(): Promise<any[]>;
+  //     onResetStore(cb: () => Promise<any>): () => void;
+  //     onClearStore(cb: () => Promise<any>): () => void;
+  //     reFetchObservableQueries(includeStandby?: boolean): Promise<ApolloQueryResult<any>[]>;
+  //     extract(optimistic?: boolean): TCacheShape;
+  //     restore(serializedState: TCacheShape): ApolloCache<TCacheShape>;
+  //     addResolvers(resolvers: Resolvers | Resolvers[]): void;
+  //     setResolvers(resolvers: Resolvers | Resolvers[]): void;
+  //     getResolvers(): Resolvers;
+  //     setLocalStateFragmentMatcher(fragmentMatcher: FragmentMatcher): void;
+  // }
   type t;
   // mutate<T = any, TVariables = OperationVariables>(options: MutationOptions<T, TVariables>): Promise<FetchResult<T>>;
   [@bs.send]
@@ -161,7 +317,9 @@ module Js_ = {
 
 type t = Js_.t;
 
-let make: ApolloClientOptions.t => t = Js_.make;
+let make: ApolloClientOptions.t => t =
+  apolloClientOptions =>
+    Js_.make(apolloClientOptions->ApolloClientOptions.toJs);
 
 let mutate:
   type data variables jsData jsVariables.

@@ -1,4 +1,4 @@
-module Cache = ApolloClient__Cache_Core_Cache;
+module ApolloCache = ApolloClient__Cache_Core_Cache.ApolloCache;
 module FetchResult = ApolloClient__Link_Core_Types.FetchResult;
 module GraphQL = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__Graphql;
@@ -103,7 +103,6 @@ module QueryOptions = {
 
   type t('variables) = {
     fetchPolicy: option(FetchPolicy.t),
-    // ...extends QueryBaseOptions
     query: ApolloClient__Graphql.documentNode,
     variables: option('variables),
     errorPolicy: option(ErrorPolicy.t),
@@ -120,12 +119,43 @@ module QueryOptions = {
     };
 };
 
-module MutationUpdaterFn = {
+module WatchQueryOptions = {
   module Js_ = {
-    type t('jsData) = (. Cache.t, FetchResult.Js_.t('jsData)) => unit;
+    type t('variables) = {
+      fetchPolicy: option(WatchQueryFetchPolicy.Js_.t),
+      // ...extends QueryBaseOptions
+      query: GraphQL.Language.documentNode,
+      variables: option('variables),
+      errorPolicy: option(ErrorPolicy.Js_.t),
+      context: option(Js.Json.t),
+    };
   };
 
-  type t('data) = (Cache.t, FetchResult.t('data)) => unit;
+  type t('variables) = {
+    fetchPolicy: option(WatchQueryFetchPolicy.t),
+    query: ApolloClient__Graphql.documentNode,
+    variables: option('variables),
+    errorPolicy: option(ErrorPolicy.t),
+    context: option(Js.Json.t),
+  };
+
+  let toJs: t('variables) => Js_.t('variables) =
+    t => {
+      fetchPolicy: t.fetchPolicy->Belt.Option.map(WatchQueryFetchPolicy.toJs),
+      query: t.query,
+      variables: t.variables,
+      errorPolicy: t.errorPolicy->Belt.Option.map(ErrorPolicy.toJs),
+      context: t.context,
+    };
+};
+
+module MutationUpdaterFn = {
+  module Js_ = {
+    type t('jsData) =
+      (. ApolloCache.Js_.t(Js.Json.t), FetchResult.Js_.t('jsData)) => unit;
+  };
+
+  type t('data) = (ApolloCache.t(Js.Json.t), FetchResult.t('data)) => unit;
 
   let toJs:
     (t('data), ~parse: Types.parse('jsData, 'data)) => Js_.t('jsData) =

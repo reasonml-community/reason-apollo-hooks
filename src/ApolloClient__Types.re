@@ -25,3 +25,8 @@ module type Operation = {
   let parse: Raw.t => t;
   let serialize: t => Raw.t;
 };
+
+module type OperationNoRequiredVars = {
+  include Operation;
+  let makeDefaultVariables: unit => Raw.t_variables;
+};
