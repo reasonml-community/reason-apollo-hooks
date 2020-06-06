@@ -3,7 +3,7 @@ module FetchResult = ApolloClient__Link_Core_Types.FetchResult;
 module GraphQL = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__Graphql;
 module MutationQueryReducersMap = ApolloClient__Core_Types.MutationQueryReducersMap;
-module Types = ApolloClient__Types;
+module Types = ApolloClient__Reason_Types;
 module PureQueryOptions = ApolloClient__Core_Types.PureQueryOptions;
 
 module ErrorPolicy = {

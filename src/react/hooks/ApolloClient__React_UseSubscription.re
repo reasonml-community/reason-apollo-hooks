@@ -5,9 +5,10 @@ module Graphql = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__GraphqlTag;
 module OnSubscriptionDataOptions = ApolloClient__React_Types.OnSubscriptionDataOptions;
 module SubscriptionHookOptions = ApolloClient__React_Types.SubscriptionHookOptions;
-module Types = ApolloClient__Types;
+module Types = ApolloClient__Reason_Types;
 
-module type Operation = ApolloClient__Types.Operation;
+module type Operation = ApolloClient__Reason_Types.Operation;
+module type OperationNoRequiredVars = ApolloClient__Reason_Types.OperationNoRequiredVars;
 
 module Js_ = {
   type useSubscription_result('jsData, 'variables) = {
@@ -50,7 +51,7 @@ let useSubscription:
       ~shouldResubscribe: BaseSubscriptionOptions.t(data, jsVariables) => bool
                             =?,
       ~skip: bool=?,
-      ~variables: Types.variablesArg(jsVariables),
+      ~variables: jsVariables,
       (module Operation with
          type t = data and
          type Raw.t = jsData and
@@ -64,14 +65,9 @@ let useSubscription:
     ~onSubscriptionComplete=?,
     ~shouldResubscribe=?,
     ~skip=?,
-    ~variables as variablesArg,
+    ~variables,
     (module Definition),
   ) => {
-    let variables =
-      switch (variablesArg) {
-      | Types.NoVariables => None
-      | Types.Variables(v) => Some(v)
-      };
     let jsSubscriptionResult =
       Js_.useSubscription(
         ~subscription=GraphqlTag.gql(Definition.query),
@@ -85,13 +81,13 @@ let useSubscription:
               subscription: None,
               shouldResubscribe,
               skip,
-              variables,
+              variables: Some(variables),
             },
             ~parse=Definition.parse,
           ),
       );
 
-    ApolloClient__Utils.useGuaranteedMemo1(
+    ApolloClient__Reason_Utils.useGuaranteedMemo1(
       () =>
         {
           variables: jsSubscriptionResult.variables,
@@ -100,6 +96,46 @@ let useSubscription:
           error: jsSubscriptionResult.error,
         },
       jsSubscriptionResult,
+    );
+  };
+
+let useSubscription0:
+  type data jsData jsVariables.
+    (
+      ~client: ApolloClient__ApolloClient.t=?,
+      ~fetchPolicy: FetchPolicy.t=?,
+      ~onSubscriptionData: OnSubscriptionDataOptions.t(data) => unit=?,
+      ~onSubscriptionComplete: unit => unit=?,
+      ~shouldResubscribe: BaseSubscriptionOptions.t(data, jsVariables) => bool
+                            =?,
+      ~skip: bool=?,
+      (module Types.OperationNoRequiredVars with
+         type t = data and
+         type Raw.t = jsData and
+         type Raw.t_variables = jsVariables)
+    ) =>
+    useSubscription_result(data, jsVariables) =
+  (
+    ~client=?,
+    ~fetchPolicy=?,
+    ~onSubscriptionData=?,
+    ~onSubscriptionComplete=?,
+    ~shouldResubscribe=?,
+    ~skip=?,
+    (module Definition),
+  ) => {
+    useSubscription(
+      ~client?,
+      ~fetchPolicy?,
+      ~onSubscriptionData?,
+      ~onSubscriptionComplete?,
+      ~shouldResubscribe?,
+      ~skip?,
+      ~variables=
+        ApolloClient__Reason_Utils.nullAsDefaultVariables(
+          Definition.makeDefaultVariables(),
+        ),
+      (module Definition),
     );
   };
 
@@ -123,6 +159,29 @@ module Extend = (M: Operation) => {
       ~shouldResubscribe?,
       ~skip?,
       ~variables,
+      (module M),
+    );
+  };
+};
+
+module ExtendNoRequiredVariables = (M: OperationNoRequiredVars) => {
+  let use =
+      (
+        ~client=?,
+        ~fetchPolicy=?,
+        ~onSubscriptionData=?,
+        ~onSubscriptionComplete=?,
+        ~shouldResubscribe=?,
+        ~skip=?,
+        (),
+      ) => {
+    useSubscription0(
+      ~client?,
+      ~fetchPolicy?,
+      ~onSubscriptionData?,
+      ~onSubscriptionComplete?,
+      ~shouldResubscribe?,
+      ~skip?,
       (module M),
     );
   };

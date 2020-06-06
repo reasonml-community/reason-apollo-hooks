@@ -1,3 +1,8 @@
+let nullAsDefaultVariables: 'a => 'a =
+  _ => {
+    Obj.magic(Js.Json.null);
+  };
+
 let useGuaranteedMemo1 = (f, dependency) => {
   let value = React.useRef(f());
   let previousDependency = React.useRef(dependency);

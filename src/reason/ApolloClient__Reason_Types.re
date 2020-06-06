@@ -8,11 +8,6 @@ type graphqlDefinition('t, 'raw_t) = (
   serialize('t, 'raw_t),
 );
 
-type variablesArg('variables) =
-  // Js.Json.t is the type of Raw.t_variables in graphql-ppx when there are no variables
-  | NoVariables: variablesArg(Js.Json.t)
-  | Variables('variables): variablesArg('variables);
-
 module type Operation = {
   let query: string;
 

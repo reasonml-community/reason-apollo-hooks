@@ -17,7 +17,7 @@ module PureQueryOptions = ApolloClient__Core_Types.PureQueryOptions;
 module RefetchQueryDescription = ApolloClient__Core_WatchQueryOptions.RefetchQueryDescription;
 module Resolvers = ApolloClient__Core_Types.Resolvers;
 module UriFunction = ApolloClient_Link_Http_SelectHttpOptionsAndBody.UriFunction;
-module Types = ApolloClient__Types;
+module Types = ApolloClient__Reason_Types;
 module WatchQueryFetchPolicy = ApolloClient__Core_WatchQueryOptions.WatchQueryFetchPolicy;
 module WatchQueryOptions = ApolloClient__Core_WatchQueryOptions.QueryOptions;
 

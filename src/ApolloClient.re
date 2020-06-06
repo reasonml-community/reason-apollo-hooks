@@ -58,6 +58,8 @@ let useSubscription = ApolloClient__React_UseSubscription.useSubscription;
 // export { RenderPromises } from './react/ssr/RenderPromises.js';
 
 module Extend = {
-  module UseQuery = ApolloClient__React_UseQuery.Extend;
+  module Query = ApolloClient__React_UseQuery.Extend;
+  module QueryNoRequiredVariables = ApolloClient__React_UseQuery.ExtendNoRequiredVariables;
   module Subscription = ApolloClient__React_UseSubscription.Extend;
+  module SubscriptionNoRequiredVariables = ApolloClient__React_UseSubscription.ExtendNoRequiredVariables;
 };

@@ -4,16 +4,11 @@ module Graphql = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__GraphqlTag;
 module QueryHookOptions = ApolloClient__React_Types.QueryHookOptions;
 module QueryResult = ApolloClient__React_Types.QueryResult;
-module Types = ApolloClient__Types;
+module Types = ApolloClient__Reason_Types;
 module WatchQueryFetchPolicy = ApolloClient__Core_WatchQueryOptions.WatchQueryFetchPolicy;
 
-module type Operation = ApolloClient__Types.Operation;
-
-type simpleQueryResult('a) =
-  | Data('a)
-  | Error(ApolloError.t)
-  | Loading
-  | NoData;
+module type Operation = ApolloClient__Reason_Types.Operation;
+module type OperationNoRequiredVars = ApolloClient__Reason_Types.OperationNoRequiredVars;
 
 module Js_ = {
   // export declare function useQuery<TData = any, TVariables = OperationVariables>(query: DocumentNode, options?: QueryHookOptions<TData, TVariables>): QueryResult<TData, TVariables>;
@@ -42,7 +37,7 @@ let useQuery:
       ~pollInterval: int=?,
       ~skip: bool=?,
       ~ssr: bool=?,
-      ~variables: Types.variablesArg(jsVariables),
+      ~variables: jsVariables,
       (module Operation with
          type t = data and
          type Raw.t = jsData and
@@ -62,14 +57,14 @@ let useQuery:
     ~pollInterval=?,
     ~skip=?,
     ~ssr=?,
-    ~variables as variablesArg,
+    ~variables,
     (module Definition),
   ) => {
-    let variables =
-      switch (variablesArg) {
-      | Types.NoVariables => None
-      | Types.Variables(v) => Some(v)
-      };
+    // let variables =
+    //   switch (variablesArg) {
+    //   | Types.NoVariables => None
+    //   | Types.Variables(v) => Some(v)
+    //   };
 
     let jsQueryResult =
       Js_.useQuery(
@@ -90,13 +85,13 @@ let useQuery:
               query: None,
               skip,
               ssr,
-              variables,
+              variables: Some(variables),
             },
             ~parse=Definition.parse,
           ),
       );
 
-    ApolloClient__Utils.useGuaranteedMemo1(
+    ApolloClient__Reason_Utils.useGuaranteedMemo1(
       () => {
         jsQueryResult->QueryResult.fromJs(
           ~parse=Definition.parse,
@@ -104,6 +99,63 @@ let useQuery:
         )
       },
       jsQueryResult,
+    );
+  };
+
+let useQuery0:
+  type data jsData jsVariables.
+    (
+      ~client: ApolloClient__ApolloClient.t=?,
+      ~context: Js.Json.t=?,
+      ~displayName: string=?,
+      ~errorPolicy: ErrorPolicy.t=?,
+      ~fetchPolicy: WatchQueryFetchPolicy.t=?,
+      ~notifyOnNetworkStatusChange: bool=?,
+      ~onCompleted: data => unit=?,
+      ~onError: ApolloError.t => unit=?,
+      ~partialRefetch: bool=?,
+      ~pollInterval: int=?,
+      ~skip: bool=?,
+      ~ssr: bool=?,
+      (module Types.OperationNoRequiredVars with
+         type t = data and
+         type Raw.t = jsData and
+         type Raw.t_variables = jsVariables)
+    ) =>
+    QueryResult.t(data, jsVariables) =
+  (
+    ~client=?,
+    ~context=?,
+    ~displayName=?,
+    ~errorPolicy=?,
+    ~fetchPolicy=?,
+    ~notifyOnNetworkStatusChange=?,
+    ~onCompleted=?,
+    ~onError=?,
+    ~partialRefetch=?,
+    ~pollInterval=?,
+    ~skip=?,
+    ~ssr=?,
+    (module Definition),
+  ) => {
+    useQuery(
+      ~client?,
+      ~context?,
+      ~displayName?,
+      ~errorPolicy?,
+      ~fetchPolicy?,
+      ~notifyOnNetworkStatusChange?,
+      ~onCompleted?,
+      ~onError?,
+      ~partialRefetch?,
+      ~pollInterval?,
+      ~skip?,
+      ~ssr?,
+      ~variables=
+        ApolloClient__Reason_Utils.nullAsDefaultVariables(
+          Definition.makeDefaultVariables(),
+        ),
+      (module Definition),
     );
   };
 
@@ -139,6 +191,41 @@ module Extend = (M: Operation) => {
       ~skip?,
       ~ssr?,
       ~variables,
+      (module M),
+    );
+  };
+};
+
+module ExtendNoRequiredVariables = (M: OperationNoRequiredVars) => {
+  let use =
+      (
+        ~client=?,
+        ~context=?,
+        ~displayName=?,
+        ~errorPolicy=?,
+        ~fetchPolicy=?,
+        ~notifyOnNetworkStatusChange=?,
+        ~onCompleted=?,
+        ~onError=?,
+        ~partialRefetch=?,
+        ~pollInterval=?,
+        ~skip=?,
+        ~ssr=?,
+        (),
+      ) => {
+    useQuery0(
+      ~client?,
+      ~context?,
+      ~displayName?,
+      ~errorPolicy?,
+      ~fetchPolicy?,
+      ~notifyOnNetworkStatusChange?,
+      ~onCompleted?,
+      ~onError?,
+      ~partialRefetch?,
+      ~pollInterval?,
+      ~skip?,
+      ~ssr?,
       (module M),
     );
   };

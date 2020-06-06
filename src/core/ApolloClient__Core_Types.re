@@ -2,7 +2,7 @@ module Graphql = ApolloClient__Graphql;
 module GraphqlTag = ApolloClient__GraphqlTag;
 module FetchResult = ApolloClient__Link_Core_Types.FetchResult;
 module Resolver = ApolloClient__Core_LocalState.Resolver;
-module Types = ApolloClient__Types;
+module Types = ApolloClient__Reason_Types;
 
 module PureQueryOptions = {
   module Js_ = {

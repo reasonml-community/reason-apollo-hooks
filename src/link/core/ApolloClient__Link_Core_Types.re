@@ -73,7 +73,10 @@ module FetchResult = {
   };
 
   let fromJs:
-    (Js_.t('jsData), ~parse: ApolloClient__Types.parse('jsData, 'data)) =>
+    (
+      Js_.t('jsData),
+      ~parse: ApolloClient__Reason_Types.parse('jsData, 'data)
+    ) =>
     t('data) =
     (js, ~parse) => {
       {
