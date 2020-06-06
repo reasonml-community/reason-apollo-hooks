@@ -9,16 +9,24 @@ module InMemoryCacheConfig = {
     //     possibleTypes?: PossibleTypesMap;
     //     typePolicies?: TypePolicies;
     // }
+    // NOTE: Using deriving abstract here because passing properties that are undefined has effects
+    [@bs.deriving abstract]
     type t = {
-      resultCaching: option(bool),
-      possibleTypes: option(PossibleTypesMap.Js_.t),
-      typePolicies: option(TypePolicies.Js_.t),
+      [@bs.optional]
+      resultCaching: bool,
+      [@bs.optional]
+      possibleTypes: PossibleTypesMap.Js_.t,
+      [@bs.optional]
+      typePolicies: TypePolicies.Js_.t,
       // ...extends ApolloReducerConfig
-      dataIdFromObject: option(KeyFieldsFunction.Js_.t),
-      addTypename: option(bool),
+      [@bs.optional]
+      dataIdFromObject: KeyFieldsFunction.Js_.t,
+      [@bs.optional]
+      addTypename: bool,
     };
   };
   type t = Js_.t;
+  let make = Js_.t;
 };
 
 module Js_ = {
@@ -55,12 +63,42 @@ module Js_ = {
   //     private varDep;
   //     makeVar<T>(value: T): ReactiveVar<T>;
   // }
-  type t;
+  type t = ApolloClient__Cache_Core_Cache.ApolloCache.Js_.t(Js.Json.t);
 
-  [@bs.module "@apollo/client"]
+  [@bs.module "@apollo/client"] [@bs.new]
   external make: InMemoryCacheConfig.Js_.t => t = "InMemoryCache";
 };
 
 type t = Js_.t;
 
-let make: InMemoryCacheConfig.t => t = Js_.make;
+let make:
+  (
+    ~resultCaching: bool=?,
+    ~possibleTypes: PossibleTypesMap.t=?,
+    ~typePolicies: TypePolicies.t=?,
+    ~dataIdFromObject: KeyFieldsFunction.t=?,
+    ~addTypename: bool=?,
+    unit
+  ) =>
+  t =
+  (
+    ~resultCaching=?,
+    ~possibleTypes=?,
+    ~typePolicies=?,
+    ~dataIdFromObject=?,
+    ~addTypename=?,
+    (),
+  ) => {
+    let config =
+      InMemoryCacheConfig.make(
+        ~resultCaching?,
+        ~possibleTypes?,
+        ~typePolicies?,
+        ~dataIdFromObject?,
+        ~addTypename?,
+        (),
+      );
+
+    Js.log2("config", config);
+    Js_.make(config);
+  };

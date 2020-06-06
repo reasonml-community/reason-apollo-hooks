@@ -188,7 +188,7 @@ module ApolloClientOptions = {
     type t = {
       uri: option(UriFunction.Js_.t),
       credentials: option(string),
-      headers: Js.Dict.t(string),
+      headers: option(Js.Dict.t(string)),
       link: option(ApolloLink.Js_.t),
       cache: ApolloCache.Js_.t(Js.Json.t),
       ssrForceFetchDelay: option(int),
@@ -197,8 +197,8 @@ module ApolloClientOptions = {
       queryDeduplication: option(bool),
       defaultOptions: option(DefaultOptions.Js_.t),
       assumeImmutableResults: option(bool),
-      resolvers: array(Resolvers.Js_.t),
-      typeDefs: array(GraphQL.documentNode),
+      resolvers: option(array(Resolvers.Js_.t)),
+      typeDefs: option(array(GraphQL.documentNode)),
       fragmentMatcher: option(FragmentMatcher.Js_.t),
       name: option(string),
       version: option(string),
@@ -208,7 +208,7 @@ module ApolloClientOptions = {
   type t = {
     uri: option(UriFunction.t),
     credentials: option(string),
-    headers: Js.Dict.t(string),
+    headers: option(Js.Dict.t(string)),
     link: option(ApolloLink.t),
     cache: ApolloCache.Js_.t(Js.Json.t),
     ssrForceFetchDelay: option(int),
@@ -217,8 +217,8 @@ module ApolloClientOptions = {
     queryDeduplication: option(bool),
     defaultOptions: option(DefaultOptions.t),
     assumeImmutableResults: option(bool),
-    resolvers: array(Resolvers.t),
-    typeDefs: array(GraphQL.documentNode),
+    resolvers: option(array(Resolvers.t)),
+    typeDefs: option(array(GraphQL.documentNode)),
     fragmentMatcher: option(FragmentMatcher.t),
     name: option(string),
     version: option(string),
@@ -321,9 +321,66 @@ module Js_ = {
 
 type t = Js_.t;
 
-let make: ApolloClientOptions.t => t =
-  apolloClientOptions =>
-    Js_.make(apolloClientOptions->ApolloClientOptions.toJs);
+let make:
+  (
+    ~uri: UriFunction.t=?,
+    ~credentials: string=?,
+    ~headers: Js.Dict.t(string)=?,
+    ~link: ApolloLink.t=?,
+    ~cache: ApolloCache.Js_.t(Js.Json.t),
+    ~ssrForceFetchDelay: int=?,
+    ~ssrMode: bool=?,
+    ~connectToDevTools: bool=?,
+    ~queryDeduplication: bool=?,
+    ~defaultOptions: DefaultOptions.t=?,
+    ~assumeImmutableResults: bool=?,
+    ~resolvers: array(Resolvers.t)=?,
+    ~typeDefs: array(GraphQL.documentNode)=?,
+    ~fragmentMatcher: FragmentMatcher.t=?,
+    ~name: string=?,
+    ~version: string=?,
+    unit
+  ) =>
+  t =
+  (
+    ~uri=?,
+    ~credentials=?,
+    ~headers=?,
+    ~link=?,
+    ~cache,
+    ~ssrForceFetchDelay=?,
+    ~ssrMode=?,
+    ~connectToDevTools=?,
+    ~queryDeduplication=?,
+    ~defaultOptions=?,
+    ~assumeImmutableResults=?,
+    ~resolvers=?,
+    ~typeDefs=?,
+    ~fragmentMatcher=?,
+    ~name=?,
+    ~version=?,
+    (),
+  ) =>
+    Js_.make(
+      ApolloClientOptions.toJs({
+        uri,
+        credentials,
+        headers,
+        link,
+        cache,
+        ssrForceFetchDelay,
+        ssrMode,
+        connectToDevTools,
+        queryDeduplication,
+        defaultOptions,
+        assumeImmutableResults,
+        resolvers,
+        typeDefs,
+        fragmentMatcher,
+        name,
+        version,
+      }),
+    );
 
 let mutate:
   type data variables jsData jsVariables.

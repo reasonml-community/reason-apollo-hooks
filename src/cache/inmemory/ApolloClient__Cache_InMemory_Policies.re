@@ -55,8 +55,9 @@ module TypePolicies = {
     // export declare type TypePolicies = {
     //     [__typename: string]: TypePolicy;
     // };
-    type t = Js.Dict.t(TypePolicy.t);
+    type t = Js.Dict.t(TypePolicy.Js_.t);
   };
+  type t = Js_.t;
 };
 
 module PossibleTypesMap = {

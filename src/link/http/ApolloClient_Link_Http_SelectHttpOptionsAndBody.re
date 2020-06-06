@@ -35,7 +35,7 @@ module HttpOptions = {
       fetch: option(t_fetch),
       headers: option(Js.Json.t),
       credentials: option(string),
-      fetchOptions: Js.Json.t,
+      fetchOptions: option(Js.Json.t),
       useGETForQueries: option(bool),
     };
   };
