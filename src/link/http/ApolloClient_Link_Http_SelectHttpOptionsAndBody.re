@@ -7,6 +7,41 @@ module Operation = ApolloClient__Link_Core_Types.Operation;
 //     variables?: Record<string, any>;
 //     extensions?: Record<string, any>;
 // }
+
+module UriFunction = {
+  module Js_ = {
+    type t = Operation.Js_.t => string;
+  };
+
+  type t = Js_.t;
+};
+
+module HttpOptions = {
+  module Js_ = {
+    // export interface HttpOptions {
+    //     uri?: string | UriFunction;
+    //     includeExtensions?: boolean;
+    //     fetch?: WindowOrWorkerGlobalScope['fetch'];
+    //     headers?: any;
+    //     credentials?: string;
+    //     fetchOptions?: any;
+    //     useGETForQueries?: boolean;
+    // }
+    type t_fetch;
+
+    type t = {
+      uri: option(UriFunction.Js_.t),
+      includeExtensions: option(bool),
+      fetch: option(t_fetch),
+      headers: option(Js.Json.t),
+      credentials: option(string),
+      fetchOptions: Js.Json.t,
+      useGETForQueries: option(bool),
+    };
+  };
+
+  type t = Js_.t;
+};
 // export interface HttpOptions {
 //     uri?: string | UriFunction;
 //     includeExtensions?: boolean;
@@ -41,10 +76,4 @@ module Operation = ApolloClient__Link_Core_Types.Operation;
 //     body: Body;
 // };
 
-module UriFunction = {
-  module Js_ = {
-    type t = Operation.Js_.t => string;
-  };
-
-  type t = Js_.t;
-};
+();

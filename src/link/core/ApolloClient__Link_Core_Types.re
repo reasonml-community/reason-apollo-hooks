@@ -2,6 +2,27 @@ module Graphql = ApolloClient__Graphql;
 module GraphQLError = ApolloClient__Graphql_Error_GraphQLError;
 module Observable = ApolloClient__ZenObservable.Observable;
 
+module GraphQLRequest = {
+  module Js_ = {
+    // export interface GraphQLRequest {
+    //   query: DocumentNode;
+    //   variables?: Record<string, any>;
+    //   operationName?: string;
+    //   context?: Record<string, any>;
+    //   extensions?: Record<string, any>;
+    // }
+    type t = {
+      query: Graphql.documentNode,
+      variables: option(Js.Json.t),
+      operationName: option(string),
+      context: option(Js.Json.t),
+      extensions: option(Js.Json.t),
+    };
+  };
+
+  type t = Js_.t;
+};
+
 module Operation = {
   module Js_ = {
     // export interface Operation {
@@ -35,8 +56,7 @@ module FetchResult = {
     //     context?: C;
     // }
     type t('jsData) = {
-      // TODO: option(Js.nullable('jsData))
-      data: option('jsData),
+      data: Js.Nullable.t('jsData),
       extensions: option(Js.Json.t), // ACTUAL: Record<string, any>
       context: option(Js.Json.t), // ACTUAL: Record<string, any>
       // ...extends ExecutionResult
@@ -57,7 +77,7 @@ module FetchResult = {
     t('data) =
     (js, ~parse) => {
       {
-        data: js.data->Belt.Option.map(parse),
+        data: js.data->Js.toOption->Belt.Option.map(parse),
         extensions: js.extensions,
         context: js.context,
         errors: js.errors,

@@ -138,3 +138,40 @@ module FragmentDefinitionNode = {
     selectionSet: SelectionSetNode.t,
   };
 };
+
+module VariableNode = {
+  type t = {
+    kind: string,
+    loc: option(Location.t),
+    name: NameNode.t,
+  };
+};
+
+module VariableDefinitionNode = {
+  type t = {
+    kind: string,
+    loc: option(Location.t),
+    variable: VariableNode.t,
+    // [@bs.as "type"]
+    // type_: TypeNode.t,
+    defaultValue: option(ValueNode.t),
+    directives: option(array(DirectiveNode.t)),
+  };
+};
+
+module OperationTypeNode = {
+  // export type OperationTypeNode = 'query' | 'mutation' | 'subscription';
+  type t = string;
+};
+
+module OperationDefinitionNode = {
+  type t = {
+    kind: string,
+    loc: option(Location.t),
+    name: NameNode.t,
+    operation: OperationTypeNode.t,
+    variableDefinitions: option(array(VariableDefinitionNode.t)),
+    directives: option(array(DirectiveNode.t)),
+    selectionSet: SelectionSetNode.t,
+  };
+};

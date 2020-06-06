@@ -1,7 +1,8 @@
+module FetchResult = ApolloClient__Link_Core_Types.FetchResult;
+module GraphQLRequest = ApolloClient__Link_Core_Types.GraphQLRequest;
+module Observable = ApolloClient__ZenObservable.Observable;
 module Operation = ApolloClient__Link_Core_Types.Operation;
 module RequestHandler = ApolloClient__Link_Core_Types.RequestHandler;
-// import { Observable } from '../../utilities/observables/Observable';
-// import { NextLink, Operation, RequestHandler, FetchResult, GraphQLRequest } from './types';
 
 module Js_ = {
   // export declare class ApolloLink {
@@ -19,6 +20,27 @@ module Js_ = {
   // }
   type t;
 
+  module Static = {
+    // static empty(): ApolloLink;
+    [@bs.module "@apollo/client"] [@bs.scope "ApolloClient"]
+    external empty: unit => t = "empty";
+    // static from(links: (ApolloLink | RequestHandler)[]): ApolloLink;
+    [@bs.module "@apollo/client"] [@bs.scope "ApolloClient"]
+    external from: array(t) => t = "from";
+    // static split(test: (op: Operation) => boolean, left: ApolloLink | RequestHandler, right?: ApolloLink | RequestHandler): ApolloLink;
+    [@bs.module "@apollo/client"] [@bs.scope "ApolloClient"]
+    external split: (~test: Operation.Js_.t => bool, ~left: t, ~right: t) => t =
+      "split";
+    // static execute(link: ApolloLink, operation: GraphQLRequest): Observable<FetchResult>;
+    [@bs.module "@apollo/client"] [@bs.scope "ApolloClient"]
+    external execute:
+      (t, GraphQLRequest.t) => Observable.t(FetchResult.Js_.t(Js.Json.t)) =
+      "execute";
+    // static concat(first: ApolloLink | RequestHandler, second: ApolloLink | RequestHandler): ApolloLink;
+    [@bs.module "@apollo/client"] [@bs.scope "ApolloClient"]
+    external concat: (t, t) => t = "concat";
+  };
+
   [@bs.module "@apollo/client"] [@bs.new]
   external make: RequestHandler.Js_.t => t = "ApolloClient";
 
@@ -33,6 +55,8 @@ module Js_ = {
     "split";
 };
 
+module Static = Js_.Static;
+
 type t = Js_.t;
 
 let make: RequestHandler.t => t = Js_.make;
@@ -43,4 +67,4 @@ let from = Js_.from;
 
 let setOnError = Js_.setOnError;
 
-let split = Js_.split;
+let split: (t, ~test: Operation.t => bool, ~left: t, ~right: t) => t = Js_.split;
