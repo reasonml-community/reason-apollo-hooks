@@ -1,0 +1,8 @@
+{
+  "graphql": {
+    "extend-query": "ApolloClient.Extend.Query",
+    "extend-query-no-required-variables": "ApolloClient.Extend.QueryNoRequiredVariables",
+    "extend-subscription": "ApolloClient.Extend.Subscription",
+    "extend-subscription-no-required-variables": "ApolloClient.Extend.SubscriptionNoRequiredVariables"
+  }
+}

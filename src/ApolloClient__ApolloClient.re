@@ -47,6 +47,12 @@ module DefaultOptions = {
         errorPolicy: t.errorPolicy->Belt.Option.map(ErrorPolicy.toJs),
         context: t.context,
       };
+
+    let make = (~fetchPolicy=?, ~errorPolicy=?, ~context=?, ()) => {
+      fetchPolicy,
+      errorPolicy,
+      context,
+    };
   };
 
   module DefaultQueryOptions = {
@@ -73,6 +79,12 @@ module DefaultOptions = {
         errorPolicy: t.errorPolicy->Belt.Option.map(ErrorPolicy.toJs),
         context: t.context,
       };
+
+    let make = (~fetchPolicy=?, ~errorPolicy=?, ~context=?, ()) => {
+      fetchPolicy,
+      errorPolicy,
+      context,
+    };
   };
 
   module DefaultMutationOptions = {

@@ -89,7 +89,7 @@ let make:
     ~addTypename=?,
     (),
   ) => {
-    let config =
+    Js_.make(
       InMemoryCacheConfig.make(
         ~resultCaching?,
         ~possibleTypes?,
@@ -97,8 +97,6 @@ let make:
         ~dataIdFromObject?,
         ~addTypename?,
         (),
-      );
-
-    Js.log2("config", config);
-    Js_.make(config);
+      ),
+    );
   };
