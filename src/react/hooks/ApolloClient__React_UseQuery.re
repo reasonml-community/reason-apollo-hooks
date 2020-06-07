@@ -58,7 +58,7 @@ let useQuery:
     ~skip=?,
     ~ssr=?,
     ~variables,
-    (module Definition),
+    (module Operation),
   ) => {
     // let variables =
     //   switch (variablesArg) {
@@ -68,7 +68,7 @@ let useQuery:
 
     let jsQueryResult =
       Js_.useQuery(
-        ~query=GraphqlTag.gql(Definition.query),
+        ~query=GraphqlTag.gql(Operation.query),
         ~options=
           QueryHookOptions.toJs(
             {
@@ -87,15 +87,15 @@ let useQuery:
               ssr,
               variables,
             },
-            ~parse=Definition.parse,
+            ~parse=Operation.parse,
           ),
       );
 
     ApolloClient__Reason_Utils.useGuaranteedMemo1(
       () => {
         jsQueryResult->QueryResult.fromJs(
-          ~parse=Definition.parse,
-          ~serialize=Definition.serialize,
+          ~parse=Operation.parse,
+          ~serialize=Operation.serialize,
         )
       },
       jsQueryResult,
@@ -136,7 +136,7 @@ let useQuery0:
     ~pollInterval=?,
     ~skip=?,
     ~ssr=?,
-    (module Definition),
+    (module Operation),
   ) => {
     useQuery(
       ~client?,
@@ -151,8 +151,8 @@ let useQuery0:
       ~pollInterval?,
       ~skip?,
       ~ssr?,
-      ~variables=Definition.makeDefaultVariables(),
-      (module Definition),
+      ~variables=Operation.makeDefaultVariables(),
+      (module Operation),
     );
   };
 

@@ -412,7 +412,7 @@ let mutate:
     ~updateQueries=?,
     ~update=?,
     ~variables=?,
-    (module Definition),
+    (module Operation),
   ) => {
     Js_.mutate(
       client,
@@ -423,21 +423,21 @@ let mutate:
             context,
             errorPolicy,
             fetchPolicy,
-            mutation: GraphqlTag.gql(Definition.query),
+            mutation: GraphqlTag.gql(Operation.query),
             optimisticResponse,
             updateQueries,
             refetchQueries,
             update,
             variables,
           },
-          ~parse=Definition.parse,
-          ~serialize=Definition.serialize,
+          ~parse=Operation.parse,
+          ~serialize=Operation.serialize,
         ),
     )
     ->Js.Promise.then_(
         jsResult =>
           jsResult
-          ->FetchResult.fromJs(_, ~parse=Definition.parse)
+          ->FetchResult.fromJs(_, ~parse=Operation.parse)
           ->Js.Promise.resolve,
         _,
       );
@@ -463,14 +463,14 @@ let query:
     ~errorPolicy=?,
     ~fetchPolicy=?,
     ~variables=?,
-    (module Definition),
+    (module Operation),
   ) => {
     Js_.query(
       client,
       ~options=
         QueryOptions.toJs({
           fetchPolicy,
-          query: GraphqlTag.gql(Definition.query),
+          query: GraphqlTag.gql(Operation.query),
           variables,
           errorPolicy,
           context,
@@ -479,7 +479,7 @@ let query:
     ->Js.Promise.then_(
         jsResult =>
           jsResult
-          ->ApolloQueryResult.fromJs(_, ~parse=Definition.parse)
+          ->ApolloQueryResult.fromJs(_, ~parse=Operation.parse)
           ->Js.Promise.resolve,
         _,
       );
@@ -498,14 +498,14 @@ let readQuery:
          type Raw.t_variables = jsVariables)
     ) =>
     option(data) =
-  (client, ~id=?, ~optimistic=?, ~variables=?, (module Definition)) => {
+  (client, ~id=?, ~optimistic=?, ~variables=?, (module Operation)) => {
     Js_.readQuery(
       client,
-      ~options={id, query: GraphqlTag.gql(Definition.query), variables},
+      ~options={id, query: GraphqlTag.gql(Operation.query), variables},
       ~optimistic,
     )
     ->Js.toOption
-    ->Belt.Option.map(Definition.parse);
+    ->Belt.Option.map(Operation.parse);
   };
 
 let writeQuery:
@@ -522,14 +522,14 @@ let writeQuery:
          type Raw.t_variables = jsVariables)
     ) =>
     unit =
-  (client, ~broadcast=?, ~data, ~id=?, ~variables=?, (module Definition)) => {
+  (client, ~broadcast=?, ~data, ~id=?, ~variables=?, (module Operation)) => {
     Js_.writeQuery(
       client,
       ~options={
         broadcast,
-        data: data->Definition.serialize,
+        data: data->Operation.serialize,
         id,
-        query: GraphqlTag.gql(Definition.query),
+        query: GraphqlTag.gql(Operation.query),
         variables,
       },
     );

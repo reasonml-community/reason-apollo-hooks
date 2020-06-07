@@ -66,11 +66,11 @@ let useSubscription:
     ~shouldResubscribe=?,
     ~skip=?,
     ~variables,
-    (module Definition),
+    (module Operation),
   ) => {
     let jsSubscriptionResult =
       Js_.useSubscription(
-        ~subscription=GraphqlTag.gql(Definition.query),
+        ~subscription=GraphqlTag.gql(Operation.query),
         ~options=
           SubscriptionHookOptions.toJs(
             {
@@ -83,7 +83,7 @@ let useSubscription:
               skip,
               variables,
             },
-            ~parse=Definition.parse,
+            ~parse=Operation.parse,
           ),
       );
 
@@ -92,7 +92,7 @@ let useSubscription:
         {
           variables: jsSubscriptionResult.variables,
           loading: jsSubscriptionResult.loading,
-          data: jsSubscriptionResult.data->Belt.Option.map(Definition.parse),
+          data: jsSubscriptionResult.data->Belt.Option.map(Operation.parse),
           error: jsSubscriptionResult.error,
         },
       jsSubscriptionResult,
@@ -122,7 +122,7 @@ let useSubscription0:
     ~onSubscriptionComplete=?,
     ~shouldResubscribe=?,
     ~skip=?,
-    (module Definition),
+    (module Operation),
   ) => {
     useSubscription(
       ~client?,
@@ -131,8 +131,8 @@ let useSubscription0:
       ~onSubscriptionComplete?,
       ~shouldResubscribe?,
       ~skip?,
-      ~variables=Definition.makeDefaultVariables(),
-      (module Definition),
+      ~variables=Operation.makeDefaultVariables(),
+      (module Operation),
     );
   };
 
