@@ -85,7 +85,7 @@ let useQuery:
               query: None,
               skip,
               ssr,
-              variables: Some(variables),
+              variables,
             },
             ~parse=Definition.parse,
           ),
@@ -151,10 +151,7 @@ let useQuery0:
       ~pollInterval?,
       ~skip?,
       ~ssr?,
-      ~variables=
-        ApolloClient__Reason_Utils.nullAsDefaultVariables(
-          Definition.makeDefaultVariables(),
-        ),
+      ~variables=Definition.makeDefaultVariables(),
       (module Definition),
     );
   };

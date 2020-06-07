@@ -81,7 +81,7 @@ let useSubscription:
               subscription: None,
               shouldResubscribe,
               skip,
-              variables: Some(variables),
+              variables,
             },
             ~parse=Definition.parse,
           ),
@@ -131,10 +131,7 @@ let useSubscription0:
       ~onSubscriptionComplete?,
       ~shouldResubscribe?,
       ~skip?,
-      ~variables=
-        ApolloClient__Reason_Utils.nullAsDefaultVariables(
-          Definition.makeDefaultVariables(),
-        ),
+      ~variables=Definition.makeDefaultVariables(),
       (module Definition),
     );
   };

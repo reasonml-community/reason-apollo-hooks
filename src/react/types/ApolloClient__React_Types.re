@@ -29,7 +29,8 @@ module QueryHookOptions = {
       // INTENTIONALLY IGNORED
       // returnPartialData: option(bool),
       ssr: option(bool),
-      variables: option('variables),
+      // Intentionally restricted to not be non-optional. `option(unit)` does not compile cleanly to `undefined`
+      variables: 'variables,
     };
   };
 
@@ -52,7 +53,7 @@ module QueryHookOptions = {
     // INTENTIONALLY IGNORED
     // returnPartialData: option(bool),
     ssr: option(bool),
-    variables: option('variables),
+    variables: 'variables,
   };
 
   let toJs =
@@ -288,7 +289,8 @@ module SubscriptionHookOptions = {
     type t('jsData, 'variables) = {
       subscription: option(Graphql.documentNode),
       // ...extends BaseSubscriptionOptions
-      variables: option('variables),
+      // Intentionally restricted to not be non-optional. `option(unit)` does not compile cleanly to `undefined`
+      variables: 'variables,
       fetchPolicy: option(FetchPolicy.t),
       shouldResubscribe:
         option(
@@ -304,7 +306,7 @@ module SubscriptionHookOptions = {
 
   type t('data, 'variables) = {
     subscription: option(Graphql.documentNode),
-    variables: option('variables),
+    variables: 'variables,
     fetchPolicy: option(FetchPolicy.t),
     shouldResubscribe:
       option(BaseSubscriptionOptions.t('data, 'variables) => bool),
