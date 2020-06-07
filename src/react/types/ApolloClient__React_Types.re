@@ -87,14 +87,18 @@ module QueryResult = {
 
     type t_fetchMoreOptions('jsData, 'variables) = {
       query: option(Graphql.Language.documentNode),
+      // ...extends FetchMoreQueryOptions
       variables: option('variables),
       context: option(Js.Json.t),
+      // ...extends FetchMoreOptions
       updateQuery:
-        (
+        option(
+          (
+            'jsData,
+            t_fetchMoreOptions_updateQueryOptions('jsData, 'variables)
+          ) =>
           'jsData,
-          t_fetchMoreOptions_updateQueryOptions('jsData, 'variables)
-        ) =>
-        'jsData,
+        ),
     };
 
     // export interface QueryResult<TData = any, TVariables = OperationVariables> extends ObservableQueryFields<TData, TVariables> {
@@ -106,15 +110,16 @@ module QueryResult = {
     //     called: true;
     // }
     type t('jsData, 'variables) = {
-      fetchMore:
-        t_fetchMoreOptions('jsData, 'variables) =>
-        Js.Promise.t(ApolloQueryResult.t('jsData)),
       called: bool,
       client: ApolloClient__ApolloClient.t,
       data: option('jsData),
       error: option(ApolloError.t),
       loading: bool,
       networkStatus: NetworkStatus.t,
+      // ...extends ObservableQueryFields
+      fetchMore:
+        t_fetchMoreOptions('jsData, 'variables) =>
+        Js.Promise.t(ApolloQueryResult.t('jsData)),
     };
   };
 
@@ -134,7 +139,8 @@ module QueryResult = {
                           'variables,
                         )
                       ) =>
-                      'parsedData,
+                      'parsedData
+                        =?,
         unit
       ) =>
       Js.Promise.t(ApolloQueryResult.t('parsedData)),
@@ -155,19 +161,26 @@ module QueryResult = {
       data: js.data->Belt.Option.map(parse),
       error: js.error,
       fetchMore:
-        (~context=?, ~variables=?, ~updateQuery as jsUpdateQuery, ()) => {
+        (~context=?, ~variables=?, ~updateQuery as jsUpdateQuery=?, ()) => {
         js.fetchMore({
           context,
           query: None,
-          updateQuery: (previousResult, {fetchMoreResult, variables}) =>
-            jsUpdateQuery(
-              parse(previousResult),
-              {
-                fetchMoreResult: fetchMoreResult->Belt.Option.map(parse),
-                variables,
-              },
-            )
-            ->serialize,
+          updateQuery:
+            jsUpdateQuery->Belt.Option.map(
+              (
+                jsUpdateQuery,
+                previousResult,
+                Js_.{fetchMoreResult, variables},
+              ) =>
+              jsUpdateQuery(
+                parse(previousResult),
+                {
+                  fetchMoreResult: fetchMoreResult->Belt.Option.map(parse),
+                  variables,
+                },
+              )
+              ->serialize
+            ),
           variables,
         })
         ->Js.Promise.then_(

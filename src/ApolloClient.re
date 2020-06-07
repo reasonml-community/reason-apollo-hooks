@@ -57,6 +57,8 @@ let useSubscription = ApolloClient__React_UseSubscription.useSubscription;
 // export { useApolloClient } from './react/hooks/useApolloClient.js';
 // export { RenderPromises } from './react/ssr/RenderPromises.js';
 
+module Utilities = ApolloClient__Utilities;
+
 module Extend = {
   module Query = ApolloClient__React_UseQuery.Extend;
   module QueryNoRequiredVariables = ApolloClient__React_UseQuery.ExtendNoRequiredVariables;

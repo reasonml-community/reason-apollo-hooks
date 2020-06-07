@@ -1,3 +1,5 @@
+let exceptionsAsApolloError = () => ();
+
 let useGuaranteedMemo1 = (f, dependency) => {
   let value = React.useRef(f());
   let previousDependency = React.useRef(dependency);

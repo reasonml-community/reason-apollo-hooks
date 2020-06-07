@@ -44,7 +44,7 @@ module WebSocketLink = {
 
   type webSocketImpl = Configuration.Js_.any;
 
-  let make_withConfiguration:
+  let make:
     (
       ~uri: string,
       ~options: ClientOptions.t=?,
