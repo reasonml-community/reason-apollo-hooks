@@ -389,7 +389,7 @@ By default, apollo will add field `__typename` to the queries and will use it to
 
 Using [fragments](https://www.apollographql.com/docs/react/data/fragments/).
 
-An example of cache update could look like this:
+An example of an update could look like this:
 
 ```reason
 // Fragments.re
