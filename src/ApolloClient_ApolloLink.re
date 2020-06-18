@@ -71,6 +71,7 @@ module LinkContext = {
     ([@bs.uncurry] ((request, context) => Js.Json.t)) => Types.apolloLink =
     "setContext";
 
+  [@bs.module "@apollo/link-context"]
   external setContextPromise:
     ((request, context) => Js.Promise.t(Js.Json.t)) => Types.apolloLink =
     "setContext";

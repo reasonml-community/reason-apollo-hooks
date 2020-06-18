@@ -408,17 +408,19 @@ let useQueryLegacy:
   };
 
 module Extend = (M: Types.Operation) => {
+  /**
+  Use hook for apollo client
+  */
   let use =
       (
         ~client=?,
-        ~variables,
         ~notifyOnNetworkStatusChange=?,
         ~fetchPolicy=?,
         ~errorPolicy=?,
         ~skip=?,
         ~pollInterval=?,
         ~context=?,
-        (),
+        variables,
       ) => {
     useQuery(
       ~client?,
@@ -435,6 +437,9 @@ module Extend = (M: Types.Operation) => {
 };
 
 module ExtendNoRequiredVars = (M: Types.OperationNoRequiredVars) => {
+  /**
+  Use hook for apollo client
+  */
   let use =
       (
         ~client=?,

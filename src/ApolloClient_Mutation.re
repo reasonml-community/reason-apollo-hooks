@@ -72,15 +72,33 @@ type jsMutate('raw_t, 'raw_t_variables) =
   (. options('raw_t, 'raw_t_variables)) =>
   Js.Promise.t(Execution.jsExecutionResult('raw_t));
 
-type mutation('t, 'raw_t, 'raw_t_variables) =
+type mutation0('t, 'raw_t, 'raw_t_variables) =
   (
-    ~variables: 'raw_t_variables=?,
     ~client: ApolloClient_Client.t=?,
     ~refetchQueries: Execution.refetchQueries('raw_t)=?,
     ~awaitRefetchQueries: bool=?,
     ~optimisticResponse: 't=?,
+    ~variables: 'raw_t_variables=?,
     unit
   ) =>
+  Js.Promise.t(
+    (Execution.executionVariantResult('t), Execution.executionResult('t)),
+  );
+
+type mutation('t, 'raw_t, 'raw_t_variables) =
+  (
+    ~client: ApolloClient_Client.t=?,
+    ~refetchQueries: Execution.refetchQueries('raw_t)=?,
+    ~awaitRefetchQueries: bool=?,
+    ~optimisticResponse: 't=?,
+    'raw_t_variables
+  ) =>
+  Js.Promise.t(
+    (Execution.executionVariantResult('t), Execution.executionResult('t)),
+  );
+
+type mutationNoVars('t, 'raw_t, 'raw_t_variables) =
+  unit =>
   Js.Promise.t(
     (Execution.executionVariantResult('t), Execution.executionResult('t)),
   );
@@ -97,7 +115,6 @@ let useMutation:
   type t raw_t raw_t_variables.
     (
       ~client: ApolloClient_Client.t=?,
-      ~variables: raw_t_variables=?,
       ~refetchQueries: Execution.refetchQueries(raw_t)=?,
       ~awaitRefetchQueries: bool=?,
       ~update: (ApolloClient_Client.t, mutationResult(raw_t)) => unit=?,
@@ -110,7 +127,6 @@ let useMutation:
     (mutation(t, raw_t, raw_t_variables), controlledResult(t)) =
   (
     ~client=?,
-    ~variables=?,
     ~refetchQueries=?,
     ~awaitRefetchQueries=?,
     ~update=?,
@@ -122,7 +138,6 @@ let useMutation:
         gql(. Operation.query),
         options(
           ~client?,
-          ~variables?,
           ~refetchQueries?,
           ~awaitRefetchQueries?,
           ~update?,
@@ -140,16 +155,15 @@ let useMutation:
       React.useMemo1(
         (
           (),
-          ~variables=?,
           ~client=?,
           ~refetchQueries=?,
           ~awaitRefetchQueries=?,
           ~optimisticResponse=?,
-          (),
+          variables,
         ) =>
           jsMutate(.
             options(
-              ~variables?,
+              ~variables,
               ~client?,
               ~refetchQueries?,
               ~awaitRefetchQueries?,
@@ -186,7 +200,7 @@ let useMutation:
 
                (simple, full) |> Js.Promise.resolve;
              }),
-        [|variables|],
+        [||],
       );
 
     let full =
@@ -207,11 +221,152 @@ let useMutation:
     (mutate, full);
   };
 
+let useMutationWithVariables:
+  type t raw_t raw_t_variables.
+    (
+      ~client: ApolloClient_Client.t=?,
+      ~refetchQueries: Execution.refetchQueries(raw_t)=?,
+      ~awaitRefetchQueries: bool=?,
+      ~update: (ApolloClient_Client.t, mutationResult(raw_t)) => unit=?,
+      ~optimisticResponse: t=?,
+      ~variables: raw_t_variables,
+      (module Types.Operation with
+         type t = t and
+         type Raw.t = raw_t and
+         type Raw.t_variables = raw_t_variables)
+    ) =>
+    (mutationNoVars(t, raw_t, raw_t_variables), controlledResult(t)) =
+  (
+    ~client=?,
+    ~refetchQueries=?,
+    ~awaitRefetchQueries=?,
+    ~update=?,
+    ~optimisticResponse=?,
+    ~variables,
+    (module Operation),
+  ) => {
+    let (jsMutate, jsResult) =
+      useMutationJs(.
+        gql(. Operation.query),
+        options(
+          ~client?,
+          ~variables,
+          ~refetchQueries?,
+          ~awaitRefetchQueries?,
+          ~update?,
+          ~optimisticResponse=?
+            switch (optimisticResponse) {
+            | Some(optimisticResponse) =>
+              Some(Operation.serialize(optimisticResponse))
+            | None => None
+            },
+          (),
+        ),
+      );
+
+    let mutate = () =>
+      jsMutate(. options())
+      |> Js.Promise.then_(jsResult => {
+           let full =
+             Execution.{
+               data:
+                 Js.Nullable.toOption(jsResult##data)
+                 ->Belt.Option.map(Operation.parse),
+               errors:
+                 switch (Js.Nullable.toOption(jsResult##errors)) {
+                 | Some(errors) when Js.Array.length(errors) > 0 =>
+                   Some(errors)
+                 | _ => None
+                 },
+             };
+
+           let simple: Execution.executionVariantResult(Operation.t) =
+             switch (full) {
+             | {errors: Some(errors)} => Errors(errors)
+             | {data: Some(data)} => Data(data)
+
+             | {errors: None, data: None} => NoData
+             };
+
+           (simple, full) |> Js.Promise.resolve;
+         });
+
+    let full =
+      React.useMemo1(
+        () =>
+          {
+            loading: jsResult##loading,
+            called: jsResult##called,
+            data:
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.map(Operation.parse),
+            error: jsResult##error->Js.Nullable.toOption,
+          },
+        [|jsResult|],
+      );
+
+    (mutate, full);
+  };
+
+let useMutation0:
+  type t raw_t raw_t_variables.
+    (
+      ~client: ApolloClient_Client.t=?,
+      ~refetchQueries: Execution.refetchQueries(raw_t)=?,
+      ~awaitRefetchQueries: bool=?,
+      ~update: (ApolloClient_Client.t, mutationResult(raw_t)) => unit=?,
+      ~optimisticResponse: t=?,
+      (module Types.OperationNoRequiredVars with
+         type t = t and
+         type Raw.t = raw_t and
+         type Raw.t_variables = raw_t_variables)
+    ) =>
+    (mutation0(t, raw_t, raw_t_variables), controlledResult(t)) =
+  (
+    ~client=?,
+    ~refetchQueries=?,
+    ~awaitRefetchQueries=?,
+    ~update=?,
+    ~optimisticResponse=?,
+    (module Operation),
+  ) => {
+    let (mutate, full) =
+      useMutation(
+        ~client?,
+        ~refetchQueries?,
+        ~awaitRefetchQueries?,
+        ~update?,
+        ~optimisticResponse?,
+        (module Operation),
+      );
+    let mutate =
+        (
+          ~client=?,
+          ~refetchQueries=?,
+          ~awaitRefetchQueries=?,
+          ~optimisticResponse=?,
+          ~variables=?,
+          (),
+        ) => {
+      mutate(
+        ~client?,
+        ~refetchQueries?,
+        ~awaitRefetchQueries?,
+        ~optimisticResponse?,
+        switch (variables) {
+        | Some(variables) => variables
+        | None => Operation.makeDefaultVariables()
+        },
+      );
+    };
+    (mutate, full);
+  };
+
 let useMutationLegacy:
   type t raw_t raw_t_variables.
     (
       ~client: ApolloClient_Client.t=?,
-      ~variables: raw_t_variables=?,
       ~refetchQueries: Execution.refetchQueries(raw_t)=?,
       ~awaitRefetchQueries: bool=?,
       ~update: (ApolloClient_Client.t, mutationResult(raw_t)) => unit=?,
@@ -228,7 +383,6 @@ let useMutationLegacy:
     ) =
   (
     ~client=?,
-    ~variables=?,
     ~refetchQueries=?,
     ~awaitRefetchQueries=?,
     ~update=?,
@@ -238,7 +392,6 @@ let useMutationLegacy:
     let (mutate, result) =
       useMutation(
         ~client?,
-        ~variables?,
         ~refetchQueries?,
         ~awaitRefetchQueries?,
         ~update?,
@@ -265,7 +418,6 @@ module Extend = (M: Types.Operation) => {
   let use =
       (
         ~client=?,
-        ~variables=?,
         ~refetchQueries=?,
         ~awaitRefetchQueries=?,
         ~update=?,
@@ -274,11 +426,72 @@ module Extend = (M: Types.Operation) => {
       ) => {
     useMutation(
       ~client?,
-      ~variables?,
       ~refetchQueries?,
       ~awaitRefetchQueries?,
       ~update?,
       ~optimisticResponse?,
+      (module M),
+    );
+  };
+  let useWithVariables =
+      (
+        ~client=?,
+        ~refetchQueries=?,
+        ~awaitRefetchQueries=?,
+        ~update=?,
+        ~optimisticResponse=?,
+        variables,
+      ) => {
+    useMutationWithVariables(
+      ~client?,
+      ~refetchQueries?,
+      ~awaitRefetchQueries?,
+      ~update?,
+      ~optimisticResponse?,
+      ~variables,
+      (module M),
+    );
+  };
+};
+
+module ExtendNoRequiredVars = (M: Types.OperationNoRequiredVars) => {
+  /**
+  Use hook for apollo client
+  */
+  let use =
+      (
+        ~client=?,
+        ~refetchQueries=?,
+        ~awaitRefetchQueries=?,
+        ~update=?,
+        ~optimisticResponse=?,
+        (),
+      ) => {
+    useMutation(
+      ~client?,
+      ~refetchQueries?,
+      ~awaitRefetchQueries?,
+      ~update?,
+      ~optimisticResponse?,
+      (module M),
+    );
+  };
+  let useWithVariables =
+      (
+        ~client=?,
+        ~refetchQueries=?,
+        ~awaitRefetchQueries=?,
+        ~update=?,
+        ~optimisticResponse=?,
+        variables,
+      ) => {
+    useMutationWithVariables(
+      ~client?,
+      ~refetchQueries?,
+      ~awaitRefetchQueries?,
+      ~update?,
+      ~optimisticResponse?,
+      ~variables,
       (module M),
     );
   };

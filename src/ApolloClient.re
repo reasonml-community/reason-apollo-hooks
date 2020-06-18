@@ -3,6 +3,7 @@ module Query = ApolloClient_Query;
 module Provider = ApolloClient_Provider;
 module Subscription = ApolloClient_Subscription;
 module Client = ApolloClient_Client;
+module Link = ApolloClient_ApolloLink;
 
 /**
   This is probably the one hook you'll use the most. A quick demo:
@@ -154,6 +155,7 @@ let useQueryLegacy = Query.useQueryLegacy;
   */
 let useMutation = Mutation.useMutation;
 let useMutationLegacy = Mutation.useMutationLegacy;
+let useMutationWithVariables = Mutation.useMutationWithVariables;
 
 let toReadQueryOptions = result => {
   "query": Client.gql(. result##query),
