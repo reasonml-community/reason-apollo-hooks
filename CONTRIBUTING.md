@@ -5,36 +5,34 @@ NOTE: this is just documenting my process for this PR in case anyone wants to he
 My hope is that we can achieve well maintained, nearly-complete bindings without a huge burden on any single person if we follow these two rules:
 
 1. Follow a consistent pattern for bindings
-1. No partial types or bindings if possible
-
-Let's try it and see how it works out!
+1. Avoid partial types or bindings if possible
 
 ## Going the Full Distance
 
-No single binding is _that_ much work. Please completely type something as you come across it or leave it for someone else. If all of us contribute just a little piece, but do it completely, it should be very easy to get 99% complete bindings. Also, 50% of the work is in tracing through the code and loading up context. This way no one has to go back and duplicate that work. Each binding we add also makes the next one that much faster as we have more and more types we can reuse blindly.
+Please type something as completely as possible when you come across it or leave it for someone else (if nothing else, put an abstract type so things will still flow through everywhere and people can cast it). If all of us contribute just a little piece, but do it completely, it should be very easy to get 99% complete bindings. Also, 50% of the work is in tracing through the code and loading up context. This way no one has to go back and duplicate that work. Each binding we add also makes the next one that much faster as we have more and more types we can reuse blindly.
 
 # Guidelines (style)
 
-## Module Names
+## Directory Structure and File Naming
 
 ```
-@apollo/client/react/hooks/react/useQuery.js
+@apollo/client/react/hooks/useQuery.js
 ```
 
 should become
 
 ```
-reason-react-hooks/src/react/hooks/ApolloClient__React_UseQuery.re
+reason-react-hooks/src/react/hooks/ApolloClient__React_Hooks_UseQuery.re
 ```
 
 in reason.
 
 ### Breaking it down: `/[1]/[2]__[3]_[4]`
 
-1. Modules should be located in the same directory structure as the js counterpart (usually there is a `.d.ts` for every `.js` file so we can think of them interchangeably)
+1. Reason files should be located in the same directory structure as the js counterpart (usually there is a `.d.ts` for every `.js` file so we can think of them interchangeably)
 1. All module names should be prefixed with `ApolloClient__` "namespace"
-1. Modules should be prefixed with the nearest `.js` parent module (and exported from there as well)
-1. Modules should be named the same as the js counterpart
+1. File names reflect the directory structure
+1. Files should be named the same as the js counterpart
 
 ## Types
 
