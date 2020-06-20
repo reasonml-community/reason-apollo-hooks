@@ -20,6 +20,7 @@ Reason bindings for the official [@apollo/react-hooks](https://www.npmjs.com/pac
     - [useMutation :arrow_up:](#usemutation-arrowup)
     - [useSubscription :arrow_up:](#usesubscription-arrowup)
   - [Cache :arrow_up:](#cache-arrowup)
+  - [Fragment :arrow_up:](#fragment-arrowup)
   - [Getting it running](#getting-it-running)
   - [Contributors ✨](#contributors-%e2%9c%a8)
 
@@ -382,6 +383,39 @@ let updatePersons = (~client, ~name, ~age) => {
 If using directives like `@bsRecord`, `@bsDecoder` or `@bsVariant` in `graphql_ppx`, the data needs to be serialized back to JS object before it is written in cache. Since there is currently no way to serialize this data (see [this issue](https://github.com/mhallin/graphql_ppx/issues/71) in `graphql_ppx`), queries that will be updated in cache shouldn't use any of those directive, unless you will take care of the serialization yourself.
 
 By default, apollo will add field `__typename` to the queries and will use it to normalize data and manipulate cache (see [normalization](https://www.apollographql.com/docs/react/advanced/caching/#normalization)). This field won't exist on parsed reason objects, since it is not included in the actual query you write, but is added by apollo before sending the query. Since `__typename` is crucial for the cache to work correctly, we need to read data from cache in its raw unparsed format, which is achieved with `readQuery` from `ApolloClient.ReadQuery` defined in `reason-apollo`.
+
+
+## Fragment [:arrow_up:](#table-of-contents)
+
+Using [fragments](https://www.apollographql.com/docs/react/data/fragments/).
+
+Fragments can be defined and used like this:
+
+```reason
+// Fragments.re
+module PersonFragment = [%graphql
+  {|
+  fragment person on Person {
+      id
+      name
+      age
+  }
+|}
+];
+
+```
+
+```reason
+module PersonsQuery = [%graphql
+{|
+  query getAllPersons  {
+    ...Fragments.PersonFragment.Person
+  }
+|}
+];
+```
+
+See [examples/persons/src/fragments/LoadMoreFragments.re](examples/persons/src/fragments/LoadMoreFragments.re).
 
 ## Getting it running
 
