@@ -182,22 +182,34 @@ module ScreamMutation = [%graphql {|
 [@react.component]
 let make = () => {
   /* Both variant and records available */
-  let ( screamMutation, _simple, _full ) = useMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), ScreamMutation.definition);
+  let ( screamMutation, simple, _full ) =
+    useMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), ScreamMutation.definition);
   let scream = (_) => {
     screamMutation()
-      |> Js.Promise.then_(result => {
-          switch(result) {
-            | Data(data) => ...
-            | Error(error) => ...
-            | NoData => ...
-          }
-          Js.Promise.resolve()
-        })
+      |> Js.Promise.then_(((simple, _full)) => {
+           // Trigger side effects by chaining the promise returned by screamMutation()
+           switch (simple) {
+             // You *must* set the error policy to be able to handle errors
+             // in then_. See EditPersons.re for more
+           | ApolloHooks.Mutation.Errors(_theErrors) => Js.log("OH NO!")
+           | NoData => Js.log("NO DATA?")
+           | Data(_theData) => Js.log("DATA!")
+           };
+           Js.Promise.resolve();
+         })
       |> ignore
   }
 
+  // Use simple (and/or full) for (most) UI feedback
   <div>
-    <button onClick={scream}>
+    {switch (simple) {
+     | NotCalled
+     | Data(_) => React.null
+     | Loading => <div> "Screaming!"->React.string </div>
+     | NoData
+     | Error(_) => <div> "Something went wrong!"->React.string </div>
+     }}
+    <button onClick={scream} disabled={simple === Loading}>
       {React.string("You kids get off my lawn!")}
     </button>
   </div>
@@ -213,14 +225,9 @@ let make = () => {
   let ( screamMutation, _simple, _full ) = useMutation(ScreamMutation.definition);
   let scream = (_) => {
     screamMutation(~variables=ScreamMutation.makeVariables(~screamLevel=10, ()), ())
-      |> Js.Promise.then_(result => {
-          switch(result) {
-            | Data(data) => ...
-            | Error(error) => ...
-            | NoData => ...
-          }
-          Js.Promise.resolve()
-        })
+      |> Js.Promise.then_(((simple, _full)) => {
+           ...
+         })
       |> ignore
   }
 
