@@ -33,7 +33,7 @@ external makeApolloInMemoryCacheParams:
   ) =>
   _;
 
-let createInMemoryCache = (~dataIdFromObject=?, ~possibleTypes=?, ()) => {
+let make = (~dataIdFromObject=?, ~possibleTypes=?, ()) => {
   /* Apollo Client, looks for key in Object. Doesn't check if value is null  */
   apolloInMemoryCache(
     makeApolloInMemoryCacheParams(~dataIdFromObject?, ~possibleTypes?),

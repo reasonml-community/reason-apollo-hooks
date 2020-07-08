@@ -79,7 +79,7 @@ external mutate:
   "mutate";
 [@bs.send] external resetStore: t => Js.Promise.t(unit) = "resetStore";
 
-type apolloClientObjectParam = {
+type options = {
   link: Types.apolloLink,
   cache: Types.apolloCache,
   ssrMode: option(bool),
@@ -89,7 +89,27 @@ type apolloClientObjectParam = {
 };
 
 [@bs.module "@apollo/client"] [@bs.new]
-external createApolloClientJS: apolloClientObjectParam => t = "ApolloClient";
+external makeJs: options => t = "ApolloClient";
+
+let make =
+    (
+      ~link,
+      ~cache,
+      ~ssrMode=?,
+      ~ssrForceFetchDelay=?,
+      ~connectToDevTools=?,
+      ~queryDeduplication=?,
+      (),
+    ) => {
+  makeJs({
+    link,
+    cache,
+    ssrMode,
+    ssrForceFetchDelay,
+    connectToDevTools,
+    queryDeduplication,
+  });
+};
 
 [@bs.module "graphql-tag"] external gql: Types.gql = "default";
 

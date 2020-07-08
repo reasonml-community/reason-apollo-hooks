@@ -67,6 +67,3 @@ external query:
   (ApolloClient_Client.t, options('data)) =>
   Js.Promise.t(queryResult('data)) =
   "query";
-
-[@bs.module "../../../apolloClient"]
-external client: ApolloClient_Client.t = "default";

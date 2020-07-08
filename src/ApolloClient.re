@@ -4,6 +4,7 @@ module Provider = ApolloClient_Provider;
 module Subscription = ApolloClient_Subscription;
 module Client = ApolloClient_Client;
 module Link = ApolloClient_ApolloLink;
+module InMemoryCache = ApolloClient_InMemoryCache;
 
 /**
   This is probably the one hook you'll use the most. A quick demo:

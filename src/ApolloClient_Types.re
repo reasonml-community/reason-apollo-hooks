@@ -14,7 +14,12 @@ type gql = (. string) => queryString;
  * An abstract type to describe an Apollo Link object.
  */
 type apolloLink;
-type documentNode;
+
+type documentDefinition = {
+  kind: string,
+  operation: string,
+};
+type documentNode = {definitions: array(documentDefinition)};
 
 /**
  * An abstract type to describe an Apollo Cache object.

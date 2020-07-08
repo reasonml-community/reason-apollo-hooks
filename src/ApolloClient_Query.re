@@ -110,6 +110,8 @@ type options('raw_t_variables) = {
   pollInterval: int,
   [@bs.optional]
   context: Types.Context.t,
+  [@bs.optional]
+  ssr: bool,
 };
 
 type refetchResult('raw_t) = {data: Js.Nullable.t('raw_t)};
@@ -148,6 +150,7 @@ let useQuery:
       ~skip: bool=?,
       ~pollInterval: int=?,
       ~context: Types.Context.t=?,
+      ~ssr: bool=?,
       (module Types.Operation with
          type t = t and
          type Raw.t = raw_t and
@@ -163,6 +166,7 @@ let useQuery:
     ~skip=?,
     ~pollInterval=?,
     ~context=?,
+    ~ssr=?,
     (module Operation),
   ) => {
     let jsResult =
@@ -177,6 +181,7 @@ let useQuery:
           ~skip?,
           ~pollInterval?,
           ~context?,
+          ~ssr?,
           (),
         ),
       );
@@ -255,6 +260,7 @@ let useQuery0:
       ~skip: bool=?,
       ~pollInterval: int=?,
       ~context: Types.Context.t=?,
+      ~ssr: bool=?,
       (module Types.OperationNoRequiredVars with
          type t = t and
          type Raw.t = raw_t and
@@ -269,6 +275,7 @@ let useQuery0:
     ~skip=?,
     ~pollInterval=?,
     ~context=?,
+    ~ssr=?,
     (module Operation),
   ) => {
     useQuery(
@@ -280,6 +287,7 @@ let useQuery0:
       ~skip?,
       ~pollInterval?,
       ~context?,
+      ~ssr?,
       (module Operation),
     );
   };
@@ -420,6 +428,7 @@ module Extend = (M: Types.Operation) => {
         ~skip=?,
         ~pollInterval=?,
         ~context=?,
+        ~ssr=?,
         variables,
       ) => {
     useQuery(
@@ -431,6 +440,7 @@ module Extend = (M: Types.Operation) => {
       ~skip?,
       ~pollInterval?,
       ~context?,
+      ~ssr?,
       (module M),
     );
   };
@@ -450,6 +460,7 @@ module ExtendNoRequiredVars = (M: Types.OperationNoRequiredVars) => {
         ~skip=?,
         ~pollInterval=?,
         ~context=?,
+        ~ssr=?,
         (),
       ) => {
     useQuery(
@@ -465,6 +476,7 @@ module ExtendNoRequiredVars = (M: Types.OperationNoRequiredVars) => {
       ~skip?,
       ~pollInterval?,
       ~context?,
+      ~ssr?,
       (module M),
     );
   };
