@@ -13,7 +13,7 @@ open ApolloHooks;
 module PersonsNameFilterQuery = [%graphql
   {|
   query getPersonsWithName($name: String!) {
-    allPersons(filter: { name: $name } ) {
+    persons(where: { name: { _eq: $name } } ) {
       id
       name
       age
@@ -27,7 +27,7 @@ external cast: Js.Json.t => PersonsNameFilterQuery.t = "%identity";
 type person = {
   .
   "age": int,
-  "id": string,
+  "id": int,
   "name": string,
 };
 
@@ -69,7 +69,7 @@ let updateCache = (client, person, name) => {
       // (with the addition of __typename field) and can be cast to PersonsNameFilterConfig.t.
       let persons = cast(cachedPersons);
       let updatedPersons = {
-        "allPersons": updateFiltered(person, name, persons##allPersons),
+        "persons": updateFiltered(person, name, persons##persons),
       };
 
       PersonsNameFilterWriteQuery.make(
@@ -96,7 +96,7 @@ let make = (~name) => {
      | Data(data) =>
        <h3>
          {"There are "
-          ++ (data##allPersons->Belt.Array.length |> string_of_int)
+          ++ (data##persons->Belt.Array.length |> string_of_int)
           ++ " with name "
           ++ name
           |> React.string}

@@ -25,7 +25,7 @@
 // ```
 module PersonFragment = [%graphql
   {|
-  fragment person on Person {
+  fragment person on persons {
       id
       name
       age
@@ -34,14 +34,14 @@ module PersonFragment = [%graphql
 ];
 module PersonIdFragment = [%graphql
   {|
-  fragment person on Person {
+  fragment person on persons {
       id
   }
 |}
 ];
 module PersonAgeFragment = [%graphql
   {|
-  fragment person on Person {
+  fragment person on persons {
       age
   }
 |}

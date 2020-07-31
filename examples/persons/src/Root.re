@@ -21,7 +21,10 @@ let make = () => {
   let editPersonUpdate = (client, mutationResult) => {
     let data =
       mutationResult##data
-      ->Belt.Option.flatMap(result => result##updatePerson);
+      ->Belt.Option.flatMap(result => result##update_persons)
+      ->Belt.Option.flatMap(update_persons =>
+          update_persons##returning->Belt.Array.get(0)
+        );
     switch (data) {
     | Some(person) =>
       FilterByNameCache.updateCache(client, person, filterName)

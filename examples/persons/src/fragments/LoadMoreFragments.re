@@ -1,7 +1,7 @@
 module GetAllPersonsQuery = [%graphql
   {|
     query getAllPersons($skip: Int!, $first: Int!) {
-      allPersons(skip: $skip, first: $first) {
+      persons(offset: $skip, limit: $first) {
         ...Fragments.PersonFragment.Person
       }
     }
@@ -23,7 +23,7 @@ let make = () => {
   let handleLoadMore = _ => {
     let skip =
       switch (full) {
-      | {data: Some(data)} => data##allPersons->Belt.Array.length
+      | {data: Some(data)} => data##persons->Belt.Array.length
       | _ => 0
       };
 
@@ -36,7 +36,7 @@ let make = () => {
             if (!fetchMoreResult) return prevResult;
             return {
                 ...fetchMoreResult,
-                allPersons: prevResult.allPersons.concat(fetchMoreResult.allPersons)
+                persons: prevResult.persons.concat(fetchMoreResult.persons)
               };
           }
         |}
@@ -51,7 +51,7 @@ let make = () => {
      | {loading: true, data: None} => <p> {React.string("Loading...")} </p>
      | {data: Some(data)} =>
        <>
-         <Persons persons={data##allPersons} />
+         <Persons persons={data##persons} />
          <button
            onClick=handleLoadMore disabled={full.networkStatus === FetchMore}>
            {React.string("Load more")}

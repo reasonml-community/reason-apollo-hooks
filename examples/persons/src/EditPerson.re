@@ -1,13 +1,15 @@
 open ApolloHooks;
 module EditPersonMutation = [%graphql
   {|
-    mutation updatePerson($id: ID!, $age: Int!, $name: String!) {
-      updatePerson(id: $id, age: $age, name: $name) {
+    mutation updatePerson($id: Int!, $age: Int!, $name: String!) {
+      update_persons(where: { id: { _eq: $id } }, _set: { age: $age, name: $name }) {
+        returning {
           id
           age
           name
         }
       }
+    }
   |}
 ];
 
@@ -19,15 +21,21 @@ module OptimisticResponse = {
    * serialisation function directly to the generated mutation. That should make this step unnecessary for most
    * usecases.
    */
+
   type t = {
     .
     "__typename": string,
-    "updatePerson": {
+    "update_persons": {
       .
       "__typename": string,
-      "age": int,
-      "id": string,
-      "name": string,
+      "returning":
+        Js.Array.t({
+          .
+          "__typename": string,
+          "age": int,
+          "id": int,
+          "name": string,
+        }),
     },
   };
 
@@ -36,24 +44,24 @@ module OptimisticResponse = {
   let make = (~id, ~name, ~age) =>
     {
       "__typename": "Mutation",
-      "updatePerson": {
-        "__typename": "Person",
-        "id": id,
-        "name": name,
-        "age": age,
+      "update_persons": {
+        "__typename": "persons_mutation_response",
+        "returning": [|
+          {"__typename": "Person", "id": id, "name": name, "age": age},
+        |],
       },
     }
     ->cast;
 };
 
 type state = {
-  id: string,
+  id: int,
   age: option(int),
   name: string,
 };
 
 type action =
-  | SetId(string)
+  | SetId(int)
   | SetAge(option(int))
   | SetName(string);
 
@@ -68,7 +76,7 @@ let reducer = (state, action) => {
 [@react.component]
 let make = (~refetchQueries, ~update) => {
   let (state, dispatch) =
-    React.useReducer(reducer, {age: None, name: "", id: ""});
+    React.useReducer(reducer, {age: None, name: "", id: 0});
 
   let (editPersonMutation, _simple, _full) =
     useMutation(
@@ -124,10 +132,10 @@ let make = (~refetchQueries, ~update) => {
       <input
         required=true
         placeholder="Id"
-        value={state.id}
+        value={state.id |> string_of_int}
         onChange={event => {
           let value = event->ReactEvent.Form.target##value;
-          dispatch(SetId(value));
+          dispatch(SetId(value |> int_of_string));
         }}
       />
     </div>

@@ -3,10 +3,12 @@ open ApolloHooks;
 module EditPersonMutation = [%graphql
   {|
     mutation addPerson($age: Int!, $name: String!) {
-      createPerson(age: $age, name: $name) {
-        id
-        age
-        name
+      insert_persons(objects: { age: $age, name: $name }) {
+        returning {
+          id
+          age
+          name
+        }
       }
     }
   |}
