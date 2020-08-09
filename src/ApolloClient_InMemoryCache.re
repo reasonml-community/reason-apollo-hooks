@@ -24,18 +24,29 @@ external apolloInMemoryCache: 'a => Types.apolloCache = "InMemoryCache";
 [@bs.send.pipe: 't]
 external restore: inMemoryCacheRestoreData => Types.apolloCache = "restore";
 
+type pagination;
+
+[@bs.module "@apollo/client/utilities"]
+external relayStylePagination: array(string) => pagination =
+  "relayStylePagination";
+
 /* Instantiate a new cache object */
 [@bs.obj]
 external makeApolloInMemoryCacheParams:
   (
     ~possibleTypes: Js.Dict.t(array(string))=?,
-    ~dataIdFromObject: Js.t({..}) => string=?
+    ~dataIdFromObject: Js.t({..}) => string=?,
+    ~typePolicies: Js.t({..})=?
   ) =>
   _;
 
-let make = (~dataIdFromObject=?, ~possibleTypes=?, ()) => {
+let make = (~dataIdFromObject=?, ~possibleTypes=?, ~typePolicies=?, ()) => {
   /* Apollo Client, looks for key in Object. Doesn't check if value is null  */
   apolloInMemoryCache(
-    makeApolloInMemoryCacheParams(~dataIdFromObject?, ~possibleTypes?),
+    makeApolloInMemoryCacheParams(
+      ~dataIdFromObject?,
+      ~possibleTypes?,
+      ~typePolicies?,
+    ),
   );
 };

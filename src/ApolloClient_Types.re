@@ -63,7 +63,7 @@ type graphqlError = {
   nodes: Js.Nullable.t(array(string)),
 };
 
-type executionResult('raw_t) = {
+type rawExecutionResult('raw_t) = {
   errors: Js.Nullable.t(Js.Array.t(graphqlError)),
   data: Js.Nullable.t('raw_t),
 };
@@ -85,7 +85,7 @@ type operation('raw_t_variables) = {
 type errorResponse('raw_t, 'raw_t_variables) = {
   graphQLErrors: Js.Nullable.t(Js.Array.t(graphqlError)),
   networkError: Js.Nullable.t(networkError),
-  response: Js.Nullable.t(executionResult('raw_t)),
+  response: Js.Nullable.t(rawExecutionResult('raw_t)),
   operation: operation('raw_t_variables),
   forward: operation('raw_t_variables) => Observable.subscription,
 };
@@ -195,12 +195,14 @@ module type Operation = {
     type t_variables;
   };
   type t;
+  type t_variables;
 
   let parse: Raw.t => t;
   let serialize: t => Raw.t;
+  let serializeVariables: t_variables => Raw.t_variables;
 };
 
 module type OperationNoRequiredVars = {
   include Operation;
-  let makeDefaultVariables: unit => Raw.t_variables;
+  let makeDefaultVariables: unit => t_variables;
 };

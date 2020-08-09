@@ -23,11 +23,6 @@ module Execution = {
     data: option('a),
     errors: option(array(Types.graphqlError)),
   };
-
-  type executionVariantResult('a) =
-    | Data('a)
-    | Errors(array(Types.graphqlError))
-    | NoData;
 };
 
 /* The type of the 'full' result returned by the hook */
@@ -72,36 +67,29 @@ type jsMutate('raw_t, 'raw_t_variables) =
   (. options('raw_t, 'raw_t_variables)) =>
   Js.Promise.t(Execution.jsExecutionResult('raw_t));
 
-type mutation0('t, 'raw_t, 'raw_t_variables) =
+type mutation0('t, 'raw_t, 't_variables) =
   (
     ~client: ApolloClient_Client.t=?,
     ~refetchQueries: Execution.refetchQueries('raw_t)=?,
     ~awaitRefetchQueries: bool=?,
     ~optimisticResponse: 't=?,
-    ~variables: 'raw_t_variables=?,
+    ~variables: 't_variables=?,
     unit
   ) =>
-  Js.Promise.t(
-    (Execution.executionVariantResult('t), Execution.executionResult('t)),
-  );
+  Js.Promise.t(Execution.executionResult('t));
 
-type mutation('t, 'raw_t, 'raw_t_variables) =
+type mutation('t, 'raw_t, 't_variables) =
   (
     ~client: ApolloClient_Client.t=?,
     ~refetchQueries: Execution.refetchQueries('raw_t)=?,
     ~awaitRefetchQueries: bool=?,
     ~optimisticResponse: 't=?,
-    'raw_t_variables
+    't_variables
   ) =>
-  Js.Promise.t(
-    (Execution.executionVariantResult('t), Execution.executionResult('t)),
-  );
+  Js.Promise.t(Execution.executionResult('t));
 
-type mutationNoVars('t, 'raw_t, 'raw_t_variables) =
-  unit =>
-  Js.Promise.t(
-    (Execution.executionVariantResult('t), Execution.executionResult('t)),
-  );
+type mutationNoVars('t, 'raw_t, 't_variables) =
+  unit => Js.Promise.t(Execution.executionResult('t));
 
 [@bs.module "@apollo/client"]
 external useMutationJs:
@@ -112,7 +100,7 @@ external useMutationJs:
 exception Error(string);
 
 let useMutation:
-  type t raw_t raw_t_variables.
+  type t raw_t t_variables raw_t_variables.
     (
       ~client: ApolloClient_Client.t=?,
       ~refetchQueries: Execution.refetchQueries(raw_t)=?,
@@ -122,9 +110,10 @@ let useMutation:
       (module Types.Operation with
          type t = t and
          type Raw.t = raw_t and
+         type t_variables = t_variables and
          type Raw.t_variables = raw_t_variables)
     ) =>
-    (mutation(t, raw_t, raw_t_variables), controlledResult(t)) =
+    (mutation(t, raw_t, t_variables), controlledResult(t)) =
   (
     ~client=?,
     ~refetchQueries=?,
@@ -163,7 +152,7 @@ let useMutation:
         ) =>
           jsMutate(.
             options(
-              ~variables,
+              ~variables=Operation.serializeVariables(variables),
               ~client?,
               ~refetchQueries?,
               ~awaitRefetchQueries?,
@@ -177,28 +166,18 @@ let useMutation:
             ),
           )
           |> Js.Promise.then_(jsResult => {
-               let full =
-                 Execution.{
-                   data:
-                     Js.Nullable.toOption(jsResult##data)
-                     ->Belt.Option.map(Operation.parse),
-                   errors:
-                     switch (Js.Nullable.toOption(jsResult##errors)) {
-                     | Some(errors) when Js.Array.length(errors) > 0 =>
-                       Some(errors)
-                     | _ => None
-                     },
-                 };
-
-               let simple: Execution.executionVariantResult(Operation.t) =
-                 switch (full) {
-                 | {errors: Some(errors)} => Errors(errors)
-                 | {data: Some(data)} => Data(data)
-
-                 | {errors: None, data: None} => NoData
-                 };
-
-               (simple, full) |> Js.Promise.resolve;
+               {
+                 Execution.data:
+                   Js.Nullable.toOption(jsResult##data)
+                   ->Belt.Option.map(Operation.parse),
+                 errors:
+                   switch (Js.Nullable.toOption(jsResult##errors)) {
+                   | Some(errors) when Js.Array.length(errors) > 0 =>
+                     Some(errors)
+                   | _ => None
+                   },
+               }
+               |> Js.Promise.resolve
              }),
         [||],
       );
@@ -221,8 +200,8 @@ let useMutation:
     (mutate, full);
   };
 
-let useMutationWithVariables:
-  type t raw_t raw_t_variables.
+let useMutationWithRawVariables:
+  type t raw_t t_variables raw_t_variables.
     (
       ~client: ApolloClient_Client.t=?,
       ~refetchQueries: Execution.refetchQueries(raw_t)=?,
@@ -233,9 +212,10 @@ let useMutationWithVariables:
       (module Types.Operation with
          type t = t and
          type Raw.t = raw_t and
+         type t_variables = t_variables and
          type Raw.t_variables = raw_t_variables)
     ) =>
-    (mutationNoVars(t, raw_t, raw_t_variables), controlledResult(t)) =
+    (mutationNoVars(t, raw_t, t_variables), controlledResult(t)) =
   (
     ~client=?,
     ~refetchQueries=?,
@@ -250,7 +230,7 @@ let useMutationWithVariables:
         gql(. Operation.query),
         options(
           ~client?,
-          ~variables,
+          ~variables=variables,
           ~refetchQueries?,
           ~awaitRefetchQueries?,
           ~update?,
@@ -267,28 +247,97 @@ let useMutationWithVariables:
     let mutate = () =>
       jsMutate(. options())
       |> Js.Promise.then_(jsResult => {
-           let full =
-             Execution.{
-               data:
-                 Js.Nullable.toOption(jsResult##data)
-                 ->Belt.Option.map(Operation.parse),
-               errors:
-                 switch (Js.Nullable.toOption(jsResult##errors)) {
-                 | Some(errors) when Js.Array.length(errors) > 0 =>
-                   Some(errors)
-                 | _ => None
-                 },
-             };
+           {
+             Execution.data:
+               Js.Nullable.toOption(jsResult##data)
+               ->Belt.Option.map(Operation.parse),
+             errors:
+               switch (Js.Nullable.toOption(jsResult##errors)) {
+               | Some(errors) when Js.Array.length(errors) > 0 =>
+                 Some(errors)
+               | _ => None
+               },
+           }
+           |> Js.Promise.resolve
+         });
 
-           let simple: Execution.executionVariantResult(Operation.t) =
-             switch (full) {
-             | {errors: Some(errors)} => Errors(errors)
-             | {data: Some(data)} => Data(data)
+    let full =
+      React.useMemo1(
+        () =>
+          {
+            loading: jsResult##loading,
+            called: jsResult##called,
+            data:
+              jsResult##data
+              ->Js.Nullable.toOption
+              ->Belt.Option.map(Operation.parse),
+            error: jsResult##error->Js.Nullable.toOption,
+          },
+        [|jsResult|],
+      );
 
-             | {errors: None, data: None} => NoData
-             };
+    (mutate, full);
+  };
 
-           (simple, full) |> Js.Promise.resolve;
+let useMutationWithVariables:
+  type t raw_t t_variables raw_t_variables.
+    (
+      ~client: ApolloClient_Client.t=?,
+      ~refetchQueries: Execution.refetchQueries(raw_t)=?,
+      ~awaitRefetchQueries: bool=?,
+      ~update: (ApolloClient_Client.t, mutationResult(raw_t)) => unit=?,
+      ~optimisticResponse: t=?,
+      ~variables: t_variables,
+      (module Types.Operation with
+         type t = t and
+         type Raw.t = raw_t and
+         type t_variables = t_variables and
+         type Raw.t_variables = raw_t_variables)
+    ) =>
+    (mutationNoVars(t, raw_t, t_variables), controlledResult(t)) =
+  (
+    ~client=?,
+    ~refetchQueries=?,
+    ~awaitRefetchQueries=?,
+    ~update=?,
+    ~optimisticResponse=?,
+    ~variables,
+    (module Operation),
+  ) => {
+    let (jsMutate, jsResult) =
+      useMutationJs(.
+        gql(. Operation.query),
+        options(
+          ~client?,
+          ~variables=Operation.serializeVariables(variables),
+          ~refetchQueries?,
+          ~awaitRefetchQueries?,
+          ~update?,
+          ~optimisticResponse=?
+            switch (optimisticResponse) {
+            | Some(optimisticResponse) =>
+              Some(Operation.serialize(optimisticResponse))
+            | None => None
+            },
+          (),
+        ),
+      );
+
+    let mutate = () =>
+      jsMutate(. options())
+      |> Js.Promise.then_(jsResult => {
+           {
+             Execution.data:
+               Js.Nullable.toOption(jsResult##data)
+               ->Belt.Option.map(Operation.parse),
+             errors:
+               switch (Js.Nullable.toOption(jsResult##errors)) {
+               | Some(errors) when Js.Array.length(errors) > 0 =>
+                 Some(errors)
+               | _ => None
+               },
+           }
+           |> Js.Promise.resolve
          });
 
     let full =
@@ -310,7 +359,7 @@ let useMutationWithVariables:
   };
 
 let useMutation0:
-  type t raw_t raw_t_variables.
+  type t raw_t t_variables raw_t_variables.
     (
       ~client: ApolloClient_Client.t=?,
       ~refetchQueries: Execution.refetchQueries(raw_t)=?,
@@ -320,9 +369,10 @@ let useMutation0:
       (module Types.OperationNoRequiredVars with
          type t = t and
          type Raw.t = raw_t and
+         type t_variables = t_variables and
          type Raw.t_variables = raw_t_variables)
     ) =>
-    (mutation0(t, raw_t, raw_t_variables), controlledResult(t)) =
+    (mutation0(t, raw_t, t_variables), controlledResult(t)) =
   (
     ~client=?,
     ~refetchQueries=?,
@@ -364,7 +414,7 @@ let useMutation0:
   };
 
 let useMutationLegacy:
-  type t raw_t raw_t_variables.
+  type t raw_t t_variables raw_t_variables.
     (
       ~client: ApolloClient_Client.t=?,
       ~refetchQueries: Execution.refetchQueries(raw_t)=?,
@@ -374,10 +424,11 @@ let useMutationLegacy:
       (module Types.Operation with
          type t = t and
          type Raw.t = raw_t and
+         type t_variables = t_variables and
          type Raw.t_variables = raw_t_variables)
     ) =>
     (
-      mutation(t, raw_t, raw_t_variables),
+      mutation(t, raw_t, t_variables),
       controlledVariantResult(t),
       controlledResult(t),
     ) =
@@ -443,6 +494,25 @@ module Extend = (M: Types.Operation) => {
         variables,
       ) => {
     useMutationWithVariables(
+      ~client?,
+      ~refetchQueries?,
+      ~awaitRefetchQueries?,
+      ~update?,
+      ~optimisticResponse?,
+      ~variables,
+      (module M),
+    );
+  };
+  let useWithRawVariables =
+      (
+        ~client=?,
+        ~refetchQueries=?,
+        ~awaitRefetchQueries=?,
+        ~update=?,
+        ~optimisticResponse=?,
+        variables,
+      ) => {
+    useMutationWithRawVariables(
       ~client?,
       ~refetchQueries?,
       ~awaitRefetchQueries?,

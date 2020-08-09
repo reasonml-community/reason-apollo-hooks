@@ -26,9 +26,9 @@ external doMakeOptions:
   options('data);
 
 let makeOptions:
-  type t raw_t raw_t_variables.
+  type t raw_t t_variables raw_t_variables.
     (
-      ~variables: raw_t_variables=?,
+      ~variables: t_variables=?,
       ~notifyOnNetworkStatusChange: bool=?,
       ~fetchPolicy: Types.fetchPolicy=?,
       ~errorPolicy: Types.errorPolicy=?,
@@ -37,6 +37,7 @@ let makeOptions:
       (module Types.Operation with
          type t = t and
          type Raw.t = raw_t and
+         type t_variables = t_variables and
          type Raw.t_variables = raw_t_variables)
     ) =>
     options(t) =
@@ -47,11 +48,13 @@ let makeOptions:
     ~errorPolicy=?,
     ~pollInterval=?,
     ~context=?,
-    (module Definition),
+    (module Operation),
   ) => {
     doMakeOptions(
-      ~query=gql(. Definition.query),
-      ~variables?,
+      ~query=gql(. Operation.query),
+      ~variables=?{switch(variables) {
+        | Some(variables) => Some(Operation.serializeVariables(variables))
+        | None => None}},
       ~notifyOnNetworkStatusChange?,
       ~fetchPolicy=?
         fetchPolicy->Belt.Option.map(f => Types.fetchPolicyToJs(f)),

@@ -39,7 +39,7 @@ type subscribeToMoreOptions = {
 
 type fetchMoreOptions('raw_t, 'raw_t_variables) = {
   variables: option('raw_t_variables),
-  updateQuery: updateQueryT('raw_t, 'raw_t_variables),
+  updateQuery: option(updateQueryT('raw_t, 'raw_t_variables)),
 };
 
 type queryResult('raw_t, 'raw_t_variables) = {
@@ -113,53 +113,61 @@ let make =
 
 [@bs.module "graphql-tag"] external gql: Types.gql = "default";
 
-module ReadQuery = (Definition: Types.Definition) => {
+module ReadQuery = (Operation: Types.Operation) => {
   type readQueryOptions = {
     query: Types.queryString,
-    variables: Js.Nullable.t(Definition.Raw.t_variables),
+    variables: Js.Nullable.t(Operation.Raw.t_variables),
   };
-  type response = option(Definition.t);
+  type response = option(Operation.t);
   [@bs.send]
-  external readQuery: (t, readQueryOptions) => Js.Nullable.t(Definition.Raw.t) =
+  external readQuery: (t, readQueryOptions) => Js.Nullable.t(Operation.Raw.t) =
     "readQuery";
 
-  let graphqlQueryAST = gql(. Definition.query);
-  let apolloDataToRecord: Js.Nullable.t(Definition.Raw.t) => response =
+  let graphqlQueryAST = gql(. Operation.query);
+  let apolloDataToRecord: Js.Nullable.t(Operation.Raw.t) => response =
     apolloData =>
-      Js.Nullable.toOption(apolloData)->(Belt.Option.map(Definition.parse));
+      Js.Nullable.toOption(apolloData)->(Belt.Option.map(Operation.parse));
 
-  let make = (~client, ~variables: option(Definition.Raw.t_variables)=?, ()) =>
+  let make = (~client, ~variables: option(Operation.t_variables)=?, ()) =>
     readQuery(
       client,
-      {query: graphqlQueryAST, variables: Js.Nullable.fromOption(variables)},
+      {query: graphqlQueryAST, variables:
+        Js.Nullable.fromOption(switch(variables) { 
+          | Some(variables) => Some(Operation.serializeVariables(variables))
+          | None => None
+          })},
     )
     ->apolloDataToRecord;
 };
 
-module WriteQuery = (Definition: Types.Definition) => {
+module WriteQuery = (Operation: Types.Operation) => {
   type writeQueryOptions = {
     query: Types.queryString,
-    variables: Js.Nullable.t(Definition.Raw.t_variables),
-    data: Definition.t,
+    variables: Js.Nullable.t(Operation.Raw.t_variables),
+    data: Operation.t,
   };
 
   [@bs.send]
   external writeQuery: (t, writeQueryOptions) => unit = "writeQuery";
 
-  let graphqlQueryAST = gql(. Definition.query);
+  let graphqlQueryAST = gql(. Operation.query);
 
   let make =
       (
         ~client,
-        ~variables: option(Definition.Raw.t_variables)=?,
-        ~data: Definition.t,
+        ~variables: option(Operation.t_variables)=?,
+        ~data: Operation.t,
         (),
       ) =>
     writeQuery(
       client,
       {
         query: graphqlQueryAST,
-        variables: Js.Nullable.fromOption(variables),
+        variables:
+          Js.Nullable.fromOption(switch(variables) {
+            | Some(variables) => Some(Operation.serializeVariables(variables))
+            | None => None
+          }),
         data,
       },
     );

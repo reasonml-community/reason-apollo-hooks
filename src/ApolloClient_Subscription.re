@@ -43,12 +43,13 @@ external useSubscription:
 let useSubscription:
   type t t_variables raw_t raw_t_variables.
     (
-      ~variables: Js.Json.t=?,
+      ~variables: t_variables=?,
       ~client: ApolloClient_Client.t=?,
       ~skip: bool=?,
       (module Types.Operation with
          type t = t and
          type Raw.t = raw_t and
+         type t_variables = t_variables and
          type Raw.t_variables = raw_t_variables)
     ) =>
     (variant(t), result(t)) =
@@ -56,7 +57,9 @@ let useSubscription:
     let jsResult =
       useSubscription(
         gql(. Operation.query),
-        options(~variables?, ~client?, ~skip?, ()),
+        options(~variables=?{switch(variables) {
+          | Some(variables) => Some(Operation.serializeVariables(variables))
+          | None => None }}, ~client?, ~skip?, ()),
       );
 
     let result = {

@@ -50,20 +50,22 @@ module Raw = {
   type fetchMoreOptions('raw_t, 'raw_t_variables) = {
     variables: option('raw_t_variables),
     updateQuery:
-      ('raw_t, updateQueryOptions('raw_t, 'raw_t_variables)) => 'raw_t,
+      option(
+        ('raw_t, updateQueryOptions('raw_t, 'raw_t_variables)) => 'raw_t,
+      ),
   };
 };
 
-type queryResult('t, 'raw_t, 'raw_t_variables) = {
+type queryResult('t, 'raw_t, 't_variables, 'raw_t_variables) = {
   data: option('t),
   loading: bool,
   error: option(Types.apolloError),
   networkStatus: Types.networkStatus,
-  refetch: (~variables: 'raw_t_variables=?, unit) => Js.Promise.t('t),
+  refetch: (~variables: 't_variables=?, unit) => Js.Promise.t('t),
   fetchMore:
     (
-      ~variables: 'raw_t_variables=?,
-      ~updateQuery: ('t, updateQueryOptions('t, 'raw_t_variables)) => 't,
+      ~variables: 't_variables=?,
+      ~updateQuery: ('t, updateQueryOptions('t, 'raw_t_variables)) => 't=?,
       unit
     ) =>
     Js.Promise.t(unit),
@@ -74,7 +76,8 @@ type queryResult('t, 'raw_t, 'raw_t_variables) = {
                       'raw_t,
                       Raw.updateQueryOptions('raw_t, 'raw_t_variables)
                     ) =>
-                    'raw_t,
+                    'raw_t
+                      =?,
       unit
     ) =>
     Js.Promise.t(unit),
@@ -83,7 +86,7 @@ type queryResult('t, 'raw_t, 'raw_t_variables) = {
   subscribeToMore:
     (
       ~document: Types.queryString,
-      ~variables: 'raw_t_variables=?,
+      ~variables: 't_variables=?,
       ~updateQuery: updateQuerySubscribeToMoreT('raw_t, 'raw_t_variables)=?,
       unit
     ) =>
@@ -112,6 +115,8 @@ type options('raw_t_variables) = {
   context: Types.Context.t,
   [@bs.optional]
   ssr: bool,
+  [@bs.optional]
+  partialRefetch: bool,
 };
 
 type refetchResult('raw_t) = {data: Js.Nullable.t('raw_t)};
@@ -143,7 +148,7 @@ let useQuery:
   type t t_variables raw_t raw_t_variables.
     (
       ~client: ApolloClient_Client.t=?,
-      ~variables: raw_t_variables,
+      ~variables: t_variables,
       ~notifyOnNetworkStatusChange: bool=?,
       ~fetchPolicy: Types.fetchPolicy=?,
       ~errorPolicy: Types.errorPolicy=?,
@@ -151,12 +156,14 @@ let useQuery:
       ~pollInterval: int=?,
       ~context: Types.Context.t=?,
       ~ssr: bool=?,
+      ~partialRefetch: bool=?,
       (module Types.Operation with
          type t = t and
          type Raw.t = raw_t and
-         type Raw.t_variables = raw_t_variables)
+         type Raw.t_variables = raw_t_variables and
+         type t_variables = t_variables)
     ) =>
-    queryResult(t, raw_t, raw_t_variables) =
+    queryResult(t, raw_t, t_variables, raw_t_variables) =
   (
     ~client=?,
     ~variables,
@@ -167,13 +174,14 @@ let useQuery:
     ~pollInterval=?,
     ~context=?,
     ~ssr=?,
+    ~partialRefetch=true,
     (module Operation),
   ) => {
     let jsResult =
       useQueryJs(
         gql(. Operation.query),
         options(
-          ~variables,
+          ~variables=Operation.serializeVariables(variables),
           ~client?,
           ~notifyOnNetworkStatusChange?,
           ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
@@ -182,6 +190,7 @@ let useQuery:
           ~pollInterval?,
           ~context?,
           ~ssr?,
+          ~partialRefetch,
           (),
         ),
       );
@@ -203,35 +212,52 @@ let useQuery:
           networkStatus:
             ApolloClient_Types.toNetworkStatus(jsResult##networkStatus),
           refetch: (~variables=?, ()) =>
-            jsResult##refetch(Js.Nullable.fromOption(variables))
+            jsResult##refetch(Js.Nullable.fromOption(switch(variables) { 
+              | Some(variables) =>
+                Some(Operation.serializeVariables(variables))
+              | None => None 
+            }))
             |> Js.Promise.then_(result =>
                  Operation.parse(
                    result.data->Js.Nullable.toOption->Belt.Option.getExn,
                  )
                  |> Js.Promise.resolve
                ),
-          rawFetchMore: (~variables=?, ~updateQuery, ()) =>
-            jsResult##fetchMore({Raw.variables, Raw.updateQuery}),
-          fetchMore: (~variables=?, ~updateQuery, ()) => {
+          rawFetchMore: (~variables=?, ~updateQuery=?, ()) =>
+            jsResult##fetchMore({Raw.variables: variables, Raw.updateQuery}),
+          fetchMore: (~variables=?, ~updateQuery=?, ()) => {
             jsResult##fetchMore({
-              Raw.variables,
-              Raw.updateQuery:
-                (previousResult, {fetchMoreResult, variables}) => {
-                let result =
-                  updateQuery(
-                    Operation.parse(previousResult),
-                    {
-                      fetchMoreResult:
-                        switch (Js.Nullable.toOption(fetchMoreResult)) {
-                        | None => None
-                        | Some(fetchMoreResult) =>
-                          Some(Operation.parse(fetchMoreResult))
-                        },
-                      variables: Js.Nullable.toOption(variables),
-                    },
-                  );
-                Operation.serialize(result);
+              Raw.variables: switch(variables) { 
+                | Some (variables) =>
+                  Some(Operation.serializeVariables(variables))
+                | None => None
               },
+              Raw.updateQuery:
+                switch (updateQuery) {
+                | Some(updateQuery) =>
+                  Some(
+                    (previousResult, Raw.{fetchMoreResult, variables}) => {
+                      let result =
+                        updateQuery(
+                          Operation.parse(previousResult),
+                          ({
+                            fetchMoreResult:
+                              switch (Js.Nullable.toOption(fetchMoreResult)) {
+                              | None => None
+                              | Some(fetchMoreResult) =>
+                                Some(Operation.parse(fetchMoreResult))
+                              },
+                            variables:
+                              (Js.Nullable.toOption(variables):
+                               option(Operation.Raw.t_variables)),
+                          }: updateQueryOptions(Operation.t,
+                                                Operation.Raw.t_variables)),
+                        );
+                      Operation.serialize(result);
+                    },
+                  )
+                | None => None
+                },
             });
           },
           stopPolling: () => jsResult##stopPolling(),
@@ -240,7 +266,12 @@ let useQuery:
             jsResult##subscribeToMore(
               subscribeToMoreOptionsJs(
                 ~document,
-                ~variables?,
+                ~variables=?{switch(variables) {
+                  | Some(variables) =>
+                    Some(Operation.serializeVariables(variables))
+                  | None => None
+                  }}
+                  ,
                 ~updateQuery?,
                 (),
               ),
@@ -251,7 +282,7 @@ let useQuery:
   };
 
 let useQuery0:
-  type t t_variables raw_t raw_t_variables.
+  type t raw_t raw_t_variables t_variables.
     (
       ~client: ApolloClient_Client.t=?,
       ~notifyOnNetworkStatusChange: bool=?,
@@ -261,12 +292,14 @@ let useQuery0:
       ~pollInterval: int=?,
       ~context: Types.Context.t=?,
       ~ssr: bool=?,
+      ~partialRefetch: bool=?,
       (module Types.OperationNoRequiredVars with
          type t = t and
          type Raw.t = raw_t and
-         type Raw.t_variables = raw_t_variables)
+         type Raw.t_variables = raw_t_variables and
+         type t_variables = t_variables)
     ) =>
-    queryResult(t, raw_t, raw_t_variables) =
+    queryResult(t, raw_t, t_variables, raw_t_variables) =
   (
     ~client=?,
     ~notifyOnNetworkStatusChange=?,
@@ -276,6 +309,7 @@ let useQuery0:
     ~pollInterval=?,
     ~context=?,
     ~ssr=?,
+    ~partialRefetch=?,
     (module Operation),
   ) => {
     useQuery(
@@ -288,27 +322,30 @@ let useQuery0:
       ~pollInterval?,
       ~context?,
       ~ssr?,
+      ~partialRefetch?,
       (module Operation),
     );
   };
 
 let useQueryLegacy:
-  type t t_variables raw_t raw_t_variables.
+  type t raw_t raw_t_variables t_variables.
     (
       ~client: ApolloClient_Client.t=?,
-      ~variables: raw_t_variables=?,
+      ~variables: t_variables=?,
       ~notifyOnNetworkStatusChange: bool=?,
       ~fetchPolicy: Types.fetchPolicy=?,
       ~errorPolicy: Types.errorPolicy=?,
       ~skip: bool=?,
       ~pollInterval: int=?,
       ~context: Types.Context.t=?,
+      ~partialRefetch: bool=?,
       (module Types.Operation with
          type t = t and
          type Raw.t = raw_t and
-         type Raw.t_variables = raw_t_variables)
+         type Raw.t_variables = raw_t_variables and
+         type t_variables = t_variables)
     ) =>
-    (variant(t), queryResult(t, raw_t, raw_t_variables)) =
+    (variant(t), queryResult(t, raw_t, t_variables, raw_t_variables)) =
   (
     ~client=?,
     ~variables=?,
@@ -318,13 +355,17 @@ let useQueryLegacy:
     ~skip=?,
     ~pollInterval=?,
     ~context=?,
+    ~partialRefetch=?,
     (module Operation),
   ) => {
     let jsResult =
       useQueryJs(
         gql(. Operation.query),
         options(
-          ~variables?,
+          ~variables=?{switch(variables) {
+            | Some(variables) => Some(Operation.serializeVariables(variables))
+            | None => None
+            }},
           ~client?,
           ~notifyOnNetworkStatusChange?,
           ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
@@ -332,6 +373,7 @@ let useQueryLegacy:
           ~skip?,
           ~pollInterval?,
           ~context?,
+          ~partialRefetch?,
           (),
         ),
       );
@@ -354,35 +396,49 @@ let useQueryLegacy:
             networkStatus:
               ApolloClient_Types.toNetworkStatus(jsResult##networkStatus),
             refetch: (~variables=?, ()) =>
-              jsResult##refetch(Js.Nullable.fromOption(variables))
+              jsResult##refetch(Js.Nullable.fromOption(switch(variables) {
+                | Some(variables) =>
+                Some(Operation.serializeVariables(variables))
+                | None => None
+              }))
               |> Js.Promise.then_(result =>
                    Operation.parse(
                      result.data->Js.Nullable.toOption->Belt.Option.getExn,
                    )
                    |> Js.Promise.resolve
                  ),
-            rawFetchMore: (~variables=?, ~updateQuery, ()) =>
-              jsResult##fetchMore({Raw.variables, Raw.updateQuery}),
-            fetchMore: (~variables=?, ~updateQuery, ()) => {
+            rawFetchMore: (~variables=?, ~updateQuery=?, ()) =>
+              jsResult##fetchMore({Raw.variables: variables, Raw.updateQuery}),
+            fetchMore: (~variables=?, ~updateQuery=?, ()) => {
               jsResult##fetchMore({
-                Raw.variables,
-                Raw.updateQuery:
-                  (previousResult, {fetchMoreResult, variables}) => {
-                  let result =
-                    updateQuery(
-                      Operation.parse(previousResult),
-                      {
-                        fetchMoreResult:
-                          switch (Js.Nullable.toOption(fetchMoreResult)) {
-                          | None => None
-                          | Some(fetchMoreResult) =>
-                            Some(Operation.parse(fetchMoreResult))
-                          },
-                        variables: Js.Nullable.toOption(variables),
-                      },
-                    );
-                  Operation.serialize(result);
+                Raw.variables: switch(variables) {
+                  | Some(variables) =>
+                    Some(Operation.serializeVariables(variables))
+                  | None => None
                 },
+                Raw.updateQuery:
+                  switch (updateQuery) {
+                  | Some(updateQuery) =>
+                    Some(
+                      (previousResult, {fetchMoreResult, variables}) => {
+                        let result =
+                          updateQuery(
+                            Operation.parse(previousResult),
+                            {
+                              fetchMoreResult:
+                                switch (Js.Nullable.toOption(fetchMoreResult)) {
+                                | None => None
+                                | Some(fetchMoreResult) =>
+                                  Some(Operation.parse(fetchMoreResult))
+                                },
+                              variables: Js.Nullable.toOption(variables),
+                            },
+                          );
+                        Operation.serialize(result);
+                      },
+                    )
+                  | None => None
+                  },
               });
             },
             stopPolling: () => jsResult##stopPolling(),
@@ -391,7 +447,11 @@ let useQueryLegacy:
               jsResult##subscribeToMore(
                 subscribeToMoreOptionsJs(
                   ~document,
-                  ~variables?,
+                  ~variables=?{switch(variables) {
+                    | Some(variables) =>
+                      Some(Operation.serializeVariables(variables))
+                    | None => None
+                    }},
                   ~updateQuery?,
                   (),
                 ),
@@ -429,6 +489,7 @@ module Extend = (M: Types.Operation) => {
         ~pollInterval=?,
         ~context=?,
         ~ssr=?,
+        ~partialRefetch=?,
         variables,
       ) => {
     useQuery(
@@ -441,6 +502,7 @@ module Extend = (M: Types.Operation) => {
       ~pollInterval?,
       ~context?,
       ~ssr?,
+      ~partialRefetch?,
       (module M),
     );
   };
@@ -461,6 +523,7 @@ module ExtendNoRequiredVars = (M: Types.OperationNoRequiredVars) => {
         ~pollInterval=?,
         ~context=?,
         ~ssr=?,
+        ~partialRefetch=?,
         (),
       ) => {
     useQuery(
@@ -477,6 +540,7 @@ module ExtendNoRequiredVars = (M: Types.OperationNoRequiredVars) => {
       ~pollInterval?,
       ~context?,
       ~ssr?,
+      ~partialRefetch?,
       (module M),
     );
   };
