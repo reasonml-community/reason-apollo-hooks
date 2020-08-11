@@ -212,11 +212,15 @@ let useQuery:
           networkStatus:
             ApolloClient_Types.toNetworkStatus(jsResult##networkStatus),
           refetch: (~variables=?, ()) =>
-            jsResult##refetch(Js.Nullable.fromOption(switch(variables) { 
-              | Some(variables) =>
-                Some(Operation.serializeVariables(variables))
-              | None => None 
-            }))
+            jsResult##refetch(
+              Js.Nullable.fromOption(
+                switch (variables) {
+                | Some(variables) =>
+                  Some(Operation.serializeVariables(variables))
+                | None => None
+                },
+              ),
+            )
             |> Js.Promise.then_(result =>
                  Operation.parse(
                    result.data->Js.Nullable.toOption->Belt.Option.getExn,
@@ -224,14 +228,15 @@ let useQuery:
                  |> Js.Promise.resolve
                ),
           rawFetchMore: (~variables=?, ~updateQuery=?, ()) =>
-            jsResult##fetchMore({Raw.variables: variables, Raw.updateQuery}),
+            jsResult##fetchMore({Raw.variables, Raw.updateQuery}),
           fetchMore: (~variables=?, ~updateQuery=?, ()) => {
             jsResult##fetchMore({
-              Raw.variables: switch(variables) { 
-                | Some (variables) =>
+              Raw.variables:
+                switch (variables) {
+                | Some(variables) =>
                   Some(Operation.serializeVariables(variables))
                 | None => None
-              },
+                },
               Raw.updateQuery:
                 switch (updateQuery) {
                 | Some(updateQuery) =>
@@ -240,18 +245,22 @@ let useQuery:
                       let result =
                         updateQuery(
                           Operation.parse(previousResult),
-                          ({
+                          {
                             fetchMoreResult:
                               switch (Js.Nullable.toOption(fetchMoreResult)) {
                               | None => None
                               | Some(fetchMoreResult) =>
                                 Some(Operation.parse(fetchMoreResult))
                               },
-                            variables:
-                              (Js.Nullable.toOption(variables):
-                               option(Operation.Raw.t_variables)),
-                          }: updateQueryOptions(Operation.t,
-                                                Operation.Raw.t_variables)),
+                            variables: (
+                              Js.Nullable.toOption(variables):
+                                option(Operation.Raw.t_variables)
+                            ),
+                          }:
+                             updateQueryOptions(
+                               Operation.t,
+                               Operation.Raw.t_variables,
+                             ),
                         );
                       Operation.serialize(result);
                     },
@@ -266,12 +275,13 @@ let useQuery:
             jsResult##subscribeToMore(
               subscribeToMoreOptionsJs(
                 ~document,
-                ~variables=?{switch(variables) {
+                ~variables=?{
+                  switch (variables) {
                   | Some(variables) =>
                     Some(Operation.serializeVariables(variables))
                   | None => None
-                  }}
-                  ,
+                  };
+                },
                 ~updateQuery?,
                 (),
               ),
@@ -362,10 +372,13 @@ let useQueryLegacy:
       useQueryJs(
         gql(. Operation.query),
         options(
-          ~variables=?{switch(variables) {
-            | Some(variables) => Some(Operation.serializeVariables(variables))
+          ~variables=?{
+            switch (variables) {
+            | Some(variables) =>
+              Some(Operation.serializeVariables(variables))
             | None => None
-            }},
+            };
+          },
           ~client?,
           ~notifyOnNetworkStatusChange?,
           ~fetchPolicy=?fetchPolicy->Belt.Option.map(Types.fetchPolicyToJs),
@@ -396,11 +409,15 @@ let useQueryLegacy:
             networkStatus:
               ApolloClient_Types.toNetworkStatus(jsResult##networkStatus),
             refetch: (~variables=?, ()) =>
-              jsResult##refetch(Js.Nullable.fromOption(switch(variables) {
-                | Some(variables) =>
-                Some(Operation.serializeVariables(variables))
-                | None => None
-              }))
+              jsResult##refetch(
+                Js.Nullable.fromOption(
+                  switch (variables) {
+                  | Some(variables) =>
+                    Some(Operation.serializeVariables(variables))
+                  | None => None
+                  },
+                ),
+              )
               |> Js.Promise.then_(result =>
                    Operation.parse(
                      result.data->Js.Nullable.toOption->Belt.Option.getExn,
@@ -408,14 +425,15 @@ let useQueryLegacy:
                    |> Js.Promise.resolve
                  ),
             rawFetchMore: (~variables=?, ~updateQuery=?, ()) =>
-              jsResult##fetchMore({Raw.variables: variables, Raw.updateQuery}),
+              jsResult##fetchMore({Raw.variables, Raw.updateQuery}),
             fetchMore: (~variables=?, ~updateQuery=?, ()) => {
               jsResult##fetchMore({
-                Raw.variables: switch(variables) {
+                Raw.variables:
+                  switch (variables) {
                   | Some(variables) =>
                     Some(Operation.serializeVariables(variables))
                   | None => None
-                },
+                  },
                 Raw.updateQuery:
                   switch (updateQuery) {
                   | Some(updateQuery) =>
@@ -447,11 +465,13 @@ let useQueryLegacy:
               jsResult##subscribeToMore(
                 subscribeToMoreOptionsJs(
                   ~document,
-                  ~variables=?{switch(variables) {
+                  ~variables=?{
+                    switch (variables) {
                     | Some(variables) =>
                       Some(Operation.serializeVariables(variables))
                     | None => None
-                    }},
+                    };
+                  },
                   ~updateQuery?,
                   (),
                 ),
