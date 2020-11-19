@@ -1,3 +1,7 @@
+# ⚠️ Prefer the new https://github.com/reasonml-community/graphql-ppx instead
+
+---
+
 # reason-apollo-hooks
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
