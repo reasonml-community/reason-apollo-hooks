@@ -12,23 +12,28 @@ type result('a) = {
   error: option(error),
 };
 
+type onSubscriptionDataOptions('a) = {
+  client: ApolloClient.generatedApolloClient,
+  subscriptionData: 'a,
+};
+
 [@bs.module "graphql-tag"] external gql: ReasonApolloTypes.gql = "default";
 
 [@bs.deriving abstract]
-type options = {
+type options('a) = {
   [@bs.optional]
   variables: Js.Json.t,
   [@bs.optional]
   skip: bool,
   [@bs.optional]
-  onSubscriptionData: unit => unit,
+  onSubscriptionData: 'a => unit,
   [@bs.optional]
   client: ApolloClient.generatedApolloClient,
 };
 
 [@bs.module "@apollo/react-hooks"]
 external useSubscriptionJs:
-  (ReasonApolloTypes.queryString, options) =>
+  (ReasonApolloTypes.queryString, options('a)) =>
   {
     .
     "data": Js.Nullable.t(Js.Json.t),
@@ -42,14 +47,35 @@ let useSubscription:
     ~variables: Js.Json.t=?,
     ~client: ApolloClient.generatedApolloClient=?,
     ~skip: bool=?,
+    ~onSubscriptionData: onSubscriptionDataOptions('data) => unit=?,
     ApolloHooksTypes.graphqlDefinition('data, _, _)
   ) =>
   (variant('data), result('data)) =
-  (~variables=?, ~client=?, ~skip=?, (parse, query, _)) => {
+  (
+    ~variables=?,
+    ~client=?,
+    ~skip=?,
+    ~onSubscriptionData=?,
+    (parse, query, _),
+  ) => {
+    let jsOnSubscriptionData =
+      Belt.Option.map(onSubscriptionData, (onSubscriptionDataFn, a) =>
+        onSubscriptionDataFn({
+          client: a##client,
+          subscriptionData: a##subscriptionData##data->parse,
+        })
+      );
+
     let jsResult =
       useSubscriptionJs(
         gql(. query),
-        options(~variables?, ~client?, ~skip?, ()),
+        options(
+          ~variables?,
+          ~client?,
+          ~skip?,
+          ~onSubscriptionData=?jsOnSubscriptionData,
+          (),
+        ),
       );
 
     let result = {
