@@ -1,4 +1,4 @@
-# ⚠️ Prefer the new https://github.com/reasonml-community/graphql-ppx instead
+# ⚠️ Prefer the new https://github.com/reasonml-community/reason-apollo-client instead
 
 ---
 
