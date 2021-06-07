@@ -4,7 +4,7 @@ open ApolloHooks;
 module PersonsOlderThanQuery = [%graphql
   {|
   query getPersonsOlderThan($age: Int!) {
-    allPersons(filter: { age_gte: $age } ) {
+    persons(where: { age: { _gt: $age } } ) {
       ...PersonFragment.Person
     }
   }
@@ -25,7 +25,7 @@ let make = (~age) => {
      | Data(data) =>
        <h3>
          {"There are "
-          ++ (data##allPersons->Belt.Array.length |> string_of_int)
+          ++ (data##persons->Belt.Array.length |> string_of_int)
           ++ " people older than "
           ++ string_of_int(age)
           |> React.string}

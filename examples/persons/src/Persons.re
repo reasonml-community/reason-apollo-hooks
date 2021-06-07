@@ -2,10 +2,10 @@
 let make = (~persons) =>
   <div className="person-list">
     {persons->Belt.Array.map(person =>
-       <div key=person##id className="person">
+       <div key={person##id |> string_of_int} className="person">
          <div className="person-field">
            <span className="person-label"> {React.string("Id: ")} </span>
-           {React.string(person##id)}
+           {person##id |> string_of_int |> React.string}
          </div>
          <div className="person-field">
            <span className="person-label"> {React.string("Name: ")} </span>

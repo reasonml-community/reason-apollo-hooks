@@ -1,7 +1,7 @@
 module GetAllPersons = [%graphql
   {|
     query getAllPersons {
-      allPersons {
+      persons {
         id
         name
       }
@@ -14,11 +14,9 @@ module GetAllPersons = [%graphql
 module NewPerson = [%graphql
   {|
     subscription {
-      Person {
-        node {
-          id
-          name
-        }
+      persons {
+        id
+        name
       }
     }
   |}
@@ -27,26 +25,19 @@ module NewPerson = [%graphql
 // Defining those types and "%identity" converters below allows us to
 // write the updateQuery in pure Reason and avoid bs.raw alltogether
 type person = {
-  id: string,
+  __typename: string,
+  id: int,
   name: string,
 };
 
-type allPersons = {
+type persons = {
   __typename: string,
-  allPersons: array(person),
+  persons: array(person),
 };
 
-type subscriptionNode = {node: person};
-
-[@bs.deriving abstract]
-type newPerson = {
-  [@bs.as "Person"]
-  person: subscriptionNode,
-};
-
-external resultToJson: allPersons => Js.Json.t = "%identity";
-external toPrevResult: Js.Json.t => Js.Nullable.t(allPersons) = "%identity";
-external toSubscriptionData: Js.Json.t => Js.Nullable.t(newPerson) =
+external resultToJson: persons => Js.Json.t = "%identity";
+external toPrevResult: Js.Json.t => Js.Nullable.t(persons) = "%identity";
+external toSubscriptionData: Js.Json.t => Js.Nullable.t(persons) =
   "%identity";
 
 [@react.component]
@@ -63,23 +54,26 @@ let make = () => {
         subscribe(
           ~document=newPersonDocument,
           ~updateQuery=
-            (maybePrevResult, maybeSubscriptionPayload) =>
-              switch (
-                maybePrevResult |> toPrevResult |> Js.Nullable.toOption,
-                maybeSubscriptionPayload##subscriptionData##data
+            (maybePrevResult, maybeSubscriptionPayload) => {
+              let prevResultOption =
+                maybePrevResult |> toPrevResult |> Js.Nullable.toOption;
+              let subscriptionDataData =
+                maybeSubscriptionPayload##subscriptionData##data;
+              let subscriptionDataOption =
+                subscriptionDataData
                 |> toSubscriptionData
-                |> Js.Nullable.toOption,
-              ) {
+                |> Js.Nullable.toOption;
+
+              switch (prevResultOption, subscriptionDataOption) {
               | (Some(prev), Some(newData)) =>
                 {
                   ...prev, // NOTE: This only works with BuckleScript 7
-                  allPersons:
-                    prev.allPersons
-                    ->Belt.Array.concat([|newData->personGet.node|]),
+                  persons: newData.persons,
                 }
                 ->resultToJson
               | _ => maybePrevResult
-              },
+              };
+            },
           (),
         );
 
@@ -92,13 +86,13 @@ let make = () => {
     {switch (simple) {
      | Loading => <p> {React.string("Loading...")} </p>
      | Data(data) =>
-       data##allPersons
+       data##persons
        ->Belt.Array.reverse
        ->Belt.Array.map(person =>
-           <div key=person##id className="person">
+           <div key={person##id |> string_of_int} className="person">
              <div className="person-field">
                <span className="person-label"> {React.string("Id: ")} </span>
-               {React.string(person##id)}
+               {React.string(person##id |> string_of_int)}
              </div>
              <div className="person-field">
                <span className="person-label">

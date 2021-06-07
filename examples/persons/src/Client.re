@@ -2,14 +2,14 @@ let inMemoryCache = ApolloInMemoryCache.createInMemoryCache();
 
 let httpLink =
   ApolloLinks.createHttpLink(
-    ~uri="https://api.graph.cool/simple/v1/cjdgba1jw4ggk0185ig4bhpsn",
+    ~uri="https://reason-apollo-hooks-example.herokuapp.com/v1/graphql",
     (),
   );
 
 /* WebSocket client */
 let webSocketLink =
   ApolloLinks.webSocketLink({
-    uri: "wss://subscriptions.graph.cool/v1/cjdgba1jw4ggk0185ig4bhpsn",
+    uri: "wss://reason-apollo-hooks-example.herokuapp.com/v1/graphql",
     options: {
       reconnect: true,
       connectionParams: None,
